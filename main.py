@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from _service_center.account_okx import AccountAPI
 from _service_center.trade_okx import TradeAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from _sche_processor.schedule_processor import *
+from _data_center.data_object.req.post_order_req import *
 
 app = FastAPI()
 account_okx = AccountAPI()
 trade_okx = TradeAPI()
-
 
 # 添加 CORS 中间件
 app.add_middleware(
@@ -17,6 +17,16 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有 HTTP 方法
     allow_headers=["*"],  # 允许所有 HTTP 头部
 )
+
+
+def start_celery_worker():
+    from celery_app import celery_app
+    argv = [
+        'worker',
+        '--loglevel=info',
+        '-E',
+    ]
+    celery_app.worker_main(argv)
 
 
 @app.get("/")
@@ -50,7 +60,7 @@ def get_account_api():
 
 
 @app.post("/place_order")
-async def place_order(order: OrderOkx):
+async def place_order(order: PostOrderReq):
     # 此处，你可以添加处理订单逻辑，例如将订单信息保存到数据库等
     # 但是在这个简单的例子中，我们只返回一个假的成功响应
     print("order class: {}".format(order))
@@ -60,10 +70,17 @@ async def place_order(order: OrderOkx):
     # 返回假的成功响应
     return result
 
+
+@app.on_event("startup")
+def startup_event():
+    if multiprocessing.current_process().name == "MainProcess":
+        multiprocessing.Process(target=start_celery_worker, name="CeleryWorker").start()
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
 
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 # @app.get("/data/basic_info/jeffCox")
 # async def get_jeffCox():
@@ -76,4 +93,3 @@ if __name__ == "__main__":
 
 # @app.post("")
 # async def
-

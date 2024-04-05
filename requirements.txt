@@ -201,3 +201,5 @@ zope.interface==6.0
 
 schedule~=1.2.1
 apscheduler~=3.10.4
+backtrader~=1.9.78.123
+celery~=5.3.6
