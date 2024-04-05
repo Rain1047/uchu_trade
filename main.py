@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from _service_center.account_okx import AccountAPI
 from _service_center.trade_okx import TradeAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -71,10 +71,17 @@ async def place_order(order: PostOrderReq):
     return result
 
 
+def start_main_processor():
+    # 在后台任务中调用sche_processor中的任务
+    background_tasks = BackgroundTasks()
+    background_tasks.add_task(main_processor)
+
+
 @app.on_event("startup")
 def startup_event():
     if multiprocessing.current_process().name == "MainProcess":
         multiprocessing.Process(target=start_celery_worker, name="CeleryWorker").start()
+        start_main_processor()
 
 
 if __name__ == "__main__":

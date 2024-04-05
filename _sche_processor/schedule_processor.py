@@ -19,10 +19,10 @@ def main_processor():
     scheduler = BackgroundScheduler()
 
     # 添加作业 - 从午夜开始，每隔4小时执行一次
-    scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)
+    # scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)
 
     # 添加作业 - 从每天s的10:00开始，每隔1分钟执行一次
-    # scheduler.add_job(schedule_main_task, 'cron', hour=22, minute='0-59', second=0)
+    scheduler.add_job(schedule_main_task, 'cron', hour=20, minute='0-59', second=0)
 
     # 启动调度器
     scheduler.start()
