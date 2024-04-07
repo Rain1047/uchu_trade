@@ -13,7 +13,6 @@ def schedule_main_task():
 
 
 # 主调度器
-@celery_app.task(bind=True, name='main_processor')
 def main_processor():
     # 创建调度器实例
     scheduler = BackgroundScheduler()
@@ -22,7 +21,7 @@ def main_processor():
     # scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)
 
     # 添加作业 - 从每天s的10:00开始，每隔1分钟执行一次
-    scheduler.add_job(schedule_main_task, 'cron', hour=20, minute='0-59', second=0)
+    scheduler.add_job(schedule_main_task, 'cron', hour=00, minute='0-59', second=0)
 
     # 启动调度器
     scheduler.start()

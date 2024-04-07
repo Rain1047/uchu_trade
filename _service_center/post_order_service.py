@@ -63,7 +63,6 @@ class TradeAPI:
                 slOrdPx=order_instance.slOrdPx,
                 slTriggerPxType=order_instance.slTriggerPxType
             )
-
             return result
         except Exception as order_exception:
             print(f"Error placing order: {order_exception}")
@@ -112,7 +111,6 @@ class TradeAPI:
             return df
         else:
             return pd.DataFrame()  # 如果没有找到 details 键，返回空的 DataFrame
-
 
 
 if __name__ == "__main__":

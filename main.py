@@ -4,6 +4,8 @@ from _service_center.trade_okx import TradeAPI
 from fastapi.middleware.cors import CORSMiddleware
 from _sche_processor.schedule_processor import *
 from _data_center.data_object.req.post_order_req import *
+from multiprocessing import Process
+import logging
 
 app = FastAPI()
 account_okx = AccountAPI()
@@ -31,7 +33,8 @@ def start_celery_worker():
 
 @app.get("/")
 async def read_root():
-    return {"message": "Hello, FastAPI!"}
+    current_process_name = multiprocessing.current_process().name
+    return {"message": f"Hello, FastAPI! I'm running in the {current_process_name} process."}
 
 
 @app.get("/hello/{name}")
@@ -72,22 +75,27 @@ async def place_order(order: PostOrderReq):
 
 
 def start_main_processor():
+    print("Starting main processor1...")
     # 在后台任务中调用sche_processor中的任务
-    background_tasks = BackgroundTasks()
-    background_tasks.add_task(main_processor)
+    main_processor()
 
 
-@app.on_event("startup")
-def startup_event():
-    if multiprocessing.current_process().name == "MainProcess":
-        multiprocessing.Process(target=start_celery_worker, name="CeleryWorker").start()
-        start_main_processor()
+# 启动 FastAPI Web应用
+def start_fastapi_app():
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
 if __name__ == "__main__":
-    import uvicorn
+    # 分别在不同的进程中启动 FastAPI 应用和后台任务
+    api_process = Process(target=start_fastapi_app, name="api_process")
+    background_process = Process(target=start_main_processor, name="background_process")
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    api_process.start()
+    background_process.start()
+
+    api_process.join()  # 等待 FastAPI 应用进程结束
+    background_process.join()  # 等待后台任务进程结束
 
 # @app.get("/data/basic_info/jeffCox")
 # async def get_jeffCox():
@@ -96,7 +104,3 @@ if __name__ == "__main__":
 # 
 #     # You can return a JSON response or customize it based on your needs.
 #     return JSONResponse(content={"message": "Jeff Cox data retrieved and processed successfully."})
-
-
-# @app.post("")
-# async def

@@ -1,6 +1,8 @@
 import sys
 import os
 
+from _data_center.data_object.dao.od_instance_dao import OrderInstance
+
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import time
@@ -28,6 +30,9 @@ marketDataAPI = MarketData.MarketAPI(flag=flag)
 
 # 获取当前时间的毫秒级别时间戳
 millis_timestamp = int(time.time() * 1000)
+
+
+x剖个
 
 dayTime = 24*3600*1000
 
@@ -94,7 +99,34 @@ def sub_task(st_instance):
                     st_instance.trade_pair,
                     result['data'][0]['ordId']
                 )
-                print(f"{datetime.datetime.now()}: result_info")
+
+                data = result.get('data', [{}])[0]
+                ordId = data.get('ordId', None)
+                sCode = data.get('sCode', None)
+                sMsg = data.get('sMsg', None)
+
+                data_info = result_info.get('data', [{}])[0]
+                accFillSz = data_info.get('accFillSz', None)
+                avgPx = data_info.get('avgPx', None)
+                state = data_info.get('state', None)
+                posSide = data_info.get('posSide', None)
+                cTime = data_info.get('cTime', None)
+
+                if sCode == "0":
+                    order_instance = OrderInstance(
+                        order_id=ordId,
+                        gmt_create=timestamp_to_datetime_milliseconds(cTime),
+                        gmt_modified=datetime.datetime.now(),
+                    )
+                # 将 OrderInstance 对象添加到会话中
+                session.add(order_instance)
+                # 提交会话以将更改保存到数据库中
+                session.commit()
+                # 关闭会话
+                session.close()
+
+
+                print(f"{datetime.datetime.now()}: result_info: {result_info}")
             except Exception as e1:
                 print(f"Post Order Error: {e1}")
         if not res.signal:
