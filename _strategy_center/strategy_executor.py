@@ -32,7 +32,10 @@ marketDataAPI = MarketData.MarketAPI(flag=flag)
 millis_timestamp = int(time.time() * 1000)
 
 
-x剖个
+def timestamp_to_datetime_milliseconds(timestamp_ms):
+    timestamp_sec = timestamp_ms / 1000.0
+    return datetime.datetime.fromtimestamp(timestamp_sec)
+
 
 dayTime = 24*3600*1000
 
@@ -115,6 +118,9 @@ def sub_task(st_instance):
                 if sCode == "0":
                     order_instance = OrderInstance(
                         order_id=ordId,
+                        side=EnumSide.BUY.value,
+                        entry_time=st_instance.time_frame,
+                        order_info=sMsg,
                         gmt_create=timestamp_to_datetime_milliseconds(cTime),
                         gmt_modified=datetime.datetime.now(),
                     )
@@ -124,8 +130,6 @@ def sub_task(st_instance):
                 session.commit()
                 # 关闭会话
                 session.close()
-
-
                 print(f"{datetime.datetime.now()}: result_info: {result_info}")
             except Exception as e1:
                 print(f"Post Order Error: {e1}")
