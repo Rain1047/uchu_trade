@@ -1,9 +1,6 @@
 # 基于 Ubuntu 20.04 镜像
 FROM --platform=linux/amd64 ubuntu:20.04
 
-# 设置工作目录
-WORKDIR /app
-
 # 安装基本依赖
 RUN apt-get update && \
     apt-get install -y wget libc6 && \
@@ -25,13 +22,16 @@ RUN /opt/conda/bin/conda create -n okx-trading python=3.10 -y && \
     echo "source activate okx-trading" > ~/.bashrc
 SHELL ["/bin/bash", "-c", "source activate okx-trading"]
 
-# 在 Conda 环境中安装依赖项
-RUN conda install -n okx-trading -c conda-forge ta-lib -y
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+# 设置工作目录
+WORKDIR /app
 
+COPY requirements.txt ./
+
+# 在 Conda 环境中安装依赖项
+RUN conda install -c conda-forge ta-lib -y
+RUN pip install -r requirements.txt
 
 # 复制应用程序代码到容器中
-COPY . .
+COPY . ./
 
-# 执行应用程序
-CMD ["python", "main.py"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
