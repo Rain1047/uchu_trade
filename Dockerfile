@@ -17,23 +17,20 @@ RUN bash miniconda.sh -b -p /opt/conda && \
 # 将 conda 添加到 PATH 环境变量中
 ENV PATH /opt/conda/bin:$PATH
 
-# 创建 Conda 环境并安装依赖项
-RUN /opt/conda/bin/conda create -n okx-trading python=3.10 -y
-RUN /opt/conda/bin/conda install -n okx-trading -c conda-forge ta-lib -y
-RUN /opt/conda/bin/conda install -n okx-trading pip -y
-
-# 激活 Conda 环境
-SHELL ["/bin/bash", "-c"]
-RUN source /opt/conda/bin/activate okx-trading
-
 # 设置工作目录
 WORKDIR /app
 
+# 创建并激活 Conda 环境
+RUN /opt/conda/bin/conda create -n okx-trading python=3.10 -y && \
+    echo "source activate okx-trading" > ~/.bashrc
+SHELL ["/bin/bash", "-c", "source activate okx-trading"]
+
+# 在 Conda 环境中安装依赖项
+RUN pip install -r requirements.txt
+RUN conda install -c conda-forge ta-lib -y
+RUN pip install mysql-connector
+
 # 复制应用程序代码到容器中
 COPY . ./
-
-# 安装 Python 依赖项
-RUN pip install --upgrade setuptools pip
-RUN pip install mysql-connector
 
 #CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
