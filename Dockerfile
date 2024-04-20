@@ -1,6 +1,7 @@
 # 基于 Ubuntu 20.04 镜像
 FROM --platform=linux/amd64 ubuntu:20.04
 
+
 # 安装基本依赖
 RUN apt-get update && \
     apt-get install -y wget libc6 && \
