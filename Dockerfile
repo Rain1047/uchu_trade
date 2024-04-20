@@ -26,6 +26,9 @@ RUN /opt/conda/bin/conda create -n okx-trading python=3.10 -y && \
     echo "source activate okx-trading" > ~/.bashrc
 SHELL ["/bin/bash", "-c", "source activate okx-trading"]
 
+
+# 安装 nano 编辑器
+RUN apt-get update && apt-get install -y vim nano
 # 在 Conda 环境中安装依赖项
 RUN pip install -r requirements.txt
 RUN conda install -c conda-forge ta-lib -y

@@ -40,7 +40,8 @@ def timestamp_to_datetime_milliseconds(timestamp_ms):
 dayTime = 24*3600*1000
 
 # 创建数据库连接引擎
-engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
+# engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
+engine = create_engine('sqlite:////Users/rain/Documents/trade_db.db')
 # 创建会话类
 Session = sessionmaker(bind=engine)
 # 创建会话实例

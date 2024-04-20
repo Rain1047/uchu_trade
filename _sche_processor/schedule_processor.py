@@ -4,6 +4,7 @@ from datetime import datetime
 from _strategy_center.strategy_executor import *
 from celery_app import celery_app
 
+
 def my_scheduled_job1():
     print("Job executed at:", datetime.now())
 
@@ -21,7 +22,7 @@ def main_processor():
     # scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)
 
     # 添加作业 - 从每天s的10:00开始，每隔1分钟执行一次
-    scheduler.add_job(schedule_main_task, 'cron', hour=00, minute='0-59', second=0)
+    scheduler.add_job(schedule_main_task, 'cron', hour='15-16', minute='0-59', second=0)
 
     # 启动调度器
     scheduler.start()

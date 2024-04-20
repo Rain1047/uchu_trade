@@ -1,11 +1,10 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI
 from _service_center.account_okx import AccountAPI
 from _service_center.trade_okx import TradeAPI
 from fastapi.middleware.cors import CORSMiddleware
 from _sche_processor.schedule_processor import *
 from _data_center.data_object.req.post_order_req import *
 from multiprocessing import Process
-import logging
 
 app = FastAPI()
 account_okx = AccountAPI()
