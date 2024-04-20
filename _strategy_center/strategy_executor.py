@@ -39,9 +39,17 @@ def timestamp_to_datetime_milliseconds(timestamp_ms):
 
 dayTime = 24*3600*1000
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 定义数据库文件相对路径
+db_relative_path = '../_data_source/trade_db.db'
+
+# 获取数据库文件的绝对路径
+db_absolute_path = os.path.join(current_dir, db_relative_path)
+
 # 创建数据库连接引擎
 # engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
-engine = create_engine('sqlite:////Users/rain/Documents/trade_db.db')
+engine = create_engine(f'sqlite:///{db_absolute_path}')
 # 创建会话类
 Session = sessionmaker(bind=engine)
 # 创建会话实例
