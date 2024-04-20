@@ -16,6 +16,7 @@ from _data_center.data_object.dto.strategy_instance import StrategyInstance
 import multiprocessing
 from _service_center.post_order_service import *
 from _data_center.data_object.req.post_order_req import PostOrderReq
+from _service_center._util_service.db_connect_service import get_db_session
 import logging
 import datetime
 
@@ -50,11 +51,13 @@ db_absolute_path = os.path.join(current_dir, db_relative_path)
 # 创建数据库连接引擎
 # engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
 engine = create_engine(f'sqlite:///{db_absolute_path}')
+
+print(f'sqlite:///{db_absolute_path}')
 # 创建会话类
 Session = sessionmaker(bind=engine)
 # 创建会话实例
-session = Session()
-
+# session = Session()
+session = get_db_session()
 
 def main_task(tf: str):
     logging.info("strategy_executor#main_task begin...")
