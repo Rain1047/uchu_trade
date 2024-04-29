@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import date
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
