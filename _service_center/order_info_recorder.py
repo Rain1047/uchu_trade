@@ -3,10 +3,10 @@ import os
 import json
 import okx.Account as Account
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-config_file_path = os.path.join(script_dir, '../config.json')
-with open(config_file_path, 'r') as config_file:
-    config = json.load(config_file)
+from _data_center.data_object.enum_obj import EnumTradeType
+from _utils.config_util import get_config
+
+config = get_config()
 
 
 def get_order_info():

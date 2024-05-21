@@ -7,6 +7,9 @@ import os
 
 import psycopg2
 
+from _utils.config_util import get_config
+
+
 # database port : 5432 password : rain
 class AccountAPI:
 
@@ -16,10 +19,7 @@ class AccountAPI:
     # 获取okx账号
     def get_okx_account(self):
         if self.okx_instance is None:
-            script_dir = os.path.dirname(os.path.realpath(__file__))
-            config_file_path = os.path.join(script_dir, '../config.json')
-            with open(config_file_path, 'r') as config_file:
-                config = json.load(config_file)
+            config = get_config()
             self.okx_instance = Account.AccountAPI(config['apikey'], config['secretkey'], config['passphrase'], False,
                                                    "0")
             print("new account instance created.")

@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 from _data_center.data_object.req.post_order_req import PostOrderReq
+from _utils.config_util import get_config
 
 
 # database port : 5432 password : rain
@@ -15,10 +16,7 @@ class TradeAPI:
         production = "0"
         demo = "1"
         if self.okx_instance is None:
-            script_dir = os.path.dirname(os.path.realpath(__file__))
-            config_file_path = os.path.join(script_dir, '../config.json')
-            with open(config_file_path, 'r') as config_file:
-                config = json.load(config_file)
+            config = get_config()
             self.okx_instance = Trade.TradeAPI(config['apikeydemo'], config['secretkeydemo'], config['passphrase'],
                                                False,
                                                demo)
@@ -29,10 +27,7 @@ class TradeAPI:
     def get_okx_trade_real(self):
         production = "0"
         if self.okx_instance is None:
-            script_dir = os.path.dirname(os.path.realpath(__file__))
-            config_file_path = os.path.join(script_dir, '../config.json')
-            with open(config_file_path, 'r') as config_file:
-                config = json.load(config_file)
+            config = get_config()
             self.okx_instance = Trade.TradeAPI(config['apikey'], config['secretkey'], config['passphrase'],
                                                False, production)
             print("new trade instance created.")
