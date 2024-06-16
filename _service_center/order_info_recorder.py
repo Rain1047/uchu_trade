@@ -1,6 +1,4 @@
 import okx.SpreadTrading as SpreadTrading
-import os
-import json
 import okx.Account as Account
 
 from _data_center.data_object.enum_obj import EnumTradeType
@@ -10,6 +8,8 @@ config = get_config()
 
 
 def get_order_info():
+    print(config["apikeydemo"])
+
     flag = "1"  # 实盘:0 , 模拟盘:1
     if flag == EnumTradeType.PRODUCT.value:
         spreadAPI = SpreadTrading.SpreadTradingAPI(config["apikey"], config["secretkey"], config["passphrase"],
@@ -30,10 +30,6 @@ def get_order_info():
         result3 = accountAPI.get_positions_history()
         print(result3)
     print(config["apikey"])
-    # 获取订单详情
-    # res = spreadAPI.get_order_details(ordId='691741894593933312')
-
-    # res = spreadAPI.get_order_details(ordId='1905309079888199680')
 
 
 if __name__ == '__main__':

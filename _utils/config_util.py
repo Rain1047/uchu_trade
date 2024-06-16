@@ -7,7 +7,7 @@ def get_config():
     config_file_path = os.path.join(script_dir, '../config.json')
     with open(config_file_path, 'r') as config_file:
         config = json.load(config_file)
-    print(config)
+    return config
 
 
 if __name__ == '__main__':

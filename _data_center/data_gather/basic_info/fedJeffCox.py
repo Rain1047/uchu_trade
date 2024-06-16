@@ -95,4 +95,3 @@ def store_jeff_cox_detail():
 if __name__ == "__main__":
     print(store_jeff_cox_detail())
 
-
