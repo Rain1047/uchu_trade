@@ -3,11 +3,13 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 def get_project_root():
     # 获取当前脚本所在文件夹的绝对路径
     current_dir = Path(__file__).resolve().parent
     # 返回项目根目录的绝对路径
     return current_dir.parents[1]
+
 
 def get_db_session():
     # 获取项目根目录的绝对路径
