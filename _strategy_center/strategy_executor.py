@@ -40,33 +40,17 @@ def timestamp_to_datetime_milliseconds(timestamp_ms):
 
 dayTime = 24 * 3600 * 1000
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# 定义数据库文件相对路径
-db_relative_path = '../_data_source/trade_db.db'
-
-# 获取数据库文件的绝对路径
-db_absolute_path = os.path.join(current_dir, db_relative_path)
-
-# 创建数据库连接引擎
-# engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
-engine = create_engine(f'sqlite:///{db_absolute_path}')
-
-print(f'sqlite:///{db_absolute_path}')
-# 创建会话类
-Session = sessionmaker(bind=engine)
 # 创建会话实例
 # session = Session()
 session = get_db_session()
 
 
-def main_task(tf: str):
+# tf can be null
+def main_task(tf: str = "4H"):
     logging.info("strategy_executor#main_task begin...")
-    # 获取需要执行的规则实例
-    # 查询所有符合条件的记录
-    st_instance_list = session.query(StInstance) \
-        .filter(StInstance.switch == 0, StInstance.is_del == 0, StInstance.time_frame == tf) \
-        .all()
+    # 获取需要执行的规则实例，查询所有符合条件的记录
+    # if tf is null how to change the query make it flexible
+    st_instance_list = get_st_instance_list(StInstance, tf)
     if st_instance_list:  # 检查 st_instance_list 是否为空
         # 创建进程池
         with multiprocessing.Pool() as pool:
@@ -75,6 +59,21 @@ def main_task(tf: str):
             # 关闭进程池
             pool.close()
         sub_task(st_instance_list[0])
+
+
+from sqlalchemy import or_
+
+
+# Example function that takes a parameter tf which can be None
+def get_st_instance_list(instance, tf):
+    engine = get_db_session()
+    query = engine.query(instance).filter(
+        StInstance.switch == 0,
+        StInstance.is_del == 0,
+        or_(StInstance.time_frame == tf, tf is None)
+    )
+    return query.all()
+
 
 
 def sub_task(st_instance):
@@ -153,4 +152,7 @@ def sub_task(st_instance):
 
 
 if __name__ == '__main__':
-    main_task("4H")
+    # main_task("4H")
+    st_instance_list = get_st_instance_list(StInstance, "4H")
+    for instance in st_instance_list:
+        print(instance.id, instance.name)

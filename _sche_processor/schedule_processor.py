@@ -10,13 +10,15 @@ def my_scheduled_job1():
 
 
 def schedule_main_task():
-    main_task("4H")
+    main_task()
 
 
 # 主调度器
 def main_processor():
     # 创建调度器实例
     scheduler = BackgroundScheduler()
+
+    # 1. 查询所有符合条件的策略实例
 
     # 添加作业 - 从午夜开始，每隔4小时执行一次
     # scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)

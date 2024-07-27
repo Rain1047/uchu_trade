@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from _data_center.data_object.dao.st_instance_dao import StInstance
 
 
 def get_project_root():
@@ -15,7 +16,7 @@ def get_db_session():
     # 获取项目根目录的绝对路径
     project_root = get_project_root()
     # 构建数据库文件的绝对路径
-    db_absolute_path = project_root / '_data_source' / 'trade_db.db'
+    db_absolute_path = project_root / '_data_center' / 'trade_db.db'
     # 创建数据库连接引擎
     engine = create_engine(f'sqlite:///{db_absolute_path}')
     print(f'sqlite:///{db_absolute_path}')
@@ -26,4 +27,12 @@ def get_db_session():
 
 
 if __name__ == '__main__':
+    tf = "4H"
     session = get_db_session()
+    st_instance_list = session.query(StInstance) \
+        .filter(StInstance.switch == 0, StInstance.is_del == 0, StInstance.time_frame == tf) \
+        .all()
+    # print the result
+    for st_instance in st_instance_list:
+        print(st_instance.id, st_instance.trade_pair)
+
