@@ -5,7 +5,6 @@ import okx.MarketData as MarketData
 import requests
 
 
-
 class TickerPriceCollector:
     def __init__(self, ticker_symbol, start_date=None, end_date=None):
         self.ticker_symbol = ticker_symbol
