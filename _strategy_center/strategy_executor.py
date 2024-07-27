@@ -2,6 +2,7 @@ import sys
 import os
 
 from _data_center.data_object.dao.od_instance_dao import OrderInstance
+from _data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,28 +47,28 @@ session = get_db_session()
 
 
 # tf can be null
-def main_task(tf: str = "4H"):
+def main_task():
     logging.info("strategy_executor#main_task begin...")
     # 获取需要执行的规则实例，查询所有符合条件的记录
     # if tf is null how to change the query make it flexible
-    st_instance_list = get_st_instance_list(StInstance, tf)
-    if st_instance_list:  # 检查 st_instance_list 是否为空
+    instance_list = get_st_instance_list(StInstance, None)
+    if instance_list:  # 检查 st_instance_list 是否为空
         # 创建进程池
         with multiprocessing.Pool() as pool:
             # 并行处理每个 st_instance
-            pool.map(sub_task, st_instance_list)
+            pool.map(sub_task, instance_list)
             # 关闭进程池
             pool.close()
-        sub_task(st_instance_list[0])
+        sub_task(instance_list[0])
 
 
 from sqlalchemy import or_
 
 
 # Example function that takes a parameter tf which can be None
-def get_st_instance_list(instance, tf):
+def get_st_instance_list(strategy, tf):
     engine = get_db_session()
-    query = engine.query(instance).filter(
+    query = engine.query(strategy).filter(
         StInstance.switch == 0,
         StInstance.is_del == 0,
         or_(StInstance.time_frame == tf, tf is None)
@@ -75,11 +76,8 @@ def get_st_instance_list(instance, tf):
     return query.all()
 
 
-
-def sub_task(st_instance):
-    logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
-    try:
-        st = StrategyInstance(
+def __do2dto(st_instance):
+    return StrategyInstance(
             tradePair=st_instance.trade_pair,
             timeFrame=st_instance.time_frame,
             stEntryCode=st_instance.entry_st_code,
@@ -87,23 +85,43 @@ def sub_task(st_instance):
             lossPerTrans=st_instance.loss_per_trans,
             side=st_instance.side,
         )
+
+
+def post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance) -> PostOrderReq:
+    return PostOrderReq(
+        tradeEnv=strategy.env,
+        instId=strategy.tradePair,
+        tdMode=EnumTdMode.ISOLATED_MARGIN.value,
+        sz=str(result.sz),
+        side=result.side,
+        ordType=EnumOrdType.MARKET.value,
+        slTriggerPx=str(result.exitPrice),
+        slOrdPx="-1"
+        # PostOrderReq(
+        #     # 实盘&模拟
+        #     tradeType=EnumTradeType.DEMO.value,
+        #     instId=st_instance.trade_pair,
+        #     tdMode=EnumTdMode.ISOLATED_MARGIN.value,
+        #     sz=str(res.sz),
+        #     side=EnumSide.BUY.value,
+        #     posSide=EnumPosSide.LONG.value,
+        #     ordType=EnumOrdType.MARKET.value,
+        # )
+        # post_order_req.slTriggerPx = str(res.exitPrice)
+        # post_order_req.slOrdPx = "-1"
+    )
+
+
+def sub_task(st_instance):
+    logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
+    try:
+        st = __do2dto(st_instance)
         print(f"Sub Task Processing...")
         res = strategy_methods[st_instance.entry_st_code](st)
         print(f"Trade Pair:{st_instance.trade_pair}, Result:{res.signal}")
 
         if res.signal:
-            post_order_req = PostOrderReq(
-                # 实盘&模拟
-                tradeType=EnumTradeType.DEMO.value,
-                instId=st_instance.trade_pair,
-                tdMode=EnumTdMode.ISOLATED_MARGIN.value,
-                sz=str(res.sz),
-                side=EnumSide.BUY.value,
-                posSide=EnumPosSide.LONG.value,
-                ordType=EnumOrdType.MARKET.value,
-            )
-            post_order_req.slTriggerPx = str(res.exitPrice)
-            post_order_req.slOrdPx = "-1"
+            post_order_req = post_order_request(res, st)
 
             try:
                 trader = TradeAPI()

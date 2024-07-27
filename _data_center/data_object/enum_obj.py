@@ -1,15 +1,17 @@
+import enum
 from enum import Enum
 
 
 class EnumSide(Enum):
     BUY = 'buy'  # 买
     SELL = 'sell'  # 卖
-    ALL = 'all' # 买卖都可
+    ALL = 'all'  # 买卖都可
+
 
 class EnumTdMode(Enum):
     ISOLATED_MARGIN = 'isolated'  # 逐仓
-    CROSS_MARGIN = 'cross'         # 全仓
-    NON_MARGIN = 'cash'            # 非保证金
+    CROSS_MARGIN = 'cross'  # 全仓
+    NON_MARGIN = 'cash'  # 非保证金
     SPOT_ISOLATED_MARGIN = 'spot_isolated'  # 现货逐仓(仅适用于现货带单)
 
 
@@ -41,3 +43,7 @@ class EnumTriggerPxType(Enum):
 class EnumUnit(Enum):
     USDS = "usds"
 
+
+class EnumTradeEnv(Enum):
+    DEMO = "demo"
+    MARKET = "market"

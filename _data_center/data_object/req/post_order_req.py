@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 class PostOrderReq(BaseModel):
     # 实盘"0" 虚拟"1"
-    tradeType: str
+    tradeType: Optional[str] = "1"
+    tradeEnv: Optional[str] = "demo"
     instId: str
     tdMode: str
     sz: str

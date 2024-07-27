@@ -2,6 +2,8 @@ from pydantic import BaseModel, dataclasses
 from typing import Optional
 from datetime import datetime
 
+from _data_center.data_object.enum_obj import EnumTradeEnv
+
 
 # 策略实例
 class StrategyInstance(BaseModel):
@@ -36,3 +38,5 @@ class StrategyInstance(BaseModel):
     gmtCreate: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # 更新时间
     gmtUpdate: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # 是否实盘
+    env: str = EnumTradeEnv.DEMO.value
