@@ -38,7 +38,7 @@ def timestamp_to_datetime_milliseconds(timestamp_ms):
     return datetime.datetime.fromtimestamp(timestamp_sec)
 
 
-dayTime = 24*3600*1000
+dayTime = 24 * 3600 * 1000
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,6 +58,7 @@ Session = sessionmaker(bind=engine)
 # 创建会话实例
 # session = Session()
 session = get_db_session()
+
 
 def main_task(tf: str):
     logging.info("strategy_executor#main_task begin...")
