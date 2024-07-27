@@ -3,7 +3,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from _data_center.data_object.dao.st_instance_dao import StInstance
-
+from _utils.utils import *
 
 def get_project_root():
     # 获取当前脚本所在文件夹的绝对路径
@@ -28,11 +28,11 @@ def get_db_session():
 
 if __name__ == '__main__':
     tf = "4H"
-    session = get_db_session()
+    session = DatabaseUtils.get_db_session()
     st_instance_list = session.query(StInstance) \
         .filter(StInstance.switch == 0, StInstance.is_del == 0, StInstance.time_frame == tf) \
         .all()
     # print the result
     for st_instance in st_instance_list:
         print(st_instance.id, st_instance.trade_pair)
-
+    print(get_project_root())
