@@ -3,6 +3,7 @@ import os
 
 from _data_center.data_object.dao.od_instance_dao import OrderInstance
 from _data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from _utils.utils import CheckUtils
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -112,6 +113,32 @@ def post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance
     )
 
 
+def get_order_instance_from_result(post_order_result, order_result) -> Optional[OrderInstance]:
+    data = post_order_result.get('data', [{}])[0]
+    ordId = data.get('ordId', None)
+    sCode = data.get('sCode', None)
+    sMsg = data.get('sMsg', None)
+
+    data_info = order_result.get('data', [{}])[0]
+    accFillSz = data_info.get('accFillSz', None)
+    avgPx = data_info.get('avgPx', None)
+    state = data_info.get('state', None)
+    posSide = data_info.get('posSide', None)
+    cTime = data_info.get('cTime', None)
+
+    if sCode == "0":
+        return OrderInstance(
+            order_id=ordId,
+            side=EnumSide.BUY.value,
+            order_info=sMsg,
+            gmt_create=timestamp_to_datetime_milliseconds(int(cTime)) if cTime else None,
+            gmt_modified=datetime.datetime.now(),
+        )
+    else:
+        # Handle the error case
+        return None
+
+
 def sub_task(st_instance):
     logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
     try:
@@ -122,7 +149,6 @@ def sub_task(st_instance):
 
         if res.signal:
             post_order_req = post_order_request(res, st)
-
             try:
                 trader = TradeAPI()
                 result = trader.post_order(post_order_req)
@@ -132,35 +158,15 @@ def sub_task(st_instance):
                     st_instance.trade_pair,
                     result['data'][0]['ordId']
                 )
-
-                data = result.get('data', [{}])[0]
-                ordId = data.get('ordId', None)
-                sCode = data.get('sCode', None)
-                sMsg = data.get('sMsg', None)
-
-                data_info = result_info.get('data', [{}])[0]
-                accFillSz = data_info.get('accFillSz', None)
-                avgPx = data_info.get('avgPx', None)
-                state = data_info.get('state', None)
-                posSide = data_info.get('posSide', None)
-                cTime = data_info.get('cTime', None)
-
-                if sCode == "0":
-                    order_instance = OrderInstance(
-                        order_id=ordId,
-                        side=EnumSide.BUY.value,
-                        entry_time=st_instance.time_frame,
-                        order_info=sMsg,
-                        gmt_create=timestamp_to_datetime_milliseconds(cTime),
-                        gmt_modified=datetime.datetime.now(),
-                    )
+                order_instance = get_order_instance_from_result(result, result_info)
                 # 将 OrderInstance 对象添加到会话中
-                session.add(order_instance)
-                # 提交会话以将更改保存到数据库中
-                session.commit()
-                # 关闭会话
-                session.close()
-                print(f"{datetime.datetime.now()}: result_info: {result_info}")
+                if CheckUtils.is_not_empty(order_instance):
+                    session.add(order_instance)
+                    # 提交会话以将更改保存到数据库中
+                    session.commit()
+                    # 关闭会话
+                    session.close()
+                    print(f"{datetime.datetime.now()}: result_info: {result_info}")
             except Exception as e1:
                 print(f"Post Order Error: {e1}")
         if not res.signal:

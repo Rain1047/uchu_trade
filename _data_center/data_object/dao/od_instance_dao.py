@@ -12,7 +12,7 @@ class OrderInstance(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')
     order_id = Column(Integer, nullable=False, comment='订单实例ID')
     st_ins_code = Column(String(255), nullable=False, comment='策略实例id')
-    entry_time = Column(String(255), nullable=False, comment='根据哪一个时间入场的')
+    entry_time = Column(String(255), nullable=True, comment='根据哪一个时间入场的')
     side = Column(String(20), nullable=False, comment='方向 Long做多 Short做空')
     order_info = Column(Text, nullable=False, comment='订单信息')
     gmt_create = Column(DateTime, nullable=False, comment='生成时间')

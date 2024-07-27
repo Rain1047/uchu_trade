@@ -1,17 +1,19 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from _data_center.data_object.enum_obj import EnumOrdType, EnumTdMode, EnumTradeEnv
+
 
 class PostOrderReq(BaseModel):
     # 实盘"0" 虚拟"1"
     tradeType: Optional[str] = "1"
     tradeEnv: Optional[str] = "demo"
-    instId: str
-    tdMode: str
-    sz: str
-    side: str
+    instId: Optional[str] = None
+    tdMode: Optional[str] = None
+    sz: Optional[str] = None
+    side: Optional[str] = None
     # 订单类型：单向止盈止损、双向止盈止损
-    ordType: str
+    ordType: Optional[str] = None
     ccy: Optional[str] = None
     clOrdId: Optional[str] = None
     tag: Optional[str] = None
@@ -29,3 +31,11 @@ class PostOrderReq(BaseModel):
     stpMode: Optional[str] = None
     px: Optional[str] = None
 
+    @staticmethod
+    def default_post_order_req():
+        return PostOrderReq(
+            tradeEnv=EnumTradeEnv.DEMO.value,
+            tdMode=EnumTdMode.ISOLATED_MARGIN.value,
+            ordType=EnumOrdType.MARKET.value,
+            slOrdPx="-1"
+        )
