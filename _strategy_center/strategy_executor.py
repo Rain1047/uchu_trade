@@ -3,7 +3,7 @@ import os
 
 from _data_center.data_object.dao.od_instance_dao import OrderInstance
 from _data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
-from _utils.utils import CheckUtils
+from _utils.utils import CheckUtils, DatabaseUtils
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -161,11 +161,7 @@ def sub_task(st_instance):
                 order_instance = get_order_instance_from_result(result, result_info)
                 # 将 OrderInstance 对象添加到会话中
                 if CheckUtils.is_not_empty(order_instance):
-                    session.add(order_instance)
-                    # 提交会话以将更改保存到数据库中
-                    session.commit()
-                    # 关闭会话
-                    session.close()
+                    DatabaseUtils.save(order_instance)
                     print(f"{datetime.datetime.now()}: result_info: {result_info}")
             except Exception as e1:
                 print(f"Post Order Error: {e1}")

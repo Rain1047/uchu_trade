@@ -65,6 +65,19 @@ class DatabaseUtils:
         # 返回项目根目录的绝对路径
         return current_dir.parents[0]
 
+    @staticmethod
+    def save(data_object):
+        session = DatabaseUtils.get_db_session()
+        try:
+            session.add(data_object)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"保存数据时出错: {e}")
+            raise
+        finally:
+            session.close()
+
 
 # 示例用法
 if __name__ == "__main__":
