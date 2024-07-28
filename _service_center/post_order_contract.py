@@ -15,7 +15,7 @@ class AccountAPI:
         demo = "1"
         if self.okx_instance is None:
             config = get_config()
-            self.okx_instance = Account.AccountAPI(config['apikeydemo'], config['secretkeydemo'], config['passphrase'],
+            self.okx_instance = Account.AccountAPI(config['apikey_demo'], config['secretkey_demo'], config['passphrase'],
                                                False, demo)
             print("new trade instance created.")
         return self.okx_instance

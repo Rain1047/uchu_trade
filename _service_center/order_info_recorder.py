@@ -8,19 +8,19 @@ config = get_config()
 
 
 def get_order_info():
-    print(config["apikeydemo"])
+    print(config["apikey_demo"])
 
     flag = "1"  # 实盘:0 , 模拟盘:1
     if flag == EnumTradeType.PRODUCT.value:
         spreadAPI = SpreadTrading.SpreadTradingAPI(config["apikey"], config["secretkey"], config["passphrase"],
                                                    False, flag)
     if flag == EnumTradeType.DEMO.value:
-        spreadAPI = SpreadTrading.SpreadTradingAPI(config["apikeydemo"], config["secretkeydemo"], config["passphrase"],
+        spreadAPI = SpreadTrading.SpreadTradingAPI(config["apikey_demo"], config["secretkey_demo"], config["passphrase"],
                                                    False, flag)
         result1 = spreadAPI.get_active_orders()
         print(result1)
 
-        accountAPI = Account.AccountAPI(config["apikeydemo"], config["secretkeydemo"], config["passphrase"], False,
+        accountAPI = Account.AccountAPI(config["apikey_demo"], config["secretkey_demo"], config["passphrase"], False,
                                         flag)
 
         # 查看持仓信息

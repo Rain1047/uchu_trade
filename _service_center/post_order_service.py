@@ -16,7 +16,7 @@ class TradeAPI:
     def get_okx_trade_demo(self):
         if self.okx_instance is None:
             config = get_config()
-            self.okx_instance = Trade.TradeAPI(config['apikeydemo'], config['secretkeydemo'], config['passphrase'],
+            self.okx_instance = Trade.TradeAPI(config['apikey_demo'], config['secretkey_demo'], config['passphrase'],
                                                False, "1")
             print("new trade instance created.")
         return self.okx_instance
