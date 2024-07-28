@@ -1,4 +1,5 @@
-import this
+# import this
+import logging
 from datetime import datetime, timedelta
 import os
 import json
@@ -51,9 +52,9 @@ class DatabaseUtils:
         db_absolute_path = project_root / '_data_center' / 'trade_db.db'
         # 创建数据库连接引擎
         engine = create_engine(f'sqlite:///{db_absolute_path}')
-        print(f'sqlite:///{db_absolute_path}')
         # 创建会话类
         Session = sessionmaker(bind=engine)
+        logging.info("create db session successfully.")
         # 创建会话实例并返回
         return Session()
 
@@ -80,9 +81,9 @@ class DatabaseUtils:
 
 
 # 示例用法
-if __name__ == "__main__":
-    # print(DateUtils.current_time2string())
-    #
-    # print(DateUtils.past_time2string(20))
-
-    print(DatabaseUtils.get_project_root())
+# if __name__ == "__main__":
+#     # print(DateUtils.current_time2string())
+#     #
+#     # print(DateUtils.past_time2string(20))
+#
+#     print(DatabaseUtils.get_project_root())

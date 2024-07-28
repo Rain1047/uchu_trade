@@ -8,7 +8,7 @@ my_user = 'rain1104@foxmail.com'  # 收件人邮箱账号
 
 
 def mail():
-    ret = True
+    result = True
     try:
         msg = MIMEText('this is just a test', 'plain', 'utf-8')  # 填写邮件内容
         msg['From'] = formataddr(["tracy", my_sender])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
@@ -20,13 +20,14 @@ def mail():
         server.sendmail(my_sender, [my_user, ], msg.as_string())  # 括号中对应的是发件人邮箱账号、收件人邮箱账号、发送邮件
         server.quit()  # 关闭连接
     except Exception:  # 如果 try 中的语句没有执行，则会执行下面的 ret=False
-        ret = False
-    return ret
+        result = False
+    return result
 
 
-ret = mail()
-if ret:
-    print("邮件发送成功")
-else:
-    print("邮件发送失败")
+if __name__ == '__main__':
+    ret = mail()
+    if ret:
+        print("邮件发送成功")
+    else:
+        print("邮件发送失败")
 

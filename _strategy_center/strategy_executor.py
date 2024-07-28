@@ -172,7 +172,7 @@ def sub_task(st_instance):
 
 
 if __name__ == '__main__':
-    # main_task("4H")
-    st_instance_list = get_st_instance_list(StInstance, "4H")
-    for instance in st_instance_list:
-        print(instance.id, instance.name)
+    main_task()
+    # st_instance_list = get_st_instance_list(StInstance, "4H")
+    # for instance in st_instance_list:
+    #     print(instance.id, instance.name)
