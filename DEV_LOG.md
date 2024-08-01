@@ -54,3 +54,7 @@ log_method 装饰器为 get_account_balance 和 get_trade_fills_history 等方�
 ## 2024-07-30
 
 淦，今天加班了艹，歇！
+
+## 2024-08-01
+
+今天看了河村永辉的视频～真帅呀～但是今天又加班了，不想写代码
