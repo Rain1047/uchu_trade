@@ -54,3 +54,7 @@ class EnumTimeFrame(Enum):
     D1_U = "1D"
     H4_U = "4H"
     H4_L = "4h"
+
+
+class EnumInstanceType(Enum):
+    SPOT = "SPOT"

@@ -57,4 +57,11 @@ log_method 装饰器为 get_account_balance 和 get_trade_fills_history 等方�
 
 ## 2024-08-01
 
-今天看了河村永辉的视频～真帅呀～但是今天又加班了，不想写代码，所以就先睡觉了，明天继续～
+今天看了河村永辉的视频～真帅呀～但是今天又加班了，不想写代码，所以就先睡觉了，后天继续～（周五睡觉）
+
+## 2024-08-02
+
+今天学习并且学习了单例模式，且最终通过了装饰器的方式来修改okx_api.py中OKXAPIWrapper，使得在创建OKXAPIWrapper时保证单例；同时也修改了DatabaseUtils中的get_db_session方法，使得在创建session时保证单例。
+
+且实现了日志功能。了解到python中的数据类型-字典；之前和java中常用的json返回搞混，导致浪费了时间。
+
