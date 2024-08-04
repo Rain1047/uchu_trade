@@ -9,6 +9,9 @@ import pandas as pd
 from _data_center.data_object.dao.order_detail import OrderDetailDB
 from _data_center.data_object.enum_obj import *
 from _utils.utils import *
+from _service_center.data_api import *
+
+dbApi = DataAPIWrapper()
 
 
 def singleton(cls):
@@ -102,27 +105,6 @@ class OKXAPIWrapper:
         return FormatUtils.dict2df(self.marketAPI.get_candlesticks(instId=instId, bar=bar))
 
 
-# Sample function to insert data into the database
-def insert_order_details(api_response, db_model_class):
-    session = DatabaseUtils.get_db_session()
-    data = api_response.get('data', [])
-    for order_detail_dict in data:
-        # Convert dictionary to db_model_class instance
-        order_detail_instance = FormatUtils.dict2dao(db_model_class, order_detail_dict)
-
-        # Check if ord_id already exists in the database
-        exists = session.query(db_model_class).filter_by(ord_id=order_detail_instance.ord_id).first()
-
-        if exists:
-            print(f"Order with ord_id {order_detail_instance.ord_id} already exists. Skipping.")
-            continue
-
-        # Add instance to the session
-        session.add(order_detail_instance)
-    # Commit the transaction
-    session.commit()
-
-
 # 示例用法
 if __name__ == "__main__":
     okx = OKXAPIWrapper()
@@ -133,7 +115,7 @@ if __name__ == "__main__":
     # print(okx.get_orders_history_archive())
     # Convert dictionary to OrderDetailDB instance
     # order_detail_instance = dict_to_order_detail(OrderDetailDB, order_details_dict)
-    insert_order_details(okx.get_orders_history_archive(), OrderDetailDB)
+    dbApi.insert_order_details(okx.get_orders_history_archive(), OrderDetailDB)
     # try:
     #     store_data_to_db(okx.get_orders_history_archive())
     #     print("Data stored successfully.")
