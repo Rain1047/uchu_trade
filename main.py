@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from _service.okx_api import OKXAPIWrapper
 from fastapi.middleware.cors import CORSMiddleware
-from _sche_processor.schedule_processor import *
+from _service.schedule_api import *
 from _data_center.data_object.req.post_order_req import *
 from multiprocessing import Process
 
