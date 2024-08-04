@@ -1,5 +1,6 @@
 import okx.Account as Account
 import okx.Trade as Trade
+import okx.MarketData as Market
 import json
 from typing import Optional, Dict, Type
 
@@ -39,6 +40,7 @@ class OKXAPIWrapper:
         self.flag = "1" if self.env == EnumTradeEnv.DEMO.value else "0"
         self._initialize_account_api()
         self._initialize_trade_api()
+        self._initialize_market_api()
 
         self._initialized = True
         print("{} OKX API initialized.".format(self.env))
@@ -47,27 +49,33 @@ class OKXAPIWrapper:
         with open(self.config_file_path, 'r') as config_file:
             self.config = json.load(config_file)
 
+    # 初始化账户API
     def _initialize_account_api(self):
         self.accountAPI = Account.AccountAPI(self.apikey, self.secretkey, self.passphrase, False, self.flag)
 
+    # 初始化交易API
     def _initialize_trade_api(self):
         self.tradeAPI = Trade.TradeAPI(self.apikey, self.secretkey, self.passphrase, False, self.flag)
 
+    # 初始化行情API
+    def _initialize_market_api(self):
+        self.marketAPI = Market.MarketAPI(self.apikey, self.secretkey, self.passphrase, False, self.flag)
+
     # 账户余额
-    def get_account_balance(self) -> json:
+    def get_account_balance(self) -> Dict:
         return self.accountAPI.get_account_balance()
 
     # 账户持仓信息 - 期货交易
-    def get_positions(self) -> json:
+    def get_positions(self) -> Dict:
         return self.accountAPI.get_positions()
 
     # 账户历史持仓信息
-    def get_positions_history(self) -> json:
+    def get_positions_history(self) -> Dict:
         return self.accountAPI.get_positions_history()
 
     # 获取成交明细（近三个月）
     # 获取近3个月订单成交明细信息
-    def get_trade_fills_history(self, instType: str, **kwargs) -> json:
+    def get_trade_fills_history(self, instType: str, **kwargs) -> Dict:
         return self.tradeAPI.get_fills_history(instType=instType, **kwargs)
 
     # 获取历史订单记录（近三个月）
@@ -77,8 +85,13 @@ class OKXAPIWrapper:
         return self.tradeAPI.get_orders_history_archive(instType=instType, **kwargs)
 
     # 获取订单信息
-    def get_order(self, instId: str, ordId: str) -> json:
+    def get_order(self, instId: str, ordId: str) -> Dict:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId)
+
+    # 通过Ticker Symbol来获取行情
+    def get_ticker(self, instId: str):
+        return self.marketAPI.get_ticker(instId="BTC-USDT")
+
 
     # 存储数据到数据库
     def insert_order_details(self, api_response: Dict, db_model_class: Type):

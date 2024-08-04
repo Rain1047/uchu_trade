@@ -6,8 +6,11 @@ import pandas as pd
 from _service_center.data_service import MarketAPIWrapper
 from _utils.utils import *
 import okx.MarketData as MarketData
+from _service_center._okx_service.okx_api import OKXAPIWrapper
 from _data_center.data_object.enum_obj import *
 import requests
+
+okx = OKXAPIWrapper()
 
 
 class TickerPriceCollector:
@@ -33,16 +36,13 @@ class TickerPriceCollector:
             end=DateUtils.current_time2string())
 
     def get_current_ticker_price(self):
-        flag = "0"  # 实盘:0 , 模拟盘：1
-        marketDataAPI = MarketData.MarketAPI(flag=flag)
         if self.ticker_symbol.endswith("-USD") or self.ticker_symbol.endswith("-USDT"):
-            # 获取单个产品行情信息
-            result = marketDataAPI.get_ticker(
-                instId=self.ticker_symbol[:-4] + "-USDT-SWAP"
-            )['data'][0]['last']
+            # # 获取单个产品行情信息
+            result = okx.get_ticker(
+                instId=self.ticker_symbol[:-4] + "-USDT-SWAP")['data'][0]['last']
             return result
         elif self.ticker_symbol.endswith("-USD-SWAP"):
-            return marketDataAPI.get_ticker(instId=self.ticker_symbol)['data'][0]['last']
+            return okx.get_ticker(instId=self.ticker_symbol)['data'][0]['last']
 
     def query_candles_with_time_frame(trading_pair: str, flag: str, time_frame: str) -> pd.DataFrame:
         """
@@ -92,5 +92,5 @@ if __name__ == '__main__':
     current_btc_price = btc_collector.get_current_ticker_price()
     print(current_btc_price)
 
-    btc_price_history = btc_collector.get_ticker_price_history()
-    print(btc_price_history)
+    # btc_price_history = btc_collector.get_ticker_price_history()
+    # print(btc_price_history)
