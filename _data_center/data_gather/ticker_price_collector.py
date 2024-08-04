@@ -3,7 +3,7 @@ from datetime import time
 import yfinance as yf
 import pandas as pd
 
-from _service_center.data_service import MarketAPIWrapper
+from _service_center.data_api import MarketAPIWrapper
 from _utils.utils import *
 import okx.MarketData as MarketData
 from _service_center._okx_service.okx_api import OKXAPIWrapper
@@ -14,8 +14,8 @@ okx = OKXAPIWrapper()
 
 
 class TickerPriceCollector:
-    def __init__(self, ticker_symbol, start_date=None, end_date=None, time_frame=None):
-        self.ticker_symbol = ticker_symbol
+    def __init__(self, instId, start_date=None, end_date=None, time_frame=None):
+        self.instId = instId
         self.start_date = start_date if start_date is not None else DateUtils.past_time2string(30)
         self.end_date = end_date if start_date is not None else DateUtils.current_time2string()
         self.time_frame = time_frame if time_frame is not None else EnumTimeFrame.H4_U.value
@@ -44,31 +44,19 @@ class TickerPriceCollector:
         elif self.ticker_symbol.endswith("-USD-SWAP"):
             return okx.get_ticker(instId=self.ticker_symbol)['data'][0]['last']
 
-    def query_candles_with_time_frame(trading_pair: str, flag: str, time_frame: str) -> pd.DataFrame:
-        """
-        Query historical candlestick data for a given trading pair and time frame.
-
-        Args:
-        trading_pair (str): Trading pair symbol.
-        flag (str): Flag indicating whether it's for live trading (0) or paper trading (1).
-        time_frame (str): Time frame for the candlesticks.
-
-        Returns:
-        dict: Historical candlestick data.
-        """
-
-        # Get the current millisecond-level timestamp
-        millis_timestamp = int(time.time() * 1000)
+    def query_candles_with_time_frame(self, bar: str) -> pd.DataFrame:
 
         # Get historical candlestick data for the trading pair
-        result = MarketAPIWrapper(flag).market_data_api.get_candlesticks(
-            instId=trading_pair,
-            bar=time_frame
+        # result = MarketAPIWrapper(flag).market_data_api.get_candlesticks(
+        #     instId=trading_pair,
+        #     bar=time_frame
+        # )
+        result = okx.get_candlesticks(
+            instId=self.instId,
+            bar=bar
         )
-
         # Define column names
         columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'volCcy', 'volCcyQuote', 'confirm']
-
         # Create DataFrame
         df = pd.DataFrame(result['data'], columns=columns)[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
 
@@ -89,8 +77,10 @@ if __name__ == '__main__':
     # Example usage for BTC
     btc_collector = TickerPriceCollector("BTC-USD")
 
-    current_btc_price = btc_collector.get_current_ticker_price()
-    print(current_btc_price)
+    # current_btc_price = btc_collector.get_current_ticker_price()
+    # print(current_btc_price)
+
+    print(btc_collector.query_candles_with_time_frame(bar="4H"))
 
     # btc_price_history = btc_collector.get_ticker_price_history()
     # print(btc_price_history)

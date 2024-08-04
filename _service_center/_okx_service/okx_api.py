@@ -90,8 +90,11 @@ class OKXAPIWrapper:
 
     # 通过Ticker Symbol来获取行情
     def get_ticker(self, instId: str):
-        return self.marketAPI.get_ticker(instId="BTC-USDT")
+        return self.marketAPI.get_ticker(instId=instId)
 
+    # 通过Ticker Symbol获取k线
+    def get_candlesticks(self, instId: str, bar: Optional[str] = EnumTimeFrame.D1_L.value):
+        return self.marketAPI.get_candlesticks(instId=instId, bar=bar)
 
     # 存储数据到数据库
     def insert_order_details(self, api_response: Dict, db_model_class: Type):
@@ -247,7 +250,7 @@ if __name__ == "__main__":
     # print(okx.get_orders_history_archive())
     # Convert dictionary to OrderDetailDB instance
     # order_detail_instance = dict_to_order_detail(OrderDetailDB, order_details_dict)
-    insert_order_details(okx.get_orders_history_archive(), OrderDetailDB)
+    # insert_order_details(okx.get_orders_history_archive(), OrderDetailDB)
     # try:
     #     store_data_to_db(okx.get_orders_history_archive())
     #     print("Data stored successfully.")
@@ -256,3 +259,4 @@ if __name__ == "__main__":
     # finally:
     #     print("Done.")
     # print(okx.get_order(instId="BTC-USDT", ordId="680800019749904384"))
+    print(okx.get_candlesticks(instId="BTC-USDT", bar="1H"))
