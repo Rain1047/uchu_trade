@@ -15,7 +15,7 @@ from _data_center.data_object.dto.strategy_instance import StrategyInstance
 import multiprocessing
 from _service_center.post_order_service import *
 from _data_center.data_object.req.post_order_req import PostOrderReq
-from _utils.utils import *
+from _service_center.utils import *
 import logging
 import datetime
 

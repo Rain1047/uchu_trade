@@ -1,9 +1,7 @@
 
 import okx.Account as Account
-import json
-import os
 
-from _utils.utils import *
+from _service_center.utils import *
 
 
 class AccountAPI:

@@ -1,6 +1,6 @@
 import time
 import okx.MarketData as MarketData
-from _utils.utils import *
+from _service_center.utils import *
 
 
 class DataAPIWrapper:

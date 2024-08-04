@@ -1,14 +1,10 @@
 import okx.Account as Account
 import okx.Trade as Trade
 import okx.MarketData as Market
-import json
-from typing import Optional, Dict, Type
-
-import pandas as pd
+from typing import Optional, Dict
 
 from _data_center.data_object.dao.order_detail import OrderDetailDB
 from _data_center.data_object.enum_obj import *
-from _utils.utils import *
 from _service_center.data_api import *
 
 dbApi = DataAPIWrapper()

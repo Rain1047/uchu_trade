@@ -1,10 +1,3 @@
-import json
-from typing import List, Optional, Dict
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-from pydantic import BaseModel
-from _utils.utils import *
-
 class OKXResponse:
     def __init__(self, response: dict):
         self.code = response.get('code')
@@ -15,21 +8,13 @@ class OKXResponse:
         return f"OKXResponse(code={self.code}, msg={self.msg}, data={self.data})"
 
 
-from sqlalchemy import Column, String, Integer, create_engine
+from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import declarative_base
 
 
 Base = declarative_base()
 
 
-@dataclass_json
-@dataclass
-class LinkedAlgoOrd:
-    algoId: str
-
-
-@dataclass_json
-@dataclass
 class OrderDetailDB(Base):
     __tablename__ = 'order_detail'
 
@@ -85,135 +70,3 @@ class OrderDetailDB(Base):
     tp_trigger_px_type = Column(String, comment='止盈触发价格类型')
     trade_id = Column(String, comment='交易ID')
     u_time = Column(String, comment='更新时间')
-
-    def __init__(self, **kwargs):
-        # 转换 JSON 字符串为字典
-        if 'attach_algo_ords' in kwargs:
-            kwargs['attach_algo_ords'] = json.dumps(kwargs['attach_algo_ords'])
-        if 'linked_algo_ord' in kwargs:
-            kwargs['linked_algo_ord'] = json.dumps(kwargs['linked_algo_ord'])
-        super().__init__(**kwargs)
-
-
-def dict_to_order_detail(db_model_class, data_dict):
-    """Convert a dictionary to an instance of a SQLAlchemy model class."""
-    return db_model_class(**data_dict)
-
-
-if __name__ == '__main__':
-    # Example usage:
-    response_data = '''
-    {
-        'data': [
-            {
-                'accFillSz': '0.297899',
-                'algoClOrdId': '',
-                'algoId': '',
-                'attachAlgoClOrdId': '',
-                'attachAlgoOrds': [],
-                'avgPx': '3187.52',
-                'cTime': '1721885808099',
-                'cancelSource': '',
-                'cancelSourceReason': '',
-                'category': 'normal',
-                'ccy': '',
-                'clOrdId': '',
-                'fee': '-0.000297899',
-                'feeCcy': 'ETH',
-                'fillPx': '3187.52',
-                'fillSz': '0.297899',
-                'fillTime': '1721885808101',
-                'instId': 'ETH-USDT',
-                'instType': 'SPOT',
-                'isTpLimit': 'false',
-                'lever': '',
-                'linkedAlgoOrd': {'algoId': ''},
-                'ordId': '1657032209015750656',
-                'ordType': 'market',
-                'pnl': '0',
-                'posSide': '',
-                'px': '',
-                'pxType': '',
-                'pxUsd': '',
-                'pxVol': '',
-                'quickMgnType': '',
-                'rebate': '0',
-                'rebateCcy': 'USDT',
-                'reduceOnly': 'false',
-                'side': 'buy',
-                'slOrdPx': '',
-                'slTriggerPx': '',
-                'slTriggerPxType': '',
-                'source': '',
-                'state': 'filled',
-                'stpId': '',
-                'stpMode': 'cancel_maker',
-                'sz': '949.56',
-                'tag': '',
-                'tdMode': 'cash',
-                'tgtCcy': 'quote_ccy',
-                'tpOrdPx': '',
-                'tpTriggerPx': '',
-                'tpTriggerPxType': '',
-                'tradeId': '430393910',
-                'uTime': '1721885808102'
-            },
-            {
-                'accFillSz': '195.334',
-                'algoClOrdId': '',
-                'algoId': '',
-                'attachAlgoClOrdId': '',
-                'attachAlgoOrds': [],
-                'avgPx': '2.855',
-                'cTime': '1721309432026',
-                'cancelSource': '',
-                'cancelSourceReason': '',
-                'category': 'normal',
-                'ccy': '',
-                'clOrdId': '',
-                'fee': '-0.195334',
-                'feeCcy': 'WLD',
-                'fillPx': '2.855',
-                'fillSz': '21.732',
-                'fillTime': '1721309432027',
-                'instId': 'WLD-USDT',
-                'instType': 'SPOT',
-                'isTpLimit': 'false',
-                'lever': '',
-                'linkedAlgoOrd': {'algoId': ''},
-                'ordId': '1637692237267853312',
-                'ordType': 'market',
-                'pnl': '0',
-                'posSide': '',
-                'px': '',
-                'pxType': '',
-                'pxUsd': '',
-                'pxVol': '',
-                'quickMgnType': '',
-                'rebate': '0',
-                'rebateCcy': 'USDT',
-                'reduceOnly': 'false',
-                'side': 'buy',
-                'slOrdPx': '',
-                'slTriggerPx': '',
-                'slTriggerPxType': '',
-                'source': '',
-                'state': 'filled',
-                'stpId': '',
-                'stpMode': 'cancel_maker',
-                'sz': '557.679',
-                'tag': '',
-                'tdMode': 'cash',
-                'tgtCcy': 'quote_ccy',
-                'tpOrdPx': '',
-                'tpTriggerPx': '',
-                'tpTriggerPxType': '',
-                'tradeId': '30465982',
-                'uTime': '1721309432029'
-            }
-        ]
-    }
-    '''
-
-
-
