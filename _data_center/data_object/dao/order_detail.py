@@ -214,13 +214,6 @@ if __name__ == '__main__':
         ]
     }
     '''
-    session = DatabaseUtils.get_db_session()
-    try:
-        OrderDetailDB.store_data_to_db(session, JSONUtils.format_json(response_data))
-        print("Data stored successfully.")
-    except Exception as e:
-        print(f"Error storing data: {e}")
-    finally:
-        session.close()
+
 
 

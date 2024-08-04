@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import pandas as pd
 
 
 class DateUtils:
@@ -103,7 +104,7 @@ class DatabaseUtils:
             pass
 
 
-class JSONUtils:
+class FormatUtils:
 
     @staticmethod
     def format_json(data):
@@ -113,6 +114,57 @@ class JSONUtils:
         except json.JSONDecodeError as e:
             print(f"JSON 解析错误: {e}")
             return None
+
+    @staticmethod
+    def dict2df(data_dict):
+        # Define column names
+        columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'volCcy', 'volCcyQuote', 'confirm']
+        # Create DataFrame
+        df = pd.DataFrame(data_dict['data'], columns=columns)[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
+        # Convert other columns to numeric
+        numeric_columns = ['open', 'high', 'low', 'close', 'volume']
+        df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric)
+        # Revert the frame
+        df = df.iloc[::-1]
+        return df
+
+    @staticmethod
+    def dict2dao(model_class, data_dict):
+        # 创建模型实例
+        instance = model_class()
+
+        for key, value in data_dict.items():
+            # 将 camelCase 键转换为 snake_case
+            snake_case_key = FormatUtils.to_snake_case(key)
+
+            # 处理嵌套的字典，比如 linkedAlgoOrd
+            if isinstance(value, dict):
+                # 将嵌套字典展开到父字典中
+                for nested_key, nested_value in value.items():
+                    nested_snake_key = f"{snake_case_key}_{FormatUtils.to_snake_case(nested_key)}"
+                    setattr(instance, nested_snake_key, FormatUtils.convert_value(nested_value))
+            else:
+                # 设置实例的属性
+                if hasattr(instance, snake_case_key):
+                    setattr(instance, snake_case_key, FormatUtils.convert_value(value))
+                else:
+                    print(f"警告: {snake_case_key} 不是 {model_class.__name__} 的属性")
+
+        return instance
+
+    @staticmethod
+    def to_snake_case(camel_case_str):
+        # 将 camelCase 转换为 snake_case
+        return ''.join(['_' + i.lower() if i.isupper() else i for i in camel_case_str]).lstrip('_')
+
+    @staticmethod
+    def convert_value(value):
+        # 将非字符串类型转换为字符串
+        if isinstance(value, (int, float)):
+            return str(value)
+        elif isinstance(value, (list, dict)):
+            return json.dumps(value)
+        return value
 
 
 # 示例用法

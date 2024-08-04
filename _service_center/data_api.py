@@ -1,6 +1,29 @@
 import time
 import okx.MarketData as MarketData
-import pandas as pd
+from _utils.utils import *
+
+
+class DataAPIWrapper:
+
+    @staticmethod
+    def insert_order_details(api_response, db_model_class):
+        session = DatabaseUtils.get_db_session()
+        data = api_response.get('data', [])
+        for order_detail_dict in data:
+            # Convert dictionary to db_model_class instance
+            order_detail_instance = FormatUtils.dict2dao(db_model_class, order_detail_dict)
+
+            # Check if ord_id already exists in the database
+            exists = session.query(db_model_class).filter_by(ord_id=order_detail_instance.ord_id).first()
+
+            if exists:
+                print(f"Order with ord_id {order_detail_instance.ord_id} already exists. Skipping.")
+                continue
+
+            # Add instance to the session
+            session.add(order_detail_instance)
+        # Commit the transaction
+        session.commit()
 
 
 class MarketAPIWrapper:
@@ -14,17 +37,6 @@ class MarketAPIWrapper:
 
 
 def query_candles_with_time_frame(trading_pair: str, flag: str, time_frame: str) -> pd.DataFrame:
-    """
-    Query historical candlestick data for a given trading pair and time frame.
-
-    Args:
-    trading_pair (str): Trading pair symbol.
-    flag (str): Flag indicating whether it's for live trading (0) or paper trading (1).
-    time_frame (str): Time frame for the candlesticks.
-
-    Returns:
-    dict: Historical candlestick data.
-    """
 
     # Get the current millisecond-level timestamp
     millis_timestamp = int(time.time() * 1000)
@@ -34,22 +46,4 @@ def query_candles_with_time_frame(trading_pair: str, flag: str, time_frame: str)
         instId=trading_pair,
         bar=time_frame
     )
-
-    # Define column names
-    columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'volCcy', 'volCcyQuote', 'confirm']
-
-    # Create DataFrame
-    df = pd.DataFrame(result['data'], columns=columns)[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
-
-    # Convert timestamp to datetime
-    # df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-
-    # Convert other columns to numeric
-    numeric_columns = ['open', 'high', 'low', 'close', 'volume']
-    df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric)
-
-    # Revert the frame
-    df = df.iloc[::-1]
-
-    return df
-
+    return FormatUtils.dict2df(result)
