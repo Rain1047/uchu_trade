@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
-from _service_center._util_service.db_connect_service import get_db_session
+from _utils.utils import *
 from _data_center.data_object.dao.fn_instance_dao import FnInstance
 
 
@@ -37,7 +37,7 @@ def store_jeff_cox_detail():
     global key_points
     jeff_cox_list = get_jeff_cox_list()
     link = jeff_cox_list[0]
-    session = get_db_session()
+    session = DatabaseUtils.get_db_session()
     for link in jeff_cox_list:
         response = requests.get(link)
         if response.status_code == 200:

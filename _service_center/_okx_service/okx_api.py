@@ -1,7 +1,7 @@
 import okx.Account as Account
 import okx.Trade as Trade
 import json
-from typing import Optional
+from typing import Optional, Dict, Type
 
 from _data_center.data_object.dao.order_detail import OrderDetailDB
 from _data_center.data_object.enum_obj import *
@@ -80,6 +80,18 @@ class OKXAPIWrapper:
     def get_order(self, instId: str, ordId: str) -> json:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId)
 
+    # 存储数据到数据库
+    def insert_order_details(self, api_response: Dict, db_model_class: Type):
+        session = DatabaseUtils.get_db_session()
+        data = api_response.get('data', [])
+        for order_detail_dict in data:
+            # Convert dictionary to db_model_class instance
+            order_detail_instance = dict_to_order_detail(db_model_class, order_detail_dict)
+            # Add instance to the session
+            session.add(order_detail_instance)
+        # Commit the transaction
+        session.commit()
+
 
 def store_data_to_db(json_data: str):
     if not isinstance(json_data, str):
@@ -87,7 +99,6 @@ def store_data_to_db(json_data: str):
 
     data = json.loads(json_data)
     order_details = data.get('data', [])
-    print(order_details)
 
     if not order_details:
         print("没有订单数据需要保存.")
@@ -201,12 +212,12 @@ def convert_value(value):
 
 
 # Sample function to insert data into the database
-def insert_order_details(api_response):
+def insert_order_details(api_response, db_model_class):
     session = DatabaseUtils.get_db_session()
     data = api_response.get('data', [])
     for order_detail_dict in data:
-        # Convert dictionary to OrderDetailDB instance
-        order_detail_instance = dict_to_order_detail(OrderDetailDB, order_detail_dict)
+        # Convert dictionary to db_model_class instance
+        order_detail_instance = dict_to_order_detail(db_model_class, order_detail_dict)
         # Add instance to the session
         session.add(order_detail_instance)
     # Commit the transaction
@@ -223,7 +234,7 @@ if __name__ == "__main__":
     # print(okx.get_orders_history_archive())
     # Convert dictionary to OrderDetailDB instance
     # order_detail_instance = dict_to_order_detail(OrderDetailDB, order_details_dict)
-    insert_order_details(okx.get_orders_history_archive())
+    insert_order_details(okx.get_orders_history_archive(), OrderDetailDB)
     # try:
     #     store_data_to_db(okx.get_orders_history_archive())
     #     print("Data stored successfully.")
@@ -232,5 +243,3 @@ if __name__ == "__main__":
     # finally:
     #     print("Done.")
     # print(okx.get_order(instId="BTC-USDT", ordId="680800019749904384"))
-
-

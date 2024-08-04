@@ -3,22 +3,19 @@ import os
 
 from _data_center.data_object.dao.od_instance_dao import OrderInstance
 from _data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
-from _utils.utils import CheckUtils, DatabaseUtils
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import time
 import okx.MarketData as MarketData
 from _strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from _data_center.data_object.dao.st_instance_dao import StInstance
 from _data_center.data_object.dto.strategy_instance import StrategyInstance
 import multiprocessing
 from _service_center.post_order_service import *
 from _data_center.data_object.req.post_order_req import PostOrderReq
-from _service_center._util_service.db_connect_service import get_db_session
+from _utils.utils import *
 import logging
 import datetime
 
@@ -44,7 +41,7 @@ dayTime = 24 * 3600 * 1000
 
 # 创建会话实例
 # session = Session()
-session = get_db_session()
+session = DatabaseUtils.get_db_session()
 
 
 # tf can be null
@@ -68,7 +65,7 @@ from sqlalchemy import or_
 
 # Example function that takes a parameter tf which can be None
 def get_st_instance_list(strategy, tf):
-    engine = get_db_session()
+    engine = DatabaseUtils.get_db_session()
     query = engine.query(strategy).filter(
         StInstance.switch == 0,
         StInstance.is_del == 0,
