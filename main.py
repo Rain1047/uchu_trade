@@ -1,14 +1,14 @@
 from fastapi import FastAPI
-from _service_center.account_okx import AccountAPI
-from _service_center.trade_okx import TradeAPI
+from _service_center._okx_service.okx_api import OKXAPIWrapper
 from fastapi.middleware.cors import CORSMiddleware
 from _sche_processor.schedule_processor import *
 from _data_center.data_object.req.post_order_req import *
 from multiprocessing import Process
 
 app = FastAPI()
-account_okx = AccountAPI()
-trade_okx = TradeAPI()
+okx = OKXAPIWrapper()
+account_okx = okx.accountAPI
+trade_okx = okx.tradeAPI
 
 # 添加 CORS 中间件
 app.add_middleware(

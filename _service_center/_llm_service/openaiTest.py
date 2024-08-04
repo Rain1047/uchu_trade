@@ -2,11 +2,9 @@
 # import os
 # import time
 #
-# from _utils.config_util import get_config
 #
 #
 # if __name__ == '__main__':
-#   config = get_config()
 #   client = OpenAI(api_key=config['openaiApiKey'])
 #   # Set a delay between API requests
 #   time.sleep(2)  # Add a delay of 2 seconds between requests

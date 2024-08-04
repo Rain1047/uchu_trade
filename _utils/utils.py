@@ -20,6 +20,8 @@ class DateUtils:
         date = datetime.now() - timedelta(days=days)
         return date.strftime("%Y-%m-%d")
 
+
+class ConfigUtils:
     @staticmethod
     def get_config():
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -111,12 +113,12 @@ class JSONUtils:
             return None
 
 
-
-
 # 示例用法
-# if __name__ == "__main__":
-#     # print(DateUtils.current_time2string())
-#     #
-#     # print(DateUtils.past_time2string(20))
-#
-#     print(DatabaseUtils.get_project_root())
+if __name__ == "__main__":
+    # print(DateUtils.current_time2string())
+    #
+    # print(DateUtils.past_time2string(20))
+
+    # print(DatabaseUtils.get_project_root())
+
+    print(ConfigUtils.get_config())

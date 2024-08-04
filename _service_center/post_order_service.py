@@ -4,7 +4,7 @@ import json
 import os
 from _data_center.data_object.req.post_order_req import *
 from _data_center.data_object.enum_obj import *
-from _utils.config_util import get_config
+from _utils.utils import *
 
 
 # database port : 5432 password : rain
@@ -15,7 +15,7 @@ class TradeAPI:
     # 获取okx账号-模拟盘
     def get_okx_trade_demo(self):
         if self.okx_instance is None:
-            config = get_config()
+            config = ConfigUtils.get_config()
             self.okx_instance = Trade.TradeAPI(config['apikey_demo'], config['secretkey_demo'], config['passphrase'],
                                                False, "1")
             print("new trade instance created.")
@@ -24,7 +24,7 @@ class TradeAPI:
     # 获取okx账号-实盘
     def get_okx_trade_product(self):
         if self.okx_instance is None:
-            config = get_config()
+            config = ConfigUtils.get_config()
             self.okx_instance = Trade.TradeAPI(config['apikey'], config['secretkey'], config['passphrase'],
                                                False, "0")
             print("new trade instance created.")

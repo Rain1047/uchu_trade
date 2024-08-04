@@ -3,7 +3,7 @@ import okx.Account as Account
 import json
 import os
 
-from _utils.config_util import get_config
+from _utils.utils import *
 
 
 class AccountAPI:
@@ -14,7 +14,7 @@ class AccountAPI:
     def get_okx_trade_demo(self):
         demo = "1"
         if self.okx_instance is None:
-            config = get_config()
+            config = ConfigUtils.get_config()
             self.okx_instance = Account.AccountAPI(config['apikey_demo'], config['secretkey_demo'], config['passphrase'],
                                                False, demo)
             print("new trade instance created.")
@@ -24,7 +24,7 @@ class AccountAPI:
     def get_okx_trade_product(self):
         production = "0"
         if self.okx_instance is None:
-            config = get_config()
+            config = ConfigUtils.get_config()
             self.okx_instance = Account.AccountAPI(config['apikey'], config['secretkey'], config['passphrase'],
                                                False, production)
             print("new trade instance created.")
