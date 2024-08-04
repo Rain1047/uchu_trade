@@ -1,5 +1,9 @@
+from datetime import time
+
 import yfinance as yf
 import pandas as pd
+
+from _service_center.data_service import MarketAPIWrapper
 from _utils.utils import *
 import okx.MarketData as MarketData
 from _data_center.data_object.enum_obj import *
@@ -9,8 +13,8 @@ import requests
 class TickerPriceCollector:
     def __init__(self, ticker_symbol, start_date=None, end_date=None, time_frame=None):
         self.ticker_symbol = ticker_symbol
-        self.start_date = start_date if start_date is not None else DateUtils.current_time2string()
-        self.end_date = end_date if start_date is not None else DateUtils.past_time2string(30)
+        self.start_date = start_date if start_date is not None else DateUtils.past_time2string(30)
+        self.end_date = end_date if start_date is not None else DateUtils.current_time2string()
         self.time_frame = time_frame if time_frame is not None else EnumTimeFrame.H4_U.value
 
     def get_ticker_price_history(self):
@@ -18,6 +22,7 @@ class TickerPriceCollector:
         if CheckUtils.is_not_empty(self.start_date) and CheckUtils.is_not_empty(self.end_date):
             ticker_history = ticker_data.history(start=self.start_date, end=self.end_date)
         else:
+            print("get past 30 day ticker price")
             ticker_history = self.get_past30day_ticker_price()
         return ticker_history
 

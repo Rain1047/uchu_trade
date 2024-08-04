@@ -13,11 +13,13 @@ class DateUtils:
     @staticmethod
     def current_time2string():
         now = datetime.now()
+        print(now)
         return now.strftime("%Y-%m-%d")
 
     @staticmethod
     def past_time2string(days):
         date = datetime.now() - timedelta(days=days)
+        print("past_time: " + str(date))
         return date.strftime("%Y-%m-%d")
 
 
