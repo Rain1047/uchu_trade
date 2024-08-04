@@ -8,7 +8,7 @@ import talib
 from _data_center.data_object.dto.strategy_instance import StrategyInstance
 from _data_center.data_object.res.strategy_execute_result import *
 from _data_center.data_object.enum_obj import *
-from _service_center.data_api import query_candles_with_time_frame
+from _service.data_api import query_candles_with_time_frame
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
 

@@ -1,6 +1,7 @@
 import okx.Trade as Trade
-from _data_center.data_object.req.post_order_req import PostOrderReq
-from _service_center.utils import *
+from _data_center.data_object.req.post_order_req import *
+from _data_center.data_object.enum_obj import *
+from _service.utils import *
 
 
 # database port : 5432 password : rain
@@ -10,23 +11,19 @@ class TradeAPI:
 
     # 获取okx账号-模拟盘
     def get_okx_trade_demo(self):
-        production = "0"
-        demo = "1"
         if self.okx_instance is None:
             config = ConfigUtils.get_config()
             self.okx_instance = Trade.TradeAPI(config['apikey_demo'], config['secretkey_demo'], config['passphrase'],
-                                               False,
-                                               demo)
+                                               False, "1")
             print("new trade instance created.")
         return self.okx_instance
 
     # 获取okx账号-实盘
-    def get_okx_trade_real(self):
-        production = "0"
+    def get_okx_trade_product(self):
         if self.okx_instance is None:
             config = ConfigUtils.get_config()
             self.okx_instance = Trade.TradeAPI(config['apikey'], config['secretkey'], config['passphrase'],
-                                               False, production)
+                                               False, "0")
             print("new trade instance created.")
         return self.okx_instance
 
@@ -41,19 +38,23 @@ class TradeAPI:
 
     # 下单-普通
     def post_order_common(self, order_instance: PostOrderReq):
-        headers = {'Content-Type': 'application/json', 'OK-ACCESS-SIGN': str(0), 'OK-ACCESS-TIMESTAMP': str(0)}
-        okx = self.get_okx_trade_demo()
+        if order_instance.tradeType.__eq__(EnumTradeType.DEMO.value):
+            okx = self.get_okx_trade_demo()
+        else:
+            okx = self.get_okx_trade_product()
+
         try:
             result = okx.place_order(
                 instId=order_instance.instId,
                 tdMode=order_instance.tdMode,
-                clOrdId=order_instance.clOrdId,
+                sz=order_instance.sz,
                 side=order_instance.side,
+                posSide=order_instance.posSide,
                 ordType=order_instance.ordType,
-                px=order_instance.px,
-                sz=order_instance.sz
+                slTriggerPx=order_instance.slTriggerPx,
+                slOrdPx=order_instance.slOrdPx,
+                slTriggerPxType=order_instance.slTriggerPxType
             )
-            print("trade res: {}".format(result))
             return result
         except Exception as order_exception:
             print(f"Error placing order: {order_exception}")
@@ -61,33 +62,35 @@ class TradeAPI:
 
     # 下单-策略下单
     def post_order_algo(self, order_instance: PostOrderReq):
-        # params = {'instId': instId, 'tdMode': tdMode, 'side': side, 'ordType': ordType, 'sz': sz, 'ccy': ccy,
-        #           'posSide': posSide, 'reduceOnly': reduceOnly, 'tpTriggerPx': tpTriggerPx, 'tpOrdPx': tpOrdPx,
-        #           'slTriggerPx': slTriggerPx, 'slOrdPx': slOrdPx, 'triggerPx': triggerPx, 'orderPx': orderPx,
-        #           'tgtCcy': tgtCcy, 'pxVar': pxVar, 'szLimit': szLimit, 'pxLimit': pxLimit,
-        #           'timeInterval': timeInterval,
-        #           'pxSpread': pxSpread, 'tpTriggerPxType': tpTriggerPxType, 'slTriggerPxType': slTriggerPxType,
-        #           'callbackRatio': callbackRatio, 'callbackSpread': callbackSpread, 'activePx': activePx,
-        #           'tag': tag, 'triggerPxType': triggerPxType, 'closeFraction': closeFraction,
-        #           'quickMgnType': quickMgnType, 'algoClOrdId': algoClOrdId}
-        # if (order_instance.tradeType.__eq__("0")
-        headers = {'Content-Type': 'application/json', 'OK-ACCESS-SIGN': str(0), 'OK-ACCESS-TIMESTAMP': str(0)}
         okx = self.get_okx_trade_demo()
         try:
             result = okx.place_algo_order(
                 instId=order_instance.instId,
                 tdMode=order_instance.tdMode,
-                side=order_instance.side,
-                ordType=order_instance.ordType,
                 sz=order_instance.sz,
-                slOrdPx=order_instance.slOrdPx,
-                slTriggerPx=order_instance.slTriggerPx
+                side=order_instance.side,
+                posSide=order_instance.posSide,
+                ordType=order_instance.ordType,
+                slTriggerPx=order_instance.slTriggerPx,
+                slOrdPx=order_instance.slOrdPx
             )
             print("trade res: {}".format(result))
             return result
         except Exception as order_exception:
             print(f"Error placing order: {order_exception}")
             return {"status": "error", "error_message": str(order_exception)}
+
+    # 下单
+    def get_order_info(self, type: str, instId: str, orderId: str):
+        if type.__eq__(EnumTradeType.DEMO.value):
+            okx = self.get_okx_trade_demo()
+        else:
+            okx = self.get_okx_trade_product()
+        result_info = okx.get_order(
+            instId=instId,
+            ordId=orderId
+        )
+        return result_info
 
     # 提取 details 作为 DataFrame
     def details_to_dataframe(self):
@@ -103,60 +106,45 @@ class TradeAPI:
 
 
 if __name__ == "__main__":
-
+    # 现货下单
     order_params_limit = {
+        "tradeType": EnumTradeType.PRODUCT.value,
         "instId": "BTC-USDT",
         "tdMode": "cash",
         "clOrdId": "b15",
         "side": "buy",
         "ordType": "limit",
+        # 限价价格
         "px": "2.15",
+        # 数量
         "sz": "2"
     }
-
-    # 市价
-    order_params_market = {
-        "instId": "BTC-USDT",
-        "tdMode": "cash",
-        "side": "buy",
-        "ordType": "market",
-        "sz": "2",
-        "px": ""
-    }
-
-    # 获取市价
-
-    # 带止损
-    order_params_algo = {
-        "instId": "BTC-USDT",
-        "tdMode": "cash",
-        "side": "buy",
-        "ordType": "conditional",
-        "sz": "2",
-        "px": ""
-    }
-
     order_limit = PostOrderReq(**order_params_limit)
-    order_market = PostOrderReq(**order_params_market)
-    order_algo = PostOrderReq(**order_params_algo)
-    #
-    # try:
-    #     trade = TradeAPI()
-    #     trade_result = trade.post_order(order_limit)
-    #     # print("trade res: {}".format(trade_result))
-    # except Exception as e:
-    #     print(f"Error: {e}")
-    #
-    # try:
-    #     trade = TradeAPI()
-    #     trade_result = trade.post_order(order_market)
-    #     # print("trade res: {}".format(trade_result))
-    # except Exception as e:
-    #     print(f"Error: {e}")
+
+    # 合约下单
+    swap_params = {
+        "tradeType": EnumTradeType.DEMO.value,
+        "instId": "BTC-USDT-SWAP",
+        # 数量
+        "sz": "73",
+        # 逐仓
+        "tdMode": "isolated",
+        "side": EnumSide.BUY.value,
+        "posSide": EnumPosSide.LONG.value,
+        # 市价单
+        "ordType": "market",
+        # 止损触发价
+        "slTriggerPx": "65000.0",
+        # 止损委托价 -1时为市价
+        "slOrdPx": "-1",
+        "slTriggerPxType": "last"
+    }
+    swap_order = PostOrderReq(**swap_params)
 
     try:
         trade = TradeAPI()
-        trade_result = trade.post_order(order_market)
-        # print("trade res: {}".format(trade_result))
+        # trade_result = trade.post_order(order_limit)
+        trade_result = trade.post_order(swap_order)
+        print("trade res: {}".format(trade_result))
     except Exception as e:
         print(f"Error: {e}")

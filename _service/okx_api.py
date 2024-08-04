@@ -7,7 +7,7 @@ from typing import Optional, Dict
 
 from _data_center.data_object.dao.order_detail import OrderDetailDB
 from _data_center.data_object.enum_obj import *
-from _service_center.data_api import *
+from _service.data_api import *
 
 dbApi = DataAPIWrapper()
 
