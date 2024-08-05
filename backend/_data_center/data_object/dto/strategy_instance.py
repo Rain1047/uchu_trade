@@ -1,8 +1,8 @@
-from pydantic import BaseModel, dataclasses
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-from _data_center.data_object.enum_obj import EnumTradeEnv
+from backend._data_center.data_object.enum_obj import EnumTradeEnv
 
 
 # 策略实例

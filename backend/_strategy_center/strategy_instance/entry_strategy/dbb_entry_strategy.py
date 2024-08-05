@@ -5,10 +5,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import talib
-from _data_center.data_object.dto.strategy_instance import StrategyInstance
-from _data_center.data_object.res.strategy_execute_result import *
-from _data_center.data_object.enum_obj import *
-from _service.data_api import query_candles_with_time_frame
+from backend._data_center.data_object.dto.strategy_instance import StrategyInstance
+from backend._data_center.data_object.enum_obj import *
+from backend._service.data_api import query_candles_with_time_frame
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
 

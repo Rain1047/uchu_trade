@@ -1,7 +1,7 @@
 
 import okx.Account as Account
 
-from _service.utils import *
+from backend._service.utils import *
 
 
 class AccountAPI:

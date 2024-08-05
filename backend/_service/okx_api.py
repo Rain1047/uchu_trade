@@ -2,12 +2,11 @@ import okx.Account as Account
 import okx.Trade as Trade
 import okx.MarketData as Market
 import okx.PublicData as PublicData
-import json
 from typing import Optional, Dict
 
-from _data_center.data_object.dao.order_detail import OrderDetailDB
-from _data_center.data_object.enum_obj import *
-from _service.data_api import *
+from backend._data_center.data_object.dao.order_detail import OrderDetailDB
+from backend._data_center.data_object.enum_obj import *
+from backend._service.data_api import *
 
 dbApi = DataAPIWrapper()
 
@@ -95,7 +94,7 @@ class OKXAPIWrapper:
             return
 
         self.env = env
-        self.config_file_path = '../config.json'
+        self.config_file_path = '../../config.json'
         self._load_config()
 
         self.apikey = self.config['apikey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['apikey']

@@ -1,8 +1,8 @@
 import okx.SpreadTrading as SpreadTrading
 import okx.Account as Account
 
-from _data_center.data_object.enum_obj import EnumTradeType
-from _service.utils import *
+from backend._data_center.data_object.enum_obj import EnumTradeType
+from backend._service.utils import *
 
 config = ConfigUtils.get_config()
 

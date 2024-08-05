@@ -2,8 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
-from _service.utils import *
-from _data_center.data_object.dao.fn_instance_dao import FnInstance
+from backend._data_center.data_object.dao.fn_instance_dao import FnInstance
 
 
 def get_jeff_cox_list():

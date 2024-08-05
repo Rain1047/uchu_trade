@@ -1,21 +1,21 @@
 import sys
 import os
 
-from _data_center.data_object.dao.od_instance_dao import OrderInstance
-from _data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from backend._data_center.data_object.dao.od_instance_dao import OrderInstance
+from backend._data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import time
 import okx.MarketData as MarketData
-from _strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
+from backend._strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
 
-from _data_center.data_object.dao.st_instance_dao import StInstance
-from _data_center.data_object.dto.strategy_instance import StrategyInstance
+from backend._data_center.data_object.dao.st_instance_dao import StInstance
+from backend._data_center.data_object.dto.strategy_instance import StrategyInstance
 import multiprocessing
-from _service.post_order_service import *
-from _data_center.data_object.req.post_order_req import PostOrderReq
-from _service.utils import *
+from backend._service.post_order_service import *
+from backend._data_center.data_object.req.post_order_req import PostOrderReq
+from backend._service.utils import *
 import logging
 import datetime
 

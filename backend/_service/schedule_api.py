@@ -1,8 +1,5 @@
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
-from _strategy_center.strategy_executor import *
-from celery_app import celery_app
 
 
 def my_scheduled_job1():

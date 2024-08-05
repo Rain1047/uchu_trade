@@ -1,7 +1,6 @@
 import okx.Trade as Trade
-from _data_center.data_object.req.post_order_req import *
-from _data_center.data_object.enum_obj import *
-from _service.utils import *
+from backend._data_center.data_object.enum_obj import *
+from backend._service.utils import *
 
 
 # database port : 5432 password : rain

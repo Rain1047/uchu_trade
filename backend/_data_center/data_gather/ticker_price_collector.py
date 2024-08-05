@@ -1,8 +1,7 @@
 import yfinance as yf
 
-from _service.utils import *
-from _service.okx_api import OKXAPIWrapper
-from _data_center.data_object.enum_obj import *
+from backend._service import OKXAPIWrapper
+from backend._data_center.data_object.enum_obj import *
 
 okx = OKXAPIWrapper()
 
