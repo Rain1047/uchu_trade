@@ -1,8 +1,7 @@
-# from openai import OpenAI
-# import os
-# import time
-#
-#
+from openai import OpenAI
+import os
+import time
+
 #
 # if __name__ == '__main__':
 #   client = OpenAI(api_key=config['openaiApiKey'])
