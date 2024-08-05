@@ -86,6 +86,10 @@ class PublicDataAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.publicAPI = PublicData.PublicAPI(apikey, secretkey, passphrase, False, flag)
 
+    @add_docstring("张币转换")
+    def get_convert_contract_coin(self, instId: str, px: str, sz: str, unit: Optional[str] = "usds"):
+        self.publicAPI.get_convert_contract_coin(instId=instId, sz=sz, px=px, unit=unit)
+
 
 @singleton
 class OKXAPIWrapper:
