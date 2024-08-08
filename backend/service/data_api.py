@@ -1,9 +1,4 @@
-import time
-import okx.MarketData as MarketData
 from backend.service.utils import *
-from backend.service.okx_api import OKXAPIWrapper
-
-okx = OKXAPIWrapper()
 
 
 class DataAPIWrapper:
@@ -27,21 +22,3 @@ class DataAPIWrapper:
             session.add(order_detail_instance)
         # Commit the transaction
         session.commit()
-
-
-class MarketAPIWrapper:
-    _instance = None
-
-    def __new__(cls, flag):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.market_data_api = MarketData.MarketAPI(flag=flag)
-        return cls._instance
-
-
-def query_candles_with_time_frame(trading_pair: str, flag: str, time_frame: str) -> pd.DataFrame:
-    # Get the current millisecond-level timestamp
-    millis_timestamp = int(time.time() * 1000)
-    # Get historical candlestick data for the trading pair
-    result = okx.market.get_candlesticks(instId=trading_pair, bar=time_frame)
-    return FormatUtils.dict2df(result)

@@ -1,19 +1,24 @@
 import os
 import sys
 
+from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import talib
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 from backend.data_center.data_object.enum_obj import *
-from backend.service.data_api import query_candles_with_time_frame
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
+from backend.service.okx_api import OKXAPIWrapper
+from backend.service.utils import *
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
+
+okx = OKXAPIWrapper()
 
 
 def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
@@ -28,7 +33,7 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     # 查询历史蜡烛图数据
     print("Double Bollinger Bands Strategy Start...")
-    df = query_candles_with_time_frame(stIns.tradePair, stIns.flag, stIns.timeFrame)
+    df = FormatUtils.dict2df(okx.market.get_candlesticks(stIns.tradePair, stIns.timeFrame))
 
     # 初始化策略执行结果对象
     res = StrategyExecuteResult()
