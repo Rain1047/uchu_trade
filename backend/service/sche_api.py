@@ -1,6 +1,6 @@
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from backend._strategy_center.strategy_executor import *
+from backend.strategy_center.strategy_executor import *
 
 
 def my_scheduled_job1():

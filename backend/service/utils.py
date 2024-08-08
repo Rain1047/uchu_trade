@@ -65,7 +65,7 @@ class DatabaseUtils:
         # 获取项目根目录的绝对路径
         project_root = cls.get_project_root()
         # 构建数据库文件的绝对路径
-        db_absolute_path = project_root / '_data_center' / 'trade_db.db'
+        db_absolute_path = project_root / 'data_center' / 'trade_db.db'
         # 创建数据库连接引擎
         cls._engine = create_engine(f'sqlite:///{db_absolute_path}')
         # 创建会话类

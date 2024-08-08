@@ -4,9 +4,9 @@ import okx.MarketData as Market
 import okx.PublicData as PublicData
 from typing import Optional, Dict
 
-from backend._data_center.data_object.dao.order_detail import OrderDetailDB
-from backend._data_center.data_object.enum_obj import *
-from backend._service.data_api import *
+from backend.data_center.data_object.dao.order_detail import OrderDetailDB
+from backend.data_center.data_object.enum_obj import *
+from backend.service.data_api import *
 
 dbApi = DataAPIWrapper()
 

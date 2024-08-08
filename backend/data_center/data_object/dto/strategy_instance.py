@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-from backend._data_center.data_object.enum_obj import EnumTradeEnv
+from backend.data_center.data_object.enum_obj import EnumTradeEnv
 
 
 # 策略实例

@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 
-from backend._data_center.data_object.enum_obj import EnumOrdType, EnumTdMode, EnumTradeEnv
+from backend.data_center.data_object.enum_obj import EnumOrdType, EnumTdMode, EnumTradeEnv
 
 
 class PostOrderReq(BaseModel):

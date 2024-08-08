@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend._service import OKXAPIWrapper
+from backend.service import OKXAPIWrapper
 from fastapi.middleware.cors import CORSMiddleware
 from multiprocessing import Process
 
