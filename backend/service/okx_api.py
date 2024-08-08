@@ -64,6 +64,13 @@ class TradeAPIWrapper:
     def get_order(self, instId: str, ordId: str) -> Dict:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId)
 
+    @add_docstring("下单")
+    def place_order(self, instId: str, tdMode: str, sz: str, side: str, posSide: str,
+                    ordType: str, slTriggerPx: str) -> Dict:
+        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
+                                         side=side, posSide=posSide,
+                                         ordType=ordType, slTriggerPx=slTriggerPx)
+
 
 class MarketAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):

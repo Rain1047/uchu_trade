@@ -1,5 +1,6 @@
 import sys
 import os
+from functools import partial
 from typing import Optional
 
 from backend.data_center.data_object.dao.od_instance_dao import OrderInstance
@@ -16,6 +17,7 @@ import multiprocessing
 from backend.service.post_order_service import *
 from backend.data_center.data_object.req.post_order_req import PostOrderReq
 from backend.service.utils import *
+from backend.service.okx_api import *
 import logging
 import datetime
 
@@ -32,6 +34,8 @@ marketDataAPI = MarketData.MarketAPI(flag=flag)
 millis_timestamp = int(time.time() * 1000)
 
 
+
+
 def timestamp_to_datetime_milliseconds(timestamp_ms):
     timestamp_sec = timestamp_ms / 1000.0
     return datetime.datetime.fromtimestamp(timestamp_sec)
@@ -43,6 +47,8 @@ dayTime = 24 * 3600 * 1000
 # session = Session()
 session = DatabaseUtils.get_db_session()
 
+okx = OKXAPIWrapper()
+
 
 # tf can be null
 def main_task():
@@ -53,11 +59,12 @@ def main_task():
     if instance_list:  # 检查 st_instance_list 是否为空
         # 创建进程池
         with multiprocessing.Pool() as pool:
+            partial_sub_task = partial(sub_task, okx=okx)
             # 并行处理每个 st_instance
-            pool.map(sub_task, instance_list)
+            pool.map(partial_sub_task, instance_list)
             # 关闭进程池
             pool.close()
-        sub_task(instance_list[0])
+        sub_task(instance_list[0], okx)
 
 
 from sqlalchemy import or_
@@ -136,7 +143,7 @@ def get_order_instance_from_result(post_order_result, order_result) -> Optional[
         return None
 
 
-def sub_task(st_instance):
+def sub_task(st_instance, okx: OKXAPIWrapper):
     logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
     try:
         st = __do2dto(st_instance)
@@ -147,10 +154,9 @@ def sub_task(st_instance):
         if res.signal:
             post_order_req = post_order_request(res, st)
             try:
-                trader = TradeAPI()
-                result = trader.post_order(post_order_req)
+                result = okx.trade.post_order(post_order_req)
                 print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
-                result_info = trader.get_order_info(
+                result_info = okx.trade.get_order_info(
                     EnumTradeType.DEMO.value,
                     st_instance.trade_pair,
                     result['data'][0]['ordId']
