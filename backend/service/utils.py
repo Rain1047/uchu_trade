@@ -27,10 +27,20 @@ class DateUtils:
 class ConfigUtils:
     @staticmethod
     def get_config():
+        # Get the directory of the current script
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        config_file_path = os.path.join(script_dir, '../config.json')
+
+        # Navigate to the correct config file path
+        config_file_path = os.path.join(script_dir, '../../config.json')
+
+        # Check if the config file exists
+        if not os.path.exists(config_file_path):
+            raise FileNotFoundError(f"Config file not found at {config_file_path}")
+
+        # Load and return the config
         with open(config_file_path, 'r') as config_file:
             config = json.load(config_file)
+
         return config
 
 
