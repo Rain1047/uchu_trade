@@ -13,9 +13,9 @@ function App() {
         <Routes> {/* Updated from Switch to Routes */}
           <Route path="/account/dashboard" element={<Dashboard />} />
           <Route path="/account/positions" element={<Positions />} />
-            <Route path="/trade/order" element={<Positions />} />
-            <Route path="/account/tradetable" element={<DataGridDemo />} />
-            <Route path="/account/collapsgrid" element={<CollapsibleDataGrid />} />
+          <Route path="/trade/order" element={<Positions />} />
+          <Route path="/account/tradetable" element={<DataGridDemo />} />
+          <Route path="/account/collapsgrid" element={<CollapsibleDataGrid />} />
         </Routes>
       </Router>
   );
