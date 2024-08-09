@@ -2,7 +2,6 @@ import multiprocessing
 
 from fastapi import FastAPI
 
-from backend.data_center.data_object.req.post_order_req import PostOrderReq
 from backend.service.okx_api import OKXAPIWrapper
 from fastapi.middleware.cors import CORSMiddleware
 from multiprocessing import Process
@@ -48,25 +47,25 @@ def get_balance():
         return None
 
 
-@app.get("/get_positions")
-def get_positions():
-    try:
-        return okx.account.get_positions()
-    except Exception as e:
-        print(f"Error getting OKX account: {e}")
-        return None
+# @app.get("/get_positions")
+# def get_positions():
+#     try:
+#         return okx.account.get_positions()
+#     except Exception as e:
+#         print(f"Error getting OKX account: {e}")
+#         return None
 
 
-@app.post("/place_order")
-async def place_order(order: PostOrderReq):
-    # 此处，你可以添加处理订单逻辑，例如将订单信息保存到数据库等
-    # 但是在这个简单的例子中，我们只返回一个假的成功响应
-    print("order class: {}".format(order))
-    result = okx.trade.place_order(order)
-
-    # 这里模拟订单处理，可以在这里插入将订单信息保存到数据库的代码
-    # 返回假的成功响应
-    return result
+# @app.post("/place_order")
+# async def place_order(order: PostOrderReq):
+#     # 此处，你可以添加处理订单逻辑，例如将订单信息保存到数据库等
+#     # 但是在这个简单的例子中，我们只返回一个假的成功响应
+#     print("order class: {}".format(order))
+#     result = okx.trade.place_order(order)
+#
+#     # 这里模拟订单处理，可以在这里插入将订单信息保存到数据库的代码
+#     # 返回假的成功响应
+#     return result
 
 
 def start_main_processor():
@@ -96,6 +95,6 @@ if __name__ == "__main__":
 # async def get_jeffCox():
 #     fed_news_list = get_fed_news(url, div_class)
 #     check_and_process_fed_news(fed_news_list, target_date)
-# 
+#
 #     # You can return a JSON response or customize it based on your needs.
 #     return JSONResponse(content={"message": "Jeff Cox data retrieved and processed successfully."})

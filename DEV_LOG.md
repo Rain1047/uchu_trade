@@ -93,6 +93,10 @@ typescript项目
 create-react-app frontend --template typescript
 ```
 
+## 2024-08-09
+
+最近有点累，今天优化了前端的上传github逻辑，前后端总算跑起来了，加了一个启动脚本
+
 ```
 npm install --legacy-peer-deps
 ```
