@@ -92,3 +92,8 @@ typescript项目
 ```
 create-react-app frontend --template typescript
 ```
+
+```
+npm install --legacy-peer-deps
+```
+

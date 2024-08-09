@@ -11,8 +11,7 @@ from backend.service.sche_api import main_processor
 
 app = FastAPI()
 okx = OKXAPIWrapper()
-account_okx = okx.accountAPI
-trade_okx = okx.tradeAPI
+
 
 # 添加 CORS 中间件
 app.add_middleware(
@@ -40,26 +39,19 @@ async def read_root():
     return {"message": f"Hello, FastAPI! I'm running in the {current_process_name} process."}
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
 @app.get("/get_balance")
-def get_account_api():
+def get_balance():
     try:
-        balance = account_okx.get_balance()
-        return balance
+        return okx.account.get_account_balance()
     except Exception as e:
         print(f"Error getting OKX account: {e}")
         return None
 
 
 @app.get("/get_positions")
-def get_account_api():
+def get_positions():
     try:
-        balance = account_okx.get_balance()
-        return balance
+        return okx.account.get_positions()
     except Exception as e:
         print(f"Error getting OKX account: {e}")
         return None
@@ -70,7 +62,7 @@ async def place_order(order: PostOrderReq):
     # 此处，你可以添加处理订单逻辑，例如将订单信息保存到数据库等
     # 但是在这个简单的例子中，我们只返回一个假的成功响应
     print("order class: {}".format(order))
-    result = trade_okx.post_order(order)
+    result = okx.trade.place_order(order)
 
     # 这里模拟订单处理，可以在这里插入将订单信息保存到数据库的代码
     # 返回假的成功响应
@@ -92,13 +84,13 @@ def start_fastapi_app():
 if __name__ == "__main__":
     # 分别在不同的进程中启动 FastAPI 应用和后台任务
     api_process = Process(target=start_fastapi_app, name="api_process")
-    background_process = Process(target=start_main_processor, name="background_process")
-
+    # background_process = Process(target=start_main_processor, name="background_process")
+    #
     api_process.start()
-    background_process.start()
-
-    api_process.join()  # 等待 FastAPI 应用进程结束
-    background_process.join()  # 等待后台任务进程结束
+    # background_process.start()
+    #
+    # api_process.join()  # 等待 FastAPI 应用进程结束
+    # background_process.join()  # 等待后台任务进程结束
 
 # @app.get("/data/basic_info/jeffCox")
 # async def get_jeffCox():

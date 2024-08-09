@@ -123,22 +123,22 @@ class OKXAPIWrapper:
         print("{} OKX API initialized.".format(self.env))
 
     def _load_config(self):
-        with open(self.config_file_path, 'r') as config_file:
-            self.config = json.load(config_file)
+        self.config = ConfigUtils.get_config()
 
 
 # 示例用法
 if __name__ == "__main__":
     okx = OKXAPIWrapper()
-
-    print(okx.account.get_account_balance())
-    print(okx.account.get_positions())
-    print(okx.account.get_positions_history())
-
-    print(okx.trade.get_trade_fills_history(instType="SPOT"))
-    print(okx.trade.get_orders_history_archive())
-
-    print(okx.market.get_ticker(instId="BTC-USDT"))
-    print(okx.market.get_candlesticks(instId="BTC-USDT", bar="1H"))
-
-    dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+    print(okx.config)
+    #
+    # print(okx.account.get_account_balance())
+    # print(okx.account.get_positions())
+    # print(okx.account.get_positions_history())
+    #
+    # print(okx.trade.get_trade_fills_history(instType="SPOT"))
+    # print(okx.trade.get_orders_history_archive())
+    #
+    # print(okx.market.get_ticker(instId="BTC-USDT"))
+    # print(okx.market.get_candlesticks(instId="BTC-USDT", bar="1H"))
+    #
+    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
