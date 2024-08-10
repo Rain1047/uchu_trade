@@ -2,6 +2,7 @@ import okx.Account as Account
 import okx.Trade as Trade
 import okx.MarketData as Market
 import okx.PublicData as PublicData
+import okx.Funding as Funding
 from typing import Optional, Dict
 
 from backend.data_center.data_object.dao.order_detail import OrderDetailDB
@@ -47,6 +48,10 @@ class AccountAPIWrapper:
     def get_positions_history(self) -> Dict:
         return self.accountAPI.get_positions_history()
 
+    @add_docstring("账户账单流水")
+    def get_account_bills_archive(self) -> Dict:
+        return self.accountAPI.get_account_bills_archive()
+
 
 class TradeAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
@@ -65,11 +70,39 @@ class TradeAPIWrapper:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId)
 
     @add_docstring("下单")
-    def place_order(self, instId: str, tdMode: str, sz: str, side: str, posSide: str,
-                    ordType: str, slTriggerPx: str) -> Dict:
+    def place_order(self, instId: str,
+                    sz: str,
+                    side: str,
+                    posSide: str,
+                    ordType: str,
+                    slTriggerPx: str,
+                    tdMode: Optional[str] = EnumTdMode.CASH.value,
+                    clOrdId: Optional[str] = None,
+                    ) -> Dict:
         return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
                                          side=side, posSide=posSide,
                                          ordType=ordType, slTriggerPx=slTriggerPx)
+
+    @add_docstring("策略下单")
+    def place_order_algo(self, instId: str,
+                         tdMode: str,
+                         sz: str,
+                         side: str,
+                         posSide: str,
+                         ordType: str,
+                         slTriggerPx: str) -> Dict:
+        return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
+                                              side=side, posSide=posSide,
+                                              ordType=ordType, slTriggerPx=slTriggerPx)
+
+
+class FundingAPIWrapper:
+    def __init__(self, apikey, secretkey, passphrase, flag):
+        self.fundingAPI = Funding.FundingAPI(apikey, secretkey, passphrase, False, flag)
+
+    @add_docstring("获取币种列表")
+    def get_currencies(self) -> Dict:
+        return self.fundingAPI.get_currencies()
 
 
 class MarketAPIWrapper:
@@ -89,6 +122,7 @@ class MarketAPIWrapper:
         return FormatUtils.dict2df(self.marketAPI.get_candlesticks(instId=instId, bar=bar))
 
 
+@singleton
 class PublicDataAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.publicAPI = PublicData.PublicAPI(apikey, secretkey, passphrase, False, flag)
@@ -105,7 +139,6 @@ class OKXAPIWrapper:
             return
 
         self.env = env
-        self.config_file_path = '../../config.json'
         self._load_config()
 
         self.apikey = self.config['apikey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['apikey']
@@ -118,6 +151,7 @@ class OKXAPIWrapper:
         self.trade = TradeAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
         self.market = MarketAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
         self.publicData = PublicDataAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
+        self.funding = FundingAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
 
         self._initialized = True
         print("{} OKX API initialized.".format(self.env))
@@ -129,16 +163,31 @@ class OKXAPIWrapper:
 # 示例用法
 if __name__ == "__main__":
     okx = OKXAPIWrapper()
-    print(okx.config)
-    #
+    okx_demo = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
+    print(okx.apikey)
+    print(okx_demo.apikey)
+    '''
+    Account
+    '''
     # print(okx.account.get_account_balance())
     # print(okx.account.get_positions())
     # print(okx.account.get_positions_history())
-    #
+    # print(okx.account.get_account_bills_archive())
+    '''
+    Trade
+    '''
     # print(okx.trade.get_trade_fills_history(instType="SPOT"))
     # print(okx.trade.get_orders_history_archive())
-    #
+    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+
+
+    '''
+    Market
+    '''
     # print(okx.market.get_ticker(instId="BTC-USDT"))
     # print(okx.market.get_candlesticks(instId="BTC-USDT", bar="1H"))
-    #
-    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+
+    '''
+    Funding
+    '''
+    # print(okx.funding.get_currencies())

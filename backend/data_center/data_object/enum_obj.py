@@ -8,10 +8,10 @@ class EnumSide(Enum):
 
 
 class EnumTdMode(Enum):
-    ISOLATED_MARGIN = 'isolated'  # 逐仓
-    CROSS_MARGIN = 'cross'  # 全仓
-    NON_MARGIN = 'cash'  # 非保证金
-    SPOT_ISOLATED_MARGIN = 'spot_isolated'  # 现货逐仓(仅适用于现货带单)
+    ISOLATED = 'isolated'  # 逐仓
+    CROSS = 'cross'  # 全仓
+    CASH = 'cash'  # 非保证金
+    SPOT_ISOLATED = 'spot_isolated'  # 现货逐仓(仅适用于现货带单)
 
 
 class EnumTradeType(Enum):

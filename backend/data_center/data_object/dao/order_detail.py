@@ -1,13 +1,3 @@
-class OKXResponse:
-    def __init__(self, response: dict):
-        self.code = response.get('code')
-        self.msg = response.get('msg')
-        self.data = response.get('data')
-
-    def __repr__(self):
-        return f"OKXResponse(code={self.code}, msg={self.msg}, data={self.data})"
-
-
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import declarative_base
 
