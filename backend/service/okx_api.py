@@ -76,24 +76,32 @@ class TradeAPIWrapper:
                     posSide: str,
                     ordType: str,
                     slTriggerPx: str,
+                    px: Optional[str] = '',
+                    slOrdPx: Optional[str] = "-1",
                     tdMode: Optional[str] = EnumTdMode.CASH.value,
-                    clOrdId: Optional[str] = None,
+                    clOrdId: Optional[str] = '',
                     ) -> Dict:
-        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
-                                         side=side, posSide=posSide,
-                                         ordType=ordType, slTriggerPx=slTriggerPx)
+        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz, px=px,
+                                         side=side, posSide=posSide, ordType=ordType,
+                                         slTriggerPx=slTriggerPx, slOrdPx=slOrdPx,
+                                         clOrdId=clOrdId)
 
     @add_docstring("策略下单")
-    def place_order_algo(self, instId: str,
-                         tdMode: str,
+    def place_algo_order(self, instId: str,
                          sz: str,
-                         side: str,
-                         posSide: str,
-                         ordType: str,
-                         slTriggerPx: str) -> Dict:
+                         posSide: Optional[str] = '',
+                         tpTriggerPx: Optional[str] = '',
+                         tpOrdPx: Optional[str] = '',
+                         slTriggerPx: Optional[str] = '',
+                         slOrdPx: Optional[str] = '',
+                         side: Optional[str] = EnumSide.BUY.value,
+                         tdMode: Optional[str] = EnumTdMode.CASH.value,
+                         ordType: Optional[str] = EnumOrdType.CONDITIONAL.value,
+                         ) -> Dict:
         return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
                                               side=side, posSide=posSide,
-                                              ordType=ordType, slTriggerPx=slTriggerPx)
+                                              ordType=ordType,
+                                              slTriggerPx=slTriggerPx,slOrdPx=slOrdPx)
 
 
 class FundingAPIWrapper:
@@ -162,10 +170,10 @@ class OKXAPIWrapper:
 
 # 示例用法
 if __name__ == "__main__":
-    okx = OKXAPIWrapper()
+    # okx = OKXAPIWrapper()
     okx_demo = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
-    print(okx.apikey)
-    print(okx_demo.apikey)
+    # print(okx.apikey)
+    # print(okx_demo.apikey)
     '''
     Account
     '''
@@ -180,6 +188,30 @@ if __name__ == "__main__":
     # print(okx.trade.get_orders_history_archive())
     # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
 
+    # 现货模式限价单
+    # result = okx_demo.trade.place_order(
+    #     instId="BTC-USDT",
+    #     tdMode="cash",
+    #     side="buy",
+    #     ordType="limit",
+    #     # px="2.15",  # 委托价格
+    #     sz="2",  # 委托数量
+    #     slTriggerPx="55000",
+    #     slOrdPx="54000"
+    # )
+
+    result = okx_demo.trade.place_algo_order(
+        instId="ETH-USDT",
+        tdMode="cash",
+        side="sell",
+        ordType="conditional",
+        sz="0.1",
+        tpTriggerPx="",
+        tpOrdPx="",
+        slTriggerPx="2400",
+        slOrdPx="2300"
+    )
+    print(result)
 
     '''
     Market
