@@ -87,6 +87,12 @@ class DatabaseUtils:
             cls._setup()
         return cls._instance
 
+    @staticmethod
+    def get_engine():
+        project_root = DatabaseUtils.get_project_root()
+        db_absolute_path = project_root / 'data_center' / 'trade_db.db'
+        return create_engine(f'sqlite:///{db_absolute_path}')
+
     @classmethod
     def _setup(cls):
         # 获取项目根目录的绝对路径

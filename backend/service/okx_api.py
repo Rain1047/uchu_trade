@@ -173,7 +173,7 @@ class OKXAPIWrapper:
 
 # 示例用法
 if __name__ == "__main__":
-    # okx = OKXAPIWrapper()
+    okx = OKXAPIWrapper()
     okx_demo = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
     # print(okx.apikey)
     # print(okx_demo.apikey)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     '''
     # print(okx.trade.get_trade_fills_history(instType="SPOT"))
     # print(okx.trade.get_orders_history_archive())
-    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+    dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
 
     # 现货模式限价单
     # result = okx_demo.trade.place_order(
@@ -202,19 +202,19 @@ if __name__ == "__main__":
     #     slTriggerPx="55000",
     #     slOrdPx="54000"
     # )
-
-    result = okx_demo.trade.place_algo_order(
-        instId="ETH-USDT",
-        tdMode="cash",
-        side="sell",
-        ordType="conditional",
-        sz="0.1",
-        tpTriggerPx="",
-        tpOrdPx="",
-        slTriggerPx="2400",
-        slOrdPx="2300"
-    )
-    print(result)
+    #
+    # result = okx_demo.trade.place_algo_order(
+    #     instId="ETH-USDT",
+    #     tdMode="cash",
+    #     side="sell",
+    #     ordType="conditional",
+    #     sz="0.1",
+    #     tpTriggerPx="",
+    #     tpOrdPx="",
+    #     slTriggerPx="2400",
+    #     slOrdPx="2300"
+    # )
+    # print(result)
 
     '''
     Market

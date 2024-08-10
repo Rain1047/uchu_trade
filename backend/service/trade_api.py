@@ -1,3 +1,4 @@
+from backend.data_center.data_object.dao.post_order import PostOrderDB
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.okx_api import *
 from backend.data_center.data_object.enum_obj import *
@@ -10,7 +11,7 @@ class TradeAPIWrapper:
         self.env = env
         self.okx = OKXAPIWrapper(env=env)
 
-    def stop_loss(self, request: StopLossReq) -> bool:
+    def stop_loss(self, request: StopLossReq) -> Dict:
         # 1. 获取当前Ticker
         instId = request.instId
         # 2. 撤销自动生成止损订单
@@ -23,7 +24,7 @@ class TradeAPIWrapper:
         sz: float = 1.0
 
         # 5. POST止损订单
-        print(self.okx.trade.place_algo_order(
+        return self.okx.trade.place_algo_order(
             instId=request.instId,
             tdMode=EnumTdMode.CASH.value,
             side=EnumSide.SELL.value,
@@ -32,10 +33,7 @@ class TradeAPIWrapper:
             sz=sz,
             slTriggerPx=slTriggerPx,
             slOrdPx=slOrdPx
-        ))
-
-        # 6. 成功返回True，失败返回False
-        return False
+        )
 
 
 if __name__ == '__main__':
@@ -43,4 +41,4 @@ if __name__ == '__main__':
 
     req = StopLossReq()
     req.instId = "ETH-USDT"
-    tradeApi_demo.stop_loss(req)
+    dbApi.insert_order_details(tradeApi_demo.stop_loss(req), PostOrderDB)
