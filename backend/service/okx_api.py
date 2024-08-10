@@ -92,6 +92,7 @@ class TradeAPIWrapper:
                          posSide: Optional[str] = '',
                          tpTriggerPx: Optional[str] = '',
                          tpOrdPx: Optional[str] = '',
+                         clOrdId: Optional[str] = '',
                          slTriggerPx: Optional[str] = '',
                          slOrdPx: Optional[str] = '',
                          side: Optional[str] = EnumSide.BUY.value,
@@ -101,7 +102,9 @@ class TradeAPIWrapper:
         return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
                                               side=side, posSide=posSide,
                                               ordType=ordType,
-                                              slTriggerPx=slTriggerPx,slOrdPx=slOrdPx)
+                                              algoClOrdId=clOrdId,
+                                              slTriggerPx=slTriggerPx,
+                                              slOrdPx=slOrdPx)
 
 
 class FundingAPIWrapper:

@@ -5,9 +5,15 @@ import os
 import json
 import os
 from pathlib import Path
+import re
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from datetime import datetime
+import uuid
+import time
+import random
 
 
 class DateUtils:
@@ -22,6 +28,17 @@ class DateUtils:
         date = datetime.now() - timedelta(days=days)
         print("past_time: " + str(date))
         return date.strftime("%Y-%m-%d")
+
+    @staticmethod
+    def milliseconds() -> int:
+        # 获取当前时间
+        now = datetime.now()
+        # 获取当前时间的时间戳（秒）
+        timestamp_seconds = now.timestamp()
+        # 获取毫秒部分
+        milliseconds = now.microsecond // 1000
+        # 转换为毫秒级别时间戳
+        return int(timestamp_seconds * 1000) + milliseconds
 
 
 class ConfigUtils:
@@ -114,6 +131,27 @@ class DatabaseUtils:
             pass
 
 
+class UuidUtils:
+    @staticmethod
+    def generate_32_digit_numeric_id():
+        # 生成 UUID 并取其十六进制表示的部分
+        uuid_hex = uuid.uuid4().hex
+
+        # 获取当前时间戳（秒）并取其数字部分
+        timestamp = int(time.time())
+
+        # 生成一个随机数
+        random_number = random.randint(1000, 9999)  # 生成一个随机数
+
+        # 组合 UUID 的十六进制部分、时间戳和随机数
+        combined_string = f"{uuid_hex}{timestamp}{random_number}"
+
+        # 取前32位纯数字
+        pure_numeric_id = ''.join(filter(str.isdigit, combined_string))[:32]
+
+        return pure_numeric_id
+
+
 class FormatUtils:
 
     @staticmethod
@@ -185,4 +223,13 @@ if __name__ == "__main__":
 
     # print(DatabaseUtils.get_project_root())
 
-    print(ConfigUtils.get_config())
+    # print(ConfigUtils.get_config())
+
+    print(UuidUtils.generate_32_digit_numeric_id())
+    print(UuidUtils.generate_32_digit_numeric_id())
+    print(UuidUtils.generate_32_digit_numeric_id())
+    print(UuidUtils.generate_32_digit_numeric_id())
+    print(UuidUtils.generate_32_digit_numeric_id())
+
+
+
