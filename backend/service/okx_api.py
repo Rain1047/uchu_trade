@@ -70,6 +70,10 @@ class TradeAPIWrapper:
     def get_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
+    @add_docstring("撤销订单")
+    def cancel_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
+        return self.tradeAPI.cancel_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
+
     @add_docstring("下单")
     def place_order(self, instId: str,
                     sz: str,

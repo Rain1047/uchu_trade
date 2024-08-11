@@ -4,6 +4,7 @@ from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.okx_api import *
 from backend.data_center.data_object.enum_obj import *
 from backend.service.utils import *
+from backend.constants import *
 
 
 class TradeAPIWrapper:
@@ -24,13 +25,14 @@ class TradeAPIWrapper:
         for post_order in post_order_list:
             print(f"当前存在的订单单号：{str(post_order.algo_id)}")
             # 检查订单的信息
-            print(self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id))
+            if self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id).get('code') == ORDER_NOT_EXIST:
+                print(f"订单单号{str(post_order.algo_cl_ord_id)}不存在，撤单成功")
 
         # 3. 获取Ticker的当前价格
         current_price = PriceUtils.get_current_ticker_price(request.instId)
 
         # 4. 计算止损价格和数量
-        slTriggerPx: float = 0.90
+        slTriggerPx: float = 0.98
         slOrdPx: float = 0.95
         sz: float = 0.05
 
