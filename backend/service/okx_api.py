@@ -74,22 +74,29 @@ class TradeAPIWrapper:
     def cancel_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
         return self.tradeAPI.cancel_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
+    @add_docstring("撤销策略订单")
+    def cancel_algo_order(self, algo_orders: list) -> Dict:
+        return self.tradeAPI.cancel_algo_order(algo_orders)
+
     @add_docstring("下单")
     def place_order(self, instId: str,
                     sz: str,
                     side: str,
                     posSide: str,
-                    ordType: str,
-                    slTriggerPx: str,
+                    tpTriggerPx: Optional[str] = '',
+                    tpOrdPx: Optional[str] = '',
+                    slTriggerPx: Optional[str] = '',
                     px: Optional[str] = '',
                     slOrdPx: Optional[str] = "-1",
                     tdMode: Optional[str] = EnumTdMode.CASH.value,
+                    ordType: Optional[str] = EnumOrdType.CONDITIONAL.value,
                     clOrdId: Optional[str] = '',
                     ) -> Dict:
-        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz, px=px,
-                                         side=side, posSide=posSide, ordType=ordType,
-                                         slTriggerPx=slTriggerPx, slOrdPx=slOrdPx,
-                                         clOrdId=clOrdId)
+        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
+                                         side=side, posSide=posSide,
+                                         ordType=ordType,
+                                         slTriggerPx=slTriggerPx,
+                                         slOrdPx=slOrdPx)
 
     @add_docstring("策略下单")
     def place_algo_order(self, instId: str,

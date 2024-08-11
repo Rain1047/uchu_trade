@@ -12,6 +12,7 @@ class PostOrderDB(Base):
     # 字段定义
     algo_cl_ord_id = Column(String, comment='客户自定义策略订单ID')
     algo_id = Column(String, comment='策略委托单ID')
+    ord_id = Column(String, comment='订单ID')
     cl_ord_id = Column(String, comment='客户端订单ID')
     s_code = Column(String, comment='事件执行结果的code，0代表成功')
     s_msg = Column(String, comment='事件执行失败时的msg')

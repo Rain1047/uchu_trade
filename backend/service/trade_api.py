@@ -19,18 +19,18 @@ class TradeAPIWrapper:
         # 1. 撤销自动生成止损订单
         post_order_list: list[PostOrderDB] = self.session.query(PostOrderDB).filter(
             PostOrderDB.inst_id == request.instId,
-            PostOrderDB.status == '0'
+            # PostOrderDB.status == '0'
         ).all()
 
         for post_order in post_order_list:
             print(f"当前存在的订单单号：{str(post_order.algo_id)}")
             # 检查订单的信息
-            if (self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id).get('code')
+            if (self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_id).get('code')
                     == ORDER_NOT_EXIST):
-                print(f"订单单号{str(post_order.algo_cl_ord_id)}不存在，不需要撤单")
+                print(f"订单单号{str(post_order.algo_id)}不存在，不需要撤单")
                 post_order.operation_mode = EnumOperationMode.MANUAL.value
             else:
-                self.okx.trade.cancel_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id)
+                self.okx.trade.cancel_order(instId=request.instId, clOrdId=post_order.algo_id)
                 post_order.status = '1'
                 post_order.operation_mode = EnumOperationMode.AUTO.value
         self.session.commit()
