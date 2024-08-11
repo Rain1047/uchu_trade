@@ -16,6 +16,11 @@ class PostOrderDB(Base):
     s_code = Column(String, comment='事件执行结果的code，0代表成功')
     s_msg = Column(String, comment='事件执行失败时的msg')
     tag = Column(String, comment='订单标签')
+    inst_id = Column(String, comment='交易对')
+    side = Column(String, comment='交易方向')
+    c_time = Column(String, comment='创建时间')
+    u_time = Column(String, comment='更新时间')
+    status = Column(String, comment='订单状态')
 
     # 根据 SQLAlchemy 的规范，你可能还需要主键字段
     id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')

@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import yfinance as yf
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -14,6 +15,36 @@ from datetime import datetime
 import uuid
 import time
 import random
+
+from backend.service.okx_api import OKXAPIWrapper
+
+okx = OKXAPIWrapper()
+
+
+class PriceUtils:
+    @staticmethod
+    def get_past30day_ticker_price(instId: str):
+        ticker_data = yf.Ticker(instId)
+        return ticker_data.history(
+            start=DateUtils.past_time2string(30),
+            end=DateUtils.current_time2string())
+
+    @staticmethod
+    def get_current_ticker_price(instId: str):
+
+        # # 获取单个产品行情信息
+        if instId.endswith("-USDT"):
+            return okx.market.get_ticker(instId=instId)['data'][0]['last']
+        else:
+            return okx.market.get_ticker(instId=instId + "-USDT")['data'][0]['last']
+
+    @staticmethod
+    def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
+        result = okx.market.get_candlesticks(
+            instId=instId,
+            bar=bar
+        )
+        return FormatUtils.dict2df(result)
 
 
 class DateUtils:
@@ -231,11 +262,13 @@ if __name__ == "__main__":
 
     # print(ConfigUtils.get_config())
 
-    print(UuidUtils.generate_32_digit_numeric_id())
-    print(UuidUtils.generate_32_digit_numeric_id())
-    print(UuidUtils.generate_32_digit_numeric_id())
-    print(UuidUtils.generate_32_digit_numeric_id())
-    print(UuidUtils.generate_32_digit_numeric_id())
+    print(DateUtils.milliseconds())
+    # 1720927861614
+    # 1723355565508
+    # print(UuidUtils.generate_32_digit_numeric_id())
+    # print(UuidUtils.generate_32_digit_numeric_id())
+    # print(UuidUtils.generate_32_digit_numeric_id())
+    # print(UuidUtils.generate_32_digit_numeric_id())
 
 
 

@@ -92,7 +92,7 @@ class TradeAPIWrapper:
                          posSide: Optional[str] = '',
                          tpTriggerPx: Optional[str] = '',
                          tpOrdPx: Optional[str] = '',
-                         clOrdId: Optional[str] = '',
+                         algoClOrdId: Optional[str] = '',
                          slTriggerPx: Optional[str] = '',
                          slOrdPx: Optional[str] = '',
                          side: Optional[str] = EnumSide.BUY.value,
@@ -102,7 +102,7 @@ class TradeAPIWrapper:
         return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
                                               side=side, posSide=posSide,
                                               ordType=ordType,
-                                              algoClOrdId=clOrdId,
+                                              algoClOrdId=algoClOrdId,
                                               slTriggerPx=slTriggerPx,
                                               slOrdPx=slOrdPx)
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     '''
     # print(okx.trade.get_trade_fills_history(instType="SPOT"))
     # print(okx.trade.get_orders_history_archive())
-    dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
 
     # 现货模式限价单
     # result = okx_demo.trade.place_order(
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     '''
     Market
     '''
-    # print(okx.market.get_ticker(instId="BTC-USDT"))
+    print(okx.market.get_ticker(instId="BTC-USDT-SWAP"))
     # print(okx.market.get_candlesticks(instId="BTC-USDT", bar="1H"))
 
     '''
