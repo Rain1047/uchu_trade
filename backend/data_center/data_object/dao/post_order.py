@@ -21,6 +21,7 @@ class PostOrderDB(Base):
     c_time = Column(String, comment='创建时间')
     u_time = Column(String, comment='更新时间')
     status = Column(String, comment='订单状态')
+    operation_mode = Column(String, comment='操作模式')
 
     # 根据 SQLAlchemy 的规范，你可能还需要主键字段
     id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')

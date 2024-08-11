@@ -57,3 +57,8 @@ class EnumTimeFrame(Enum):
 
 class EnumInstanceType(Enum):
     SPOT = "SPOT"
+
+
+class EnumOperationMode(Enum):
+    MANUAL = "manual"
+    AUTO = "auto"

@@ -25,8 +25,15 @@ class TradeAPIWrapper:
         for post_order in post_order_list:
             print(f"当前存在的订单单号：{str(post_order.algo_id)}")
             # 检查订单的信息
-            if self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id).get('code') == ORDER_NOT_EXIST:
-                print(f"订单单号{str(post_order.algo_cl_ord_id)}不存在，撤单成功")
+            if (self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id).get('code')
+                    == ORDER_NOT_EXIST):
+                print(f"订单单号{str(post_order.algo_cl_ord_id)}不存在，不需要撤单")
+                post_order.operation_mode = EnumOperationMode.MANUAL.value
+            else:
+                self.okx.trade.cancel_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id)
+                post_order.status = '1'
+                post_order.operation_mode = EnumOperationMode.AUTO.value
+        self.session.commit()
 
         # 3. 获取Ticker的当前价格
         current_price = PriceUtils.get_current_ticker_price(request.instId)
