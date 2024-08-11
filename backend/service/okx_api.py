@@ -81,8 +81,8 @@ class TradeAPIWrapper:
     @add_docstring("下单")
     def place_order(self, instId: str,
                     sz: str,
-                    side: str,
-                    posSide: str,
+                    side: Optional[str] = EnumSide.BUY.value,  # 订单方向
+                    posSide: Optional[str] = '',  # 持仓方向
                     tpTriggerPx: Optional[str] = '',
                     tpOrdPx: Optional[str] = '',
                     slTriggerPx: Optional[str] = '',
@@ -94,7 +94,7 @@ class TradeAPIWrapper:
                     ) -> Dict:
         return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
                                          side=side, posSide=posSide,
-                                         ordType=ordType,
+                                         ordType=ordType, px=px,
                                          slTriggerPx=slTriggerPx,
                                          slOrdPx=slOrdPx)
 
@@ -213,16 +213,17 @@ if __name__ == "__main__":
     # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
 
     # 现货模式限价单
-    # result = okx_demo.trade.place_order(
-    #     instId="BTC-USDT",
-    #     tdMode="cash",
-    #     side="buy",
-    #     ordType="limit",
-    #     # px="2.15",  # 委托价格
-    #     sz="2",  # 委托数量
-    #     slTriggerPx="55000",
-    #     slOrdPx="54000"
-    # )
+    result = okx_demo.trade.place_order(
+        instId="ETh-USDT",
+        tdMode="cash",
+        side="sell",
+        ordType="limit",
+        # px="2.15",  # 委托价格
+        sz="0.5",  # 委托数量
+        slTriggerPx="100",
+        slOrdPx="90"
+    )
+    print(result)
     #
     # result = okx_demo.trade.place_algo_order(
     #     instId="ETH-USDT",
@@ -240,7 +241,7 @@ if __name__ == "__main__":
     '''
     Market
     '''
-    print(okx.market.get_ticker(instId="BTC-USDT-SWAP"))
+    # print(okx.market.get_ticker(instId="BTC-USDT-SWAP"))
     # print(okx.market.get_candlesticks(instId="BTC-USDT", bar="1H"))
 
     '''
