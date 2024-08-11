@@ -69,4 +69,35 @@ log_method 装饰器为 get_account_balance 和 get_trade_fills_history 等方�
 
 看了德约科维奇的比赛，又想打网球了hhh～但是想想还是睡觉比较好。
 
-这个周末用了比较多的时间来重构代码，整体代码的结构比之前清晰了非常多，而且也解决了日志的录入后端部分，下周巩固下后端部分，可以通过组件快速的实现交易记录的一个预览，当然这里前端的和后端的交互是一个大头；
+这个周末用了比较多的时间来重构代码，整体代码的结构比之前清晰了非常多，而且也解决了日志的录入后端部分，下周巩固下后端部分，可以通过组件快速的实现交易记录的一个预览，当然这里前端的和后端的交互是一个大头；后端部分开始优化策略中心和调度器的功能。
+
+## 2024-08-06
+
+今天终于把前端安装上了，前端一定要安装镜像啊我去TmT
+
+下面是安装react项目的过程：
+
+```
+npm config set registry https://registry.npmmirror.com
+```
+
+javascript项目
+
+```
+create-react-app frontend
+```
+
+typescript项目
+
+```
+create-react-app frontend --template typescript
+```
+
+## 2024-08-09
+
+最近有点累，今天优化了前端的上传github逻辑，前后端总算跑起来了，加了一个启动脚本
+
+```
+npm install --legacy-peer-deps
+```
+
