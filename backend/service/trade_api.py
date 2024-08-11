@@ -12,15 +12,22 @@ class TradeAPIWrapper:
         self.env = env
         self.okx = OKXAPIWrapper(env=env)
         self.price_collector = TickerPriceCollector()
+        self.session = DatabaseUtils.get_db_session()
 
     def stop_loss(self, request: StopLossReq) -> Dict:
-        # 1. 获取当前Ticker
-        instId = request.instId
-        # 2. 撤销自动生成止损订单
+        # 1. 撤销自动生成止损订单
+        post_order_list: list[PostOrderDB] = self.session.query(PostOrderDB).filter(
+            PostOrderDB.inst_id == request.instId,
+            PostOrderDB.status == '0'
+        ).all()
 
+        for post_order in post_order_list:
+            print(f"当前存在的订单单号：{str(post_order.algo_id)}")
+            # 检查订单的信息
+            print(self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_cl_ord_id))
 
         # 3. 获取Ticker的当前价格
-        current_price = PriceUtils.get_current_ticker_price(instId)
+        current_price = PriceUtils.get_current_ticker_price(request.instId)
 
         # 4. 计算止损价格和数量
         slTriggerPx: float = 0.90
@@ -57,3 +64,17 @@ if __name__ == '__main__':
     req = StopLossReq()
     req.instId = "ETH-USDT"
     tradeApi_demo.stop_loss(req)
+
+    # 查询当前未结束的止损订单
+    # instId = "ETH-USDT"
+    # session = DatabaseUtils.get_db_session()  # 确保返回的是 Session 对象
+    # query = session.query(PostOrderDB).filter(
+    #     PostOrderDB.inst_id == instId,
+    #     PostOrderDB.status == '0'
+    # )
+    # post_order_list: list[PostOrderDB] = query.all()
+    # for post_order in post_order_list:
+    #     print(post_order.algo_id)
+
+
+

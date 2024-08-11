@@ -71,7 +71,7 @@ from sqlalchemy import or_
 
 
 # Example function that takes a parameter tf which can be None
-def get_st_instance_list(strategy, tf):
+def get_st_instance_list(strategy, tf) -> list[StInstance]:
     engine = DatabaseUtils.get_db_session()
     query = engine.query(strategy).filter(
         StInstance.switch == 0,

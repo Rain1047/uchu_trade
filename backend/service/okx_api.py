@@ -3,6 +3,7 @@ import okx.Trade as Trade
 import okx.MarketData as Market
 import okx.PublicData as PublicData
 import okx.Funding as Funding
+import okx.SpreadTrading as SpreadTrading
 from typing import Optional, Dict
 
 from backend.data_center.data_object.dao.order_detail import OrderDetailDB
@@ -66,8 +67,8 @@ class TradeAPIWrapper:
         return self.tradeAPI.get_orders_history_archive(instType=instType, **kwargs)
 
     @add_docstring("获取订单信息")
-    def get_order(self, instId: str, ordId: str) -> Dict:
-        return self.tradeAPI.get_order(instId=instId, ordId=ordId)
+    def get_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
+        return self.tradeAPI.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
     @add_docstring("下单")
     def place_order(self, instId: str,
@@ -143,6 +144,14 @@ class PublicDataAPIWrapper:
         self.publicAPI.get_convert_contract_coin(instId=instId, sz=sz, px=px, unit=unit)
 
 
+class SpreadAPIWrapper:
+    def __init__(self, apikey, secretkey, passphrase, flag):
+        self.spreadAPI = SpreadTrading.SpreadTradingAPI(apikey, secretkey, passphrase, False, flag)
+
+    def get_order_details(self, clOrdId: Optional[str], ordId: Optional[str]) -> Dict:
+        return self.spreadAPI.get_order_details(clOrdId=clOrdId, ordId=ordId)
+
+
 @singleton
 class OKXAPIWrapper:
     def __init__(self, env: Optional[str] = EnumTradeEnv.MARKET.value):
@@ -163,6 +172,7 @@ class OKXAPIWrapper:
         self.market = MarketAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
         self.publicData = PublicDataAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
         self.funding = FundingAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
+        self.spread = SpreadAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
 
         self._initialized = True
         print("{} OKX API initialized.".format(self.env))

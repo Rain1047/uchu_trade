@@ -16,10 +16,6 @@ import uuid
 import time
 import random
 
-from backend.service.okx_api import OKXAPIWrapper
-
-okx = OKXAPIWrapper()
-
 
 class PriceUtils:
     @staticmethod
@@ -31,6 +27,9 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
+        from backend.service.okx_api import OKXAPIWrapper
+
+        okx = OKXAPIWrapper()
 
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
@@ -40,6 +39,9 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
+        from backend.service.okx_api import OKXAPIWrapper
+
+        okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,
             bar=bar
