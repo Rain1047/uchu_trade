@@ -1,8 +1,12 @@
+from typing import Optional, Dict
+
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.dao.post_order import PostOrderDB
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
+from backend.service.data_api import DataAPIWrapper
 from backend.service.okx_api import *
 from backend.data_center.data_object.enum_obj import *
+from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.utils import *
 from backend.constants import *
 
@@ -12,6 +16,7 @@ class TradeAPIWrapper:
     def __init__(self, env: Optional[str] = EnumTradeEnv.MARKET.value):
         self.env = env
         self.okx = OKXAPIWrapper(env=env)
+        self.dbApi = DataAPIWrapper()
         self.price_collector = TickerPriceCollector()
         self.session = DatabaseUtils.get_db_session()
 
@@ -61,7 +66,7 @@ class TradeAPIWrapper:
             result.get('data')[0]['c_time'] = str(DateUtils.milliseconds())
             result.get('data')[0]['u_time'] = str(DateUtils.milliseconds())
             result.get('data')[0]['status'] = '0'
-            dbApi.insert_order_details(result, PostOrderDB)
+            self.dbApi.insert_order_details(result, PostOrderDB)
         else:
             print(f"止损订单下单失败，原因：{result.get('msg')}")
         return result
