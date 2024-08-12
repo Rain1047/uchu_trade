@@ -1,8 +1,19 @@
 # funding_api_wrapper.py
+import base64
+import hashlib
+import hmac
+import json
+import time
+from datetime import datetime, timezone
 
 import okx.Funding as Funding
-from typing import Dict
+from typing import Dict, Optional
+
+import requests
+
 from backend.service.decorator import add_docstring
+from backend.data_center.data_object.enum_obj import *
+from backend.service.utils import ConfigUtils
 
 
 class FundingAPIWrapper:
@@ -17,3 +28,70 @@ class FundingAPIWrapper:
     def get_saving_balance(self, ccy: str) -> Dict:
         return self.fundingAPI.get_saving_balance(ccy=ccy)
 
+    @add_docstring("申购赎回")
+    def purchase_redempt(self, ccy: str, amt: str,
+                         side: Optional[str] = EnumPurchaseRedempt.REDEMPT.value,
+                         rate: Optional[str] = "0.01") -> Dict:
+        return self.fundingAPI.purchase_redempt(ccy=ccy, amt=amt, side=side, rate=rate)
+
+def get_current_timestamp():
+    # 获取当前时间，并转为 UTC 时区
+    now = datetime.now(timezone.utc)
+    # 格式化为 ISO 8601 格式
+    return now.isoformat(timespec='milliseconds') + 'Z'
+
+
+def purchase_redempt(ccy,amt, side, rate):
+    timestamp = get_current_timestamp()
+    method = 'POST'
+    request_path = '/api/v5/finance/savings/purchase-redempt'
+
+    url = "https://aws.okx.com" + request_path
+
+    # 生成签名
+    config = ConfigUtils.get_config()
+    secret = config['secretkey']  # 替换为你的密钥
+    signature = generate_signature(secret, timestamp, method, request_path)
+
+    headers = {
+        'Content-Type': 'application/json',
+        'OK-ACCESS-KEY': config['apikey'],  # 替换为你的访问密钥
+        'OK-ACCESS-SIGN': signature,
+        'OK-ACCESS-PASSPHRASE': config['passphrase'],  # 替换为你的访问密码
+        'OK-ACCESS-TIMESTAMP': timestamp,
+        # 'x-simulated-trading': '1'
+    }
+
+    body = json.dumps({
+        'ccy': ccy,
+        'amt': amt,
+        'side': side,
+        'rate': rate
+    })
+    response = requests.post(url, json=json.loads(body), headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        response.raise_for_status()  # 引发异常以便调试
+        return response.text  # 返回响应的文本以便调试
+
+
+def generate_signature(secret, timestamp, method, request_path):
+    # 构建待签名的字符串
+    message = f"{timestamp}{method}{request_path}"
+
+    # 生成 HMAC SHA256 签名
+    signature = hmac.new(
+        key=secret.encode(),  # 使用 secret 密钥
+        msg=message.encode(),  # 消息字符串
+        digestmod=hashlib.sha256  # 使用 SHA-256 算法
+    ).digest()  # 生成字节
+
+    # 将签名结果进行 Base64 编码
+    return base64.b64encode(signature).decode()  # 返回字符串
+
+
+if __name__ == '__main__':
+    result = purchase_redempt(ccy='USDT', amt='1', side='redempt', rate='1.00')
+    print(result)

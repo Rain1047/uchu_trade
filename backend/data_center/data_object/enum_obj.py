@@ -62,3 +62,8 @@ class EnumInstanceType(Enum):
 class EnumOperationMode(Enum):
     MANUAL = "manual"
     AUTO = "auto"
+
+
+class EnumPurchaseRedempt(Enum):
+    PURCHASE = "purchase"
+    REDEMPT = "redempt"
