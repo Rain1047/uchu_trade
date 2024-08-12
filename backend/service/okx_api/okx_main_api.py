@@ -63,3 +63,6 @@ class OKXAPIWrapper:
         return self.spread
 
 
+if __name__ == '__main__':
+    okx_api = OKXAPIWrapper()
+    print(okx_api.funding.get_saving_balance(ccy='ETH'))
