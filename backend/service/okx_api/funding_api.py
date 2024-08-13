@@ -34,15 +34,30 @@ class FundingAPIWrapper:
                          rate: Optional[str] = "0.01") -> Dict:
         return self.fundingAPI.purchase_redempt(ccy=ccy, amt=amt, side=side, rate=rate)
 
+
 def get_current_timestamp():
     # 获取当前时间，并转为 UTC 时区
     now = datetime.now(timezone.utc)
-    # 格式化为 ISO 8601 格式
-    return now.isoformat(timespec='milliseconds') + 'Z'
+    # 格式化为 ISO 8601 格式，包含毫秒
+    return now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 
-def purchase_redempt(ccy,amt, side, rate):
+def generate_signature(secret, timestamp, method, request_path, body=''):
+    # 构建待签名的字符串
+    message = f"{timestamp}{method}{request_path}{body}"
+    # 生成 HMAC SHA256 签名
+    signature = hmac.new(
+        key=secret.encode(),  # 使用 secret 密钥
+        msg=message.encode(),  # 消息字符串
+        digestmod=hashlib.sha256  # 使用 SHA-256 算法
+    ).digest()  # 生成字节
+    # 将签名结果进行 Base64 编码
+    return base64.b64encode(signature).decode()  # 返回字符串
+
+
+def purchase_redempt(ccy, amt, side, rate):
     timestamp = get_current_timestamp()
+    print(timestamp)
     method = 'POST'
     request_path = '/api/v5/finance/savings/purchase-redempt'
 
@@ -51,7 +66,15 @@ def purchase_redempt(ccy,amt, side, rate):
     # 生成签名
     config = ConfigUtils.get_config()
     secret = config['secretkey']  # 替换为你的密钥
-    signature = generate_signature(secret, timestamp, method, request_path)
+    body = json.dumps({
+        'ccy': ccy,
+        'amt': amt,
+        'side': side,
+        'rate': rate
+    })
+    signature = generate_signature(secret, timestamp, method, request_path, body)
+
+    print(f"signature: {signature}")
 
     headers = {
         'Content-Type': 'application/json',
@@ -62,36 +85,20 @@ def purchase_redempt(ccy,amt, side, rate):
         # 'x-simulated-trading': '1'
     }
 
-    body = json.dumps({
-        'ccy': ccy,
-        'amt': amt,
-        'side': side,
-        'rate': rate
-    })
-    response = requests.post(url, json=json.loads(body), headers=headers)
+    response = requests.post(url, data=body, headers=headers)
+    print(f"response: {response.json()}")
 
     if response.status_code == 200:
         return response.json()
     else:
+        print(f"Error: {response.text}")  # 打印错误信息
         response.raise_for_status()  # 引发异常以便调试
         return response.text  # 返回响应的文本以便调试
 
 
-def generate_signature(secret, timestamp, method, request_path):
-    # 构建待签名的字符串
-    message = f"{timestamp}{method}{request_path}"
-
-    # 生成 HMAC SHA256 签名
-    signature = hmac.new(
-        key=secret.encode(),  # 使用 secret 密钥
-        msg=message.encode(),  # 消息字符串
-        digestmod=hashlib.sha256  # 使用 SHA-256 算法
-    ).digest()  # 生成字节
-
-    # 将签名结果进行 Base64 编码
-    return base64.b64encode(signature).decode()  # 返回字符串
-
-
 if __name__ == '__main__':
-    result = purchase_redempt(ccy='USDT', amt='1', side='redempt', rate='1.00')
+    result = purchase_redempt(ccy='USDT', amt='10', side='redempt', rate='1.00')
     print(result)
+
+# 2020-12-08T09:08:57.715Z
+# 2024-08-13T15:18:22.689+00:00Z
