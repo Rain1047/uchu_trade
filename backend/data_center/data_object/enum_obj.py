@@ -67,3 +67,8 @@ class EnumOperationMode(Enum):
 class EnumPurchaseRedempt(Enum):
     PURCHASE = "purchase"
     REDEMPT = "redempt"
+
+
+class MethodType(Enum):
+    POST = "POST"
+    GET = "GET"

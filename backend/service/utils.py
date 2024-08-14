@@ -1,11 +1,13 @@
 # import this
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import json
 import os
 from pathlib import Path
 import re
+from typing import Optional
+from backend.data_center.data_object.enum_obj import *
 import yfinance as yf
 
 from sqlalchemy import create_engine
@@ -27,10 +29,8 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        from backend.service.okx_api import OKXAPIWrapper
-
+        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
-
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
             return okx.market.get_ticker(instId=instId)['data'][0]['last']
@@ -39,8 +39,7 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.service.okx_api import OKXAPIWrapper
-
+        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,
@@ -73,10 +72,17 @@ class DateUtils:
         # 转换为毫秒级别时间戳
         return int(timestamp_seconds * 1000) + milliseconds
 
+    @staticmethod
+    def get_current_timestamp() -> str:
+        # 获取当前时间，并转为 UTC 时区
+        now = datetime.now(timezone.utc)
+        # 格式化为 ISO 8601 格式，包含毫秒
+        return now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
 
 class ConfigUtils:
     @staticmethod
-    def get_config():
+    def get_config() -> json:
         # Get the directory of the current script
         script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -92,6 +98,20 @@ class ConfigUtils:
             config = json.load(config_file)
 
         return config
+
+    @staticmethod
+    def get_headers(request_url: str, method_type: Optional[str] = MethodType.GET.value):
+        timestamp = DateUtils.get_current_timestamp()
+        config = ConfigUtils.get_config()
+        secret = config['secretkey']  # 替换为你的密钥
+        body = json.dumps({
+            'ccy': ccy,
+            'amt': amt,
+            'side': side,
+            'rate': rate
+        })
+
+
 
 
 class CheckUtils:

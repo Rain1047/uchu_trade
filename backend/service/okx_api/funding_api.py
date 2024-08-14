@@ -55,7 +55,7 @@ def generate_signature(secret, timestamp, method, request_path, body=''):
     return base64.b64encode(signature).decode()  # 返回字符串
 
 
-def purchase_redempt(ccy, amt, side, rate):
+def purchase_redempt(ccy: str, amt: str, side: str, rate: str):
     timestamp = get_current_timestamp()
     print(timestamp)
     method = 'POST'
