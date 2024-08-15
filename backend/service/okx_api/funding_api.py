@@ -31,8 +31,49 @@ class FundingAPIWrapper:
     @add_docstring("申购赎回")
     def purchase_redempt(self, ccy: str, amt: str,
                          side: Optional[str] = EnumPurchaseRedempt.REDEMPT.value,
-                         rate: Optional[str] = "0.01") -> Dict:
-        return self.fundingAPI.purchase_redempt(ccy=ccy, amt=amt, side=side, rate=rate)
+                         rate: Optional[str] = "0.01") -> json:
+        return self._purchase_redempt(ccy=ccy, amt=amt, side=side, rate=rate)
+
+    @staticmethod
+    def _purchase_redempt(ccy: str, amt: str, side: str, rate: str) -> json:
+        timestamp = get_current_timestamp()
+        print(timestamp)
+        method = 'POST'
+        request_path = '/api/v5/finance/savings/purchase-redempt'
+
+        url = "https://aws.okx.com" + request_path
+
+        # 生成签名
+        config = ConfigUtils.get_config()
+        secret = config['secretkey']  # 替换为你的密钥
+        body = json.dumps({
+            'ccy': ccy,
+            'amt': amt,
+            'side': side,
+            'rate': rate
+        })
+        signature = generate_signature(secret, timestamp, method, request_path, body)
+
+        print(f"signature: {signature}")
+
+        headers = {
+            'Content-Type': 'application/json',
+            'OK-ACCESS-KEY': config['apikey'],  # 替换为你的访问密钥
+            'OK-ACCESS-SIGN': signature,
+            'OK-ACCESS-PASSPHRASE': config['passphrase'],  # 替换为你的访问密码
+            'OK-ACCESS-TIMESTAMP': timestamp,
+            # 'x-simulated-trading': '1'
+        }
+
+        response = requests.post(url, data=body, headers=headers)
+        print(f"response: {response.json()}")
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error: {response.text}")  # 打印错误信息
+            response.raise_for_status()  # 引发异常以便调试
+            return response.text  # 返回响应的文本以便调试
 
 
 def get_current_timestamp():
@@ -55,50 +96,8 @@ def generate_signature(secret, timestamp, method, request_path, body=''):
     return base64.b64encode(signature).decode()  # 返回字符串
 
 
-def purchase_redempt(ccy: str, amt: str, side: str, rate: str):
-    timestamp = get_current_timestamp()
-    print(timestamp)
-    method = 'POST'
-    request_path = '/api/v5/finance/savings/purchase-redempt'
-
-    url = "https://aws.okx.com" + request_path
-
-    # 生成签名
-    config = ConfigUtils.get_config()
-    secret = config['secretkey']  # 替换为你的密钥
-    body = json.dumps({
-        'ccy': ccy,
-        'amt': amt,
-        'side': side,
-        'rate': rate
-    })
-    signature = generate_signature(secret, timestamp, method, request_path, body)
-
-    print(f"signature: {signature}")
-
-    headers = {
-        'Content-Type': 'application/json',
-        'OK-ACCESS-KEY': config['apikey'],  # 替换为你的访问密钥
-        'OK-ACCESS-SIGN': signature,
-        'OK-ACCESS-PASSPHRASE': config['passphrase'],  # 替换为你的访问密码
-        'OK-ACCESS-TIMESTAMP': timestamp,
-        # 'x-simulated-trading': '1'
-    }
-
-    response = requests.post(url, data=body, headers=headers)
-    print(f"response: {response.json()}")
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.text}")  # 打印错误信息
-        response.raise_for_status()  # 引发异常以便调试
-        return response.text  # 返回响应的文本以便调试
-
-
 if __name__ == '__main__':
-    result = purchase_redempt(ccy='USDT', amt='10', side='redempt', rate='1.00')
-    print(result)
+    print("")
 
-# 2020-12-08T09:08:57.715Z
-# 2024-08-13T15:18:22.689+00:00Z
+    # result = purchase_redempt(ccy='USDT', amt='10', side='redempt', rate='1.00')
+    # print(result)
