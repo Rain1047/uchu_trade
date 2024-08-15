@@ -8,6 +8,7 @@ python-dotenv==1.0.0
 requests==2.31.0
 SQLAlchemy~=1.4.51
 yfinance==0.2.31
+python-okx==0.3.2
 
 apscheduler~=3.10.4
 backtrader~=1.9.78.123

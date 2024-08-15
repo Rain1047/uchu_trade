@@ -210,7 +210,7 @@ if __name__ == "__main__":
     '''
     # print(okx.trade.get_trade_fills_history(instType="SPOT"))
     # print(okx.trade.get_orders_history_archive())
-    # dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+    dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
 
     # 现货模式限价单
     result = okx_demo.trade.place_order(
