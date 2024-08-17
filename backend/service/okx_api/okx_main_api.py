@@ -16,7 +16,7 @@ from backend.data_center.data_object.enum_obj import *
 
 @singleton
 class OKXAPIWrapper:
-    def __init__(self, env: Optional[str]):
+    def __init__(self, env: Optional[str] = EnumTradeEnv.DEMO.value):
         if hasattr(self, '_initialized') and self._initialized:
             return
 
@@ -81,6 +81,9 @@ if __name__ == '__main__':
     #                                          okx_api.funding.get_saving_balance(ccy='ETH').get('data')[0])
     # print(sb.ccy)
     # print(sb.amt)
-    okx_api.funding_api.purchase_redempt(ccy='USDT', amt='2', side='redempt', rate='0.03')
+    # okx_api.funding_api.purchase_redempt(ccy='USDT', amt='2', side='redempt', rate='0.03')
+
+    result = okx_api.trade_api.get_order_algos_list(instId="ETH-USDT")
+    print(f"{result}")
 
 
