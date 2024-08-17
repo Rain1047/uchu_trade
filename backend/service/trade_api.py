@@ -29,6 +29,7 @@ class TradeAPIWrapper:
             # PostOrderDB.status == '0'
         ).all()
         # Step1.2 检查是否存在自动生成的止损订单
+        print(f"当前列表长度：{len(post_order_list)}")
         if len(post_order_list) > 0:
             cancel_list: List[Dict[str, str]] = []
             for post_order in post_order_list:
@@ -48,11 +49,11 @@ class TradeAPIWrapper:
                     post_order.operation_mode = EnumOperationMode.AUTO.value
                     cancel_list.append(cancel_order)
             result = self.okx.trade.cancel_algo_order(cancel_list)
-            print(f"Cancel Result is:{str(result)}")
+            print(f"取消的结果为:{result}")
             self.session.commit()
-
         # 3. 获取Ticker的当前价格
         current_price = PriceUtils.get_current_ticker_price(request.instId)
+        print(f"当前价格：{current_price}")
 
         # 4. 计算止损价格和数量
         slTriggerPx: float = 0.98
@@ -76,7 +77,8 @@ class TradeAPIWrapper:
             result.get('data')[0]['side'] = EnumSide.SELL.value
             result.get('data')[0]['c_time'] = str(DateUtils.milliseconds())
             result.get('data')[0]['u_time'] = str(DateUtils.milliseconds())
-            result.get('data')[0]['status'] = '0'
+            result.get('data')[0]['status'] = 'open'
+            result.get('data')[0]['env'] = self.env
             self.dbApi.insert_order_details(result, PostOrderDB)
         else:
             print(f"止损订单下单失败，原因：{result.get('msg')}")
