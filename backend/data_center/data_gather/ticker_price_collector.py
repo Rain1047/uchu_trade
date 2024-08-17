@@ -53,6 +53,12 @@ class TickerPriceCollector:
         )
         return FormatUtils.dict2df(result)
 
+    def get_sz(self, instId: str, position: str) -> str:
+        # 获取单个产品行情信息
+        last_price = self.get_current_ticker_price(instId)
+        return okx.publicData.get_convert_contract_coin(
+            instId=instId, px=last_price, sz=position)['data'][0]['sz']
+
 
 if __name__ == '__main__':
     # Example usage for BTC

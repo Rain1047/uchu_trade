@@ -1,6 +1,7 @@
 import os
 import sys
 
+from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 
 # 将项目根目录添加到Python解释器的搜索路径中
@@ -11,7 +12,7 @@ from backend.data_center.data_object.dto.strategy_instance import StrategyInstan
 from backend.data_center.data_object.enum_obj import *
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
-from backend.service.okx_api import OKXAPIWrapper
+from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.utils import *
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
@@ -19,6 +20,8 @@ marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
 
 okx = OKXAPIWrapper()
+
+price_collector = TickerPriceCollector()
 
 
 def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
@@ -33,7 +36,7 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     # 查询历史蜡烛图数据
     print("Double Bollinger Bands Strategy Start...")
-    df = FormatUtils.dict2df(okx.market.get_candlesticks(stIns.tradePair, stIns.timeFrame))
+    df = price_collector.query_candles_with_time_frame(stIns.tradePair, stIns.timeFrame)
 
     # 初始化策略执行结果对象
     res = StrategyExecuteResult()
@@ -71,7 +74,7 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
             print(f"{stIns.tradePair} position is: {position}")
 
             # 获取单个产品行情信息
-            res.sz = get_sz(stIns, position)
+            res.sz = price_collector.get_sz(instId=stIns.tradePair, position=position)
             print(f"{stIns.tradePair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
@@ -83,33 +86,15 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
             position = str(
                 stIns.lossPerTrans * round(df.iloc[-1]['close'] / (df.iloc[-1]['middle_band'] - df.iloc[-1]['close']),
                                            2) * 10 * (-1))
-            res.sz = get_sz(stIns, position)
+            res.sz = price_collector.get_sz(instId=stIns.tradePair, position=position)
             res.signal = True
             res.side = EnumSide.BUY.value
             res.exitPrice = df.iloc[-1]['middle_band'] * 1.3
             return res
-
         else:
             res.sz = 100
             res.signal = False
             return res
-
-
-# 获取张数
-def get_sz(stIns: StrategyInstance, position: str):
-    # 获取单个产品行情信息
-    last_price = marketDataAPI.get_ticker(
-        instId=stIns.tradePair
-    )['data'][0]['last']
-
-    # 张币转换
-    sz = publicDataAPI.get_convert_contract_coin(
-        instId=stIns.tradePair,
-        px=last_price,
-        sz=position,
-        unit=EnumUnit.USDS.value
-    )['data'][0]['sz']
-    return sz
 
 
 def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:

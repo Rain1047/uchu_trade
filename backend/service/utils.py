@@ -47,7 +47,6 @@ class PriceUtils:
         )
         return FormatUtils.dict2df(result)
 
-
 class DateUtils:
     @staticmethod
     def current_time2string():

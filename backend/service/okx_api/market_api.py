@@ -6,6 +6,7 @@ import pandas as pd
 from backend.service.decorator import add_docstring
 from backend.service.utils import *
 
+
 class MarketAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.marketAPI = Market.MarketAPI(apikey, secretkey, passphrase, False, flag)
