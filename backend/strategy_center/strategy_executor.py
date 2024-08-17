@@ -1,6 +1,6 @@
 import sys
 import os
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import partial
 from typing import Optional
 
@@ -55,12 +55,17 @@ def main_task(env: Optional[str] = None):
     # 获取需要执行的规则实例，查询所有符合条件的记录
     # if tf is null how to change the query make it flexible
     instance_list = get_st_instance_list(StInstance, None)
-    okx = OKXAPIWrapper()
-
+    # if instance_list:
+    #     with ThreadPoolExecutor() as executor:
+    #         # 使用 lambda 传递额外的参数
+    #         futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
+    #         # 等待所有 futures 完成
+    #         for future in futures:
+    #             future.result()
     if instance_list:
-        with ThreadPoolExecutor() as executor:
+        with ProcessPoolExecutor() as executor:
             # 使用 lambda 传递额外的参数
-            futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
+            futures = [executor.submit(sub_task, instance, env) for instance in instance_list]
             # 等待所有 futures 完成
             for future in futures:
                 future.result()
@@ -142,7 +147,8 @@ def get_order_instance_from_result(post_order_result, order_result) -> Optional[
         return None
 
 
-def sub_task(st_instance, okx: OKXAPIWrapper):
+def sub_task(st_instance, env: str):
+    okx = OKXAPIWrapper(env)
     logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
     try:
         st = __do2dto(st_instance)
