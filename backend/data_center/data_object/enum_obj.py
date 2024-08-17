@@ -72,3 +72,9 @@ class EnumPurchaseRedempt(Enum):
 class MethodType(Enum):
     POST = "POST"
     GET = "GET"
+
+
+class EnumOrderStatus(Enum):
+    OPEN = "open"
+    CLOSE = "close"
+

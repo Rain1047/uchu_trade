@@ -11,21 +11,22 @@ from backend.service.okx_api.market_api import MarketAPIWrapper
 from backend.service.okx_api.public_data_api import PublicDataAPIWrapper
 from backend.service.okx_api.funding_api import FundingAPIWrapper
 from backend.service.okx_api.spread_api import SpreadAPIWrapper
+from backend.data_center.data_object.enum_obj import *
 
 
 @singleton
 class OKXAPIWrapper:
-    def __init__(self, env: Optional[str] = 'MARKET'):
+    def __init__(self, env: Optional[str]):
         if hasattr(self, '_initialized') and self._initialized:
             return
 
-        self.env = env
+        self.env = env if env is not None else EnumTradeEnv.DEMO.value
         self._load_config()
 
-        self.apikey = self.config['apikey_demo'] if self.env == 'DEMO' else self.config['apikey']
-        self.secretkey = self.config['secretkey_demo'] if self.env == 'DEMO' else self.config['secretkey']
+        self.apikey = self.config['apikey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['apikey']
+        self.secretkey = self.config['secretkey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['secretkey']
         self.passphrase = self.config['passphrase']
-        self.flag = "1" if self.env == 'DEMO' else "0"
+        self.flag = "1" if self.env == EnumTradeEnv.DEMO.value else "0"
 
         self.account = AccountAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
         self.trade = TradeAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
@@ -35,6 +36,7 @@ class OKXAPIWrapper:
         self.spread = SpreadAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
 
         self._initialized = True
+        print("{} OKX API initialized.".format(self.env))
 
     def _load_config(self):
         self.config = ConfigUtils.get_config()
