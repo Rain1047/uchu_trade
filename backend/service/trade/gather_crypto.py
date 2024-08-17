@@ -38,6 +38,7 @@ def get_top_cryptos():
         print(f"Error: {response.status_code}")
         return None
 
+
 def get_crypto_price_data(crypto_id, start_date, end_date):
     # CoinGecko API endpoint for fetching historical price data
     api_url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}/market_chart/range"

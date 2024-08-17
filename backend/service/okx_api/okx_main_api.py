@@ -68,6 +68,9 @@ class OKXAPIWrapper:
 
 if __name__ == '__main__':
     okx_api = OKXAPIWrapper()
+    okx_api = OKXAPIWrapper()
+    okx_api = OKXAPIWrapper()
+    okx_api = OKXAPIWrapper()
     # sb: SavingBalance = FormatUtils.dict2dao(SavingBalance, okx_api.funding_api.get_saving_balance(ccy='ETH').get('data')[0])
     # print(sb.ccy)
     # print(sb.amt)
@@ -83,7 +86,7 @@ if __name__ == '__main__':
     # print(sb.amt)
     # okx_api.funding_api.purchase_redempt(ccy='USDT', amt='2', side='redempt', rate='0.03')
 
-    result = okx_api.trade_api.get_order_algos_list(instId="ETH-USDT")
-    print(f"{result}")
+    # result = okx_api.trade_api.get_order_algos_list(instId="ETH-USDT")
+    # print(f"{result}")
 
 

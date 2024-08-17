@@ -1,10 +1,12 @@
 import sys
 import os
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Optional
 
 from backend.data_center.data_object.dao.od_instance_dao import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,8 +36,6 @@ marketDataAPI = MarketData.MarketAPI(flag=flag)
 millis_timestamp = int(time.time() * 1000)
 
 
-
-
 def timestamp_to_datetime_milliseconds(timestamp_ms):
     timestamp_sec = timestamp_ms / 1000.0
     return datetime.datetime.fromtimestamp(timestamp_sec)
@@ -47,24 +47,23 @@ dayTime = 24 * 3600 * 1000
 # session = Session()
 session = DatabaseUtils.get_db_session()
 
-okx = OKXAPIWrapper()
-
 
 # tf can be null
-def main_task():
+def main_task(env: Optional[str] = None):
     logging.info("strategy_executor#main_task begin...")
+    env = EnumTradeEnv.DEMO.value if env is None else env
     # 获取需要执行的规则实例，查询所有符合条件的记录
     # if tf is null how to change the query make it flexible
     instance_list = get_st_instance_list(StInstance, None)
-    if instance_list:  # 检查 st_instance_list 是否为空
-        # 创建进程池
-        with multiprocessing.Pool() as pool:
-            partial_sub_task = partial(sub_task, okx=okx)
-            # 并行处理每个 st_instance
-            pool.map(partial_sub_task, instance_list)
-            # 关闭进程池
-            pool.close()
-        sub_task(instance_list[0], okx)
+    okx = OKXAPIWrapper()
+
+    if instance_list:
+        with ThreadPoolExecutor() as executor:
+            # 使用 lambda 传递额外的参数
+            futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
+            # 等待所有 futures 完成
+            for future in futures:
+                future.result()
 
 
 from sqlalchemy import or_
