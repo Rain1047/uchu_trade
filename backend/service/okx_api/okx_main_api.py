@@ -5,12 +5,12 @@ from typing import Optional
 from backend.data_center.data_object.dao.saving_balance import SavingBalance
 from backend.service.decorator import singleton
 from backend.service.utils import ConfigUtils, FormatUtils
-from account_api import AccountAPIWrapper
-from trade_api import TradeAPIWrapper
-from market_api import MarketAPIWrapper
-from public_data_api import PublicDataAPIWrapper
-from funding_api import FundingAPIWrapper
-from spread_api import SpreadAPIWrapper
+from backend.service.okx_api.account_api import AccountAPIWrapper
+from backend.service.okx_api.trade_api import TradeAPIWrapper
+from backend.service.okx_api.market_api import MarketAPIWrapper
+from backend.service.okx_api.public_data_api import PublicDataAPIWrapper
+from backend.service.okx_api.funding_api import FundingAPIWrapper
+from backend.service.okx_api.spread_api import SpreadAPIWrapper
 
 
 @singleton

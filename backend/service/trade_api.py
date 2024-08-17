@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.dao.post_order import PostOrderDB
@@ -21,24 +21,31 @@ class TradeAPIWrapper:
         self.session = DatabaseUtils.get_db_session()
 
     def stop_loss(self, request: StopLossReq) -> Dict:
-        # 1. 撤销自动生成止损订单
+        # Step1.1 撤销自动生成止损订单
         post_order_list: list[PostOrderDB] = self.session.query(PostOrderDB).filter(
             PostOrderDB.inst_id == request.instId,
             # PostOrderDB.status == '0'
         ).all()
+        # Step1.2 检查是否存在自动生成的止损订单
+        if len(post_order_list) > 0:
+            cancel_list: List[Dict[str, str]] = []
+            for post_order in post_order_list:
+                print(f"当前存在的订单单号：{str(post_order.algo_id)}")
+                # Step1.3 是否人工撤销
 
-        for post_order in post_order_list:
-            print(f"当前存在的订单单号：{str(post_order.algo_id)}")
-            # 检查订单的信息
-            if (self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_id).get('code')
-                    == ORDER_NOT_EXIST):
-                print(f"订单单号{str(post_order.algo_id)}不存在，不需要撤单")
-                post_order.operation_mode = EnumOperationMode.MANUAL.value
-            else:
-                self.okx.trade.cancel_order(instId=request.instId, clOrdId=post_order.algo_id)
-                post_order.status = '1'
-                post_order.operation_mode = EnumOperationMode.AUTO.value
-        self.session.commit()
+                if (self.okx.trade.get_order(instId=request.instId, clOrdId=post_order.algo_id).get('code')
+                        == ORDER_NOT_EXIST):
+                    print(f"订单单号{str(post_order.algo_id)}不存在，不需要撤单")
+                    post_order.operation_mode = EnumOperationMode.MANUAL.value
+                else:
+                    self.okx.trade.cancel_algo_order(instId=request.instId, clOrdId=post_order.algo_id)
+                    post_order.status = '1'
+                    cancel_order = FormatUtils.dao2dict(post_order, "inst_id", "algo_id")
+                    print(cancel_order)
+                    post_order.operation_mode = EnumOperationMode.AUTO.value
+
+            self.okx.trade.cancel_algo_order(cancel_list)
+            self.session.commit()
 
         # 3. 获取Ticker的当前价格
         current_price = PriceUtils.get_current_ticker_price(request.instId)

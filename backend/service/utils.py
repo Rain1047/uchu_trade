@@ -29,7 +29,7 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.service.okx_service import OKXAPIWrapper
         okx = OKXAPIWrapper()
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
@@ -39,7 +39,7 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.service.okx_service import OKXAPIWrapper
         okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,
@@ -99,19 +99,17 @@ class ConfigUtils:
 
         return config
 
-    @staticmethod
-    def get_headers(request_url: str, method_type: Optional[str] = MethodType.GET.value):
-        timestamp = DateUtils.get_current_timestamp()
-        config = ConfigUtils.get_config()
-        secret = config['secretkey']  # 替换为你的密钥
-        body = json.dumps({
-            'ccy': ccy,
-            'amt': amt,
-            'side': side,
-            'rate': rate
-        })
-
-
+    # @staticmethod
+    # def get_headers(request_url: str, method_type: Optional[str] = MethodType.GET.value):
+    #     timestamp = DateUtils.get_current_timestamp()
+    #     config = ConfigUtils.get_config()
+    #     secret = config['secretkey']  # 替换为你的密钥
+    #     body = json.dumps({
+    #         'ccy': ccy,
+    #         'amt': amt,
+    #         'side': side,
+    #         'rate': rate
+    #     })
 
 
 class CheckUtils:
@@ -260,6 +258,22 @@ class FormatUtils:
         return instance
 
     @staticmethod
+    def dao2dict(obj, *fields: str) -> dict:
+        """
+        将对象的指定字段转换为字典。
+
+        :param obj: 需要转换为字典的对象
+        :param fields: 需要包含在字典中的字段名
+        :return: 字典格式的数据
+        """
+        if not fields:
+            # 如果没有指定字段，返回所有字段
+            return vars(obj).copy()
+
+        # 返回指定字段的字典
+        return {field: getattr(obj, field, None) for field in fields}
+
+    @staticmethod
     def to_snake_case(camel_case_str):
         # 将 camelCase 转换为 snake_case
         return ''.join(['_' + i.lower() if i.isupper() else i for i in camel_case_str]).lstrip('_')
@@ -291,6 +305,3 @@ if __name__ == "__main__":
     # print(UuidUtils.generate_32_digit_numeric_id())
     # print(UuidUtils.generate_32_digit_numeric_id())
     # print(UuidUtils.generate_32_digit_numeric_id())
-
-
-

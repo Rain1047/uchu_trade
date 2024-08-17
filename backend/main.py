@@ -2,7 +2,7 @@ import multiprocessing
 
 from fastapi import FastAPI
 
-from backend.service.okx_api import OKXAPIWrapper
+from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from fastapi.middleware.cors import CORSMiddleware
 from multiprocessing import Process
 
