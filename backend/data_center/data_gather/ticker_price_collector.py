@@ -2,7 +2,7 @@ from typing import Optional
 
 import yfinance as yf
 
-from backend.service.okx_api import OKXAPIWrapper
+from backend.service.okx_service import OKXAPIWrapper
 from backend.data_center.data_object.enum_obj import *
 from backend.service.utils import *
 
@@ -52,6 +52,12 @@ class TickerPriceCollector:
             bar=bar
         )
         return FormatUtils.dict2df(result)
+
+    def get_sz(self, instId: str, position: str) -> str:
+        # 获取单个产品行情信息
+        last_price = self.get_current_ticker_price(instId)
+        return okx.publicData.get_convert_contract_coin(
+            instId=instId, px=last_price, sz=position)['data'][0]['sz']
 
 
 if __name__ == '__main__':

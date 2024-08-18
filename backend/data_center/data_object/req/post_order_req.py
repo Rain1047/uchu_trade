@@ -7,35 +7,36 @@ from backend.data_center.data_object.enum_obj import EnumOrdType, EnumTdMode, En
 class PostOrderReq(BaseModel):
     # 实盘"0" 虚拟"1"
     tradeType: Optional[str] = "1"
-    tradeEnv: Optional[str] = "demo"
-    instId: Optional[str] = None
-    tdMode: Optional[str] = None
-    sz: Optional[str] = None
-    side: Optional[str] = None
+    tradeEnv: Optional[str] = EnumTradeEnv.DEMO.value
+    instId: Optional[str] = ''
+    tdMode: Optional[str] = ''
+    sz: Optional[str] = ''
+    side: Optional[str] = ''
     # 订单类型：单向止盈止损、双向止盈止损
-    ordType: Optional[str] = None
-    ccy: Optional[str] = None
-    clOrdId: Optional[str] = None
-    tag: Optional[str] = None
-    posSide: Optional[str] = None
-    reduceOnly: Optional[bool] = None
-    tgtCcy: Optional[str] = None
-    tpTriggerPx: Optional[str] = None
-    tpOrdPx: Optional[str] = None
-    slTriggerPx: Optional[str] = None
-    slOrdPx: Optional[str] = None
-    tpTriggerPxType: Optional[str] = None
-    slTriggerPxType: Optional[str] = None
-    quickMgnType: Optional[str] = None
-    stpId: Optional[int] = None
-    stpMode: Optional[str] = None
-    px: Optional[str] = None
+    ordType: Optional[str] = ''
+    ccy: Optional[str] = ''
+    clOrdId: Optional[str] = ''
+    tag: Optional[str] = ''
+    posSide: Optional[str] = ''
+    reduceOnly: Optional[bool] = ''
+    tgtCcy: Optional[str] = ''
+    tpTriggerPx: Optional[str] = ''
+    tpOrdPx: Optional[str] = ''
+    slTriggerPx: Optional[str] = ''
+    slOrdPx: Optional[str] = ''
+    tpTriggerPxType: Optional[str] = ''
+    slTriggerPxType: Optional[str] = ''
+    quickMgnType: Optional[str] = ''
+    stpId: Optional[int] = ''
+    stpMode: Optional[str] = ''
+    px: Optional[str] = ''
 
     @staticmethod
     def default_post_order_req():
         return PostOrderReq(
             tradeEnv=EnumTradeEnv.DEMO.value,
-            tdMode=EnumTdMode.ISOLATED_MARGIN.value,
+            tradeType="1",
+            tdMode=EnumTdMode.CASH.value,
             ordType=EnumOrdType.MARKET.value,
             slOrdPx="-1"
         )
