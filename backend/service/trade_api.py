@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.dao.post_order import PostOrderDB
+from backend.data_center.data_object.dao.algo_order_instance import AlgoOrderInstance
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
@@ -52,11 +52,11 @@ class TradeAPIWrapper:
     @add_docstring("止损")
     def stop_loss(self, request: StopLossReq) -> Dict:
         # Step1.1 撤销自动生成止损订单
-        post_order_list: list[PostOrderDB] = self.session.query(PostOrderDB).filter(
-            PostOrderDB.inst_id == request.instId,
-            PostOrderDB.env == self.env,
-            PostOrderDB.status != EnumOrderStatus.CLOSE.value
-            # PostOrderDB.status == '0'
+        post_order_list: list[AlgoOrderInstance] = self.session.query(AlgoOrderInstance).filter(
+            AlgoOrderInstance.inst_id == request.instId,
+            AlgoOrderInstance.env == self.env,
+            AlgoOrderInstance.status != EnumOrderStatus.CLOSE.value
+            # AlgoOrderInstance.status == '0'
         ).all()
         # Step1.2 检查是否存在自动生成的止损订单
         print(f"当前列表长度：{len(post_order_list)}")
@@ -109,7 +109,7 @@ class TradeAPIWrapper:
             result.get('data')[0]['u_time'] = str(DateUtils.milliseconds())
             result.get('data')[0]['status'] = 'open'
             result.get('data')[0]['env'] = self.env
-            self.dbApi.insert_order_details(result, PostOrderDB)
+            self.dbApi.insert_order_details(result, AlgoOrderInstance)
         else:
             print(f"止损订单下单失败，原因：{result.get('msg')}")
         return result
@@ -132,11 +132,11 @@ if __name__ == '__main__':
     # 查询当前未结束的止损订单
     # instId = "ETH-USDT"
     # session = DatabaseUtils.get_db_session()  # 确保返回的是 Session 对象
-    # query = session.query(PostOrderDB).filter(
-    #     PostOrderDB.inst_id == instId,
-    #     PostOrderDB.status == '0'
+    # query = session.query(AlgoOrderInstance).filter(
+    #     AlgoOrderInstance.inst_id == instId,
+    #     AlgoOrderInstance.status == '0'
     # )
-    # post_order_list: list[PostOrderDB] = query.all()
+    # post_order_list: list[AlgoOrderInstance] = query.all()
     # for post_order in post_order_list:
     #     print(post_order.algo_id)
 
