@@ -8,11 +8,11 @@ class EnumSide(Enum):
 
 
 class EnumTdMode(Enum):
+    # 现货
+    CASH = 'cash'  # 非保证金
     # 合约
     ISOLATED = 'isolated'  # 逐仓
     CROSS = 'cross'  # 全仓
-    # 现货
-    CASH = 'cash'  # 非保证金
     # 现货带单
     SPOT_ISOLATED = 'spot_isolated'  # 现货逐仓(仅适用于现货带单)
 
@@ -29,7 +29,7 @@ class EnumPosSide(Enum):
 
 class EnumOrdType(Enum):
     # place order
-    MARKET = "market"  # 市价
+    MARKET = "market"  # 市价 市价单，币币和币币杠杆
     LIMIT = "limit"  # 限价
 
 
