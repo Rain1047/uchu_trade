@@ -1,8 +1,10 @@
 import sys
 import os
+from sqlalchemy import or_
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from functools import partial
-from typing import Optional
+
+from backend.service.trade_api import TradeAPIWrapper
+from backend.service.utils import *
 
 from backend.data_center.data_object.dao.od_instance_dao import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
@@ -28,10 +30,6 @@ strategy_methods = {
     "dbb_strategy": dbb_strategy
 }
 
-flag = "0"  # 实盘:0 , 模拟盘：1
-
-marketDataAPI = MarketData.MarketAPI(flag=flag)
-
 # 获取当前时间的毫秒级别时间戳
 millis_timestamp = int(time.time() * 1000)
 
@@ -48,45 +46,75 @@ dayTime = 24 * 3600 * 1000
 session = DatabaseUtils.get_db_session()
 
 
-# tf can be null
-def main_task(env: Optional[str] = None):
-    logging.info("strategy_executor#main_task begin...")
-    env = EnumTradeEnv.DEMO.value if env is None else env
-    # 获取需要执行的规则实例，查询所有符合条件的记录
-    # if tf is null how to change the query make it flexible
-    instance_list = get_st_instance_list(StInstance, None)
-    # if instance_list:
-    #     with ThreadPoolExecutor() as executor:
-    #         # 使用 lambda 传递额外的参数
-    #         futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
-    #         # 等待所有 futures 完成
-    #         for future in futures:
-    #             future.result()
-    if instance_list:
-        with ProcessPoolExecutor() as executor:
-            # 使用 lambda 传递额外的参数
-            futures = [executor.submit(sub_task, instance, env) for instance in instance_list]
-            # 等待所有 futures 完成
-            for future in futures:
-                future.result()
+class StrategyExecutor:
+    def __init__(self, env: Optional[str] = EnumTradeEnv.DEMO.value):
+        self.env = env
+        self.instance_list = self.get_st_instance_list(StInstance, None)
 
+    def main_task(self):
+        logging.info("strategy_executor#main_task begin...")
+        # 获取需要执行的规则实例，查询所有符合条件的记录
+        # if tf is null how to change the query make it flexible
+        # if instance_list:
+        #     with ThreadPoolExecutor() as executor:
+        #         # 使用 lambda 传递额外的参数
+        #         futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
+        #         # 等待所有 futures 完成
+        #         for future in futures:
+        #             future.result()
+        if self.instance_list:
+            with ProcessPoolExecutor() as executor:
+                # 使用 lambda 传递额外的参数
+                futures = [executor.submit(self.sub_task, instance, self.env) for instance in self.instance_list]
+                # 等待所有 futures 完成
+                for future in futures:
+                    future.result()
 
-from sqlalchemy import or_
+    def sub_task(self, st_instance, env: str):
+        okx = OKXAPIWrapper(env)
+        trade_api = TradeAPIWrapper(env)
+        logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
+        try:
+            st = self.__do2dto(st_instance)
+            print(f"Sub Task Processing...")
+            res = strategy_methods[st_instance.entry_st_code](st)
+            print(f"Trade Pair:{st_instance.trade_pair}, Result:{res.signal}")
 
+            if res.signal:
+                post_order_req = post_order_request(res, st)
+                try:
+                    result = trade_api.post_order(post_order_req)
+                    print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
+                    result_info = okx.trade.get_order_info(
+                        EnumTradeType.DEMO.value,
+                        st_instance.trade_pair,
+                        result['data'][0]['ordId']
+                    )
+                    order_instance = get_order_instance_from_result(result, result_info)
+                    # 将 OrderInstance 对象添加到会话中
+                    if CheckUtils.is_not_empty(order_instance):
+                        DatabaseUtils.save(order_instance)
+                        print(f"{datetime.datetime.now()}: result_info: {result_info}")
+                except Exception as e1:
+                    print(f"Post Order Error: {e1}")
+            if not res.signal:
+                print(f"{datetime.datetime.now()}: {st_instance.trade_pair} not right time to entry")
+        except Exception as e2:
+            print(f"{datetime.datetime.now()}: Error processing st_instance: {e2}")
 
-# Example function that takes a parameter tf which can be None
-def get_st_instance_list(strategy, tf) -> list[StInstance]:
-    engine = DatabaseUtils.get_db_session()
-    query = engine.query(strategy).filter(
-        StInstance.switch == 0,
-        StInstance.is_del == 0,
-        or_(StInstance.time_frame == tf, tf is None)
-    )
-    return query.all()
+    @staticmethod
+    def get_st_instance_list(strategy, tf) -> list[StInstance]:
+        engine = DatabaseUtils.get_db_session()
+        query = engine.query(strategy).filter(
+            StInstance.switch == 0,
+            StInstance.is_del == 0,
+            or_(StInstance.time_frame == tf, tf is None)
+        )
+        return query.all()
 
-
-def __do2dto(st_instance):
-    return StrategyInstance(
+    @staticmethod
+    def __do2dto(st_instance):
+        return StrategyInstance(
             tradePair=st_instance.trade_pair,
             timeFrame=st_instance.time_frame,
             stEntryCode=st_instance.entry_st_code,
@@ -100,24 +128,12 @@ def post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance
     return PostOrderReq(
         tradeEnv=strategy.env,
         instId=strategy.tradePair,
-        tdMode=EnumTdMode.ISOLATED_MARGIN.value,
-        sz=str(result.sz),
+        tdMode=EnumTdMode.CASH.value,
+        sz=result.sz,
         side=result.side,
         ordType=EnumOrdType.MARKET.value,
         slTriggerPx=str(result.exitPrice),
         slOrdPx="-1"
-        # PostOrderReq(
-        #     # 实盘&模拟
-        #     tradeType=EnumTradeType.DEMO.value,
-        #     instId=st_instance.trade_pair,
-        #     tdMode=EnumTdMode.ISOLATED_MARGIN.value,
-        #     sz=str(res.sz),
-        #     side=EnumSide.BUY.value,
-        #     posSide=EnumPosSide.LONG.value,
-        #     ordType=EnumOrdType.MARKET.value,
-        # )
-        # post_order_req.slTriggerPx = str(res.exitPrice)
-        # post_order_req.slOrdPx = "-1"
     )
 
 
@@ -147,40 +163,9 @@ def get_order_instance_from_result(post_order_result, order_result) -> Optional[
         return None
 
 
-def sub_task(st_instance, env: str):
-    okx = OKXAPIWrapper(env)
-    logging.info(f"strategy_executor#sub_task {st_instance.trade_pair} begin...")
-    try:
-        st = __do2dto(st_instance)
-        print(f"Sub Task Processing...")
-        res = strategy_methods[st_instance.entry_st_code](st)
-        print(f"Trade Pair:{st_instance.trade_pair}, Result:{res.signal}")
-
-        if res.signal:
-            post_order_req = post_order_request(res, st)
-            try:
-                result = okx.trade.post_order(post_order_req)
-                print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
-                result_info = okx.trade.get_order_info(
-                    EnumTradeType.DEMO.value,
-                    st_instance.trade_pair,
-                    result['data'][0]['ordId']
-                )
-                order_instance = get_order_instance_from_result(result, result_info)
-                # 将 OrderInstance 对象添加到会话中
-                if CheckUtils.is_not_empty(order_instance):
-                    DatabaseUtils.save(order_instance)
-                    print(f"{datetime.datetime.now()}: result_info: {result_info}")
-            except Exception as e1:
-                print(f"Post Order Error: {e1}")
-        if not res.signal:
-            print(f"{datetime.datetime.now()}: {st_instance.trade_pair} not right time to entry")
-    except Exception as e2:
-        print(f"{datetime.datetime.now()}: Error processing st_instance: {e2}")
-
-
 if __name__ == '__main__':
-    main_task()
+    se = StrategyExecutor(env=EnumTradeEnv.DEMO.value)
+    se.main_task()
     # st_instance_list = get_st_instance_list(StInstance, "4H")
     # for instance in st_instance_list:
     #     print(instance.id, instance.name)

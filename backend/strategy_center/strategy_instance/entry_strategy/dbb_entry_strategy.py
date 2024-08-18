@@ -89,21 +89,20 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
             res.sz = price_collector.get_sz(instId=stIns.tradePair, position=position)
             res.signal = True
             res.side = EnumSide.BUY.value
-            res.exitPrice = df.iloc[-1]['middle_band'] * 1.3
+            res.exitPrice = str(df.iloc[-1]['middle_band'] * 1.3)
             return res
         else:
-            res.sz = 100
             res.signal = False
             return res
 
 
 def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
     if df.iloc[-1]['signal'] == EnumSide.BUY.value:
-        res.exitPrice = df.iloc[-2]['middle_band']
+        res.exitPrice = str(df.iloc[-2]['middle_band'])
         if df.iloc[-1]['close'] > df.iloc[-1]['upper_band2']:
-            res.profitPrice = df.iloc[-1]['upper_band1']
+            res.profitPrice = str(df.iloc[-1]['upper_band1'])
     elif df.iloc[-1]['signal'] == EnumSide.SELL.value:
-        res.exitPrice = df.iloc[-1]['middle_band']
+        res.exitPrice = str(df.iloc[-1]['middle_band'])
         if df.iloc[-1]['close'] < df.iloc[-1]['lower_band2']:
-            res.profitPrice = df.iloc[-1]['lower_band1']
+            res.profitPrice = str(df.iloc[-1]['lower_band1'])
     return res

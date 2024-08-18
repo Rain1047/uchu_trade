@@ -2,8 +2,10 @@ from typing import Optional, Dict, List
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.dao.post_order import PostOrderDB
+from backend.data_center.data_object.req.post_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
+from backend.service.decorator import *
 from backend.service.okx_api import *
 from backend.data_center.data_object.enum_obj import *
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
@@ -20,6 +22,36 @@ class TradeAPIWrapper:
         self.price_collector = TickerPriceCollector()
         self.session = DatabaseUtils.get_db_session()
 
+    @add_docstring("下单")
+    def post_order(self, post_req: PostOrderReq):
+        # 判断order类型，当order类型为
+        if post_req.ordType in ["limit", "market"]:
+            print("order_instance: {}".format(post_req))
+            return self.okx.trade.place_order(
+                instId=post_req.instId,
+                tdMode=post_req.tdMode,
+                sz=post_req.sz,
+                side=post_req.side,
+                posSide=post_req.posSide,
+                ordType=post_req.ordType,
+                px=req.px,
+                slTriggerPx=req.slTriggerPx,
+                slOrdPx=req.slOrdPx
+            )
+        elif post_req.ordType in ["conditional", "oco", "trigger", "move_order_stop"]:
+            return self.okx.trade.place_algo_order(
+                instId=post_req.instId,
+                tdMode=post_req.tdMode,
+                sz=post_req.sz,
+                side=post_req.side,
+                posSide=post_req.posSide,
+                ordType=post_req.ordType,
+                algoClOrdId=post_req.algoClOrdId,
+                slTriggerPx=post_req.slTriggerPx,
+                slOrdPx=post_req.slOrdPx
+            )
+
+    @add_docstring("止损")
     def stop_loss(self, request: StopLossReq) -> Dict:
         # Step1.1 撤销自动生成止损订单
         post_order_list: list[PostOrderDB] = self.session.query(PostOrderDB).filter(
@@ -94,8 +126,6 @@ if __name__ == '__main__':
     req.instId = "ETH-USDT"
     tradeApi_demo.stop_loss(req)
 
-
-
     # 查询当前未结束的止损订单
     # instId = "ETH-USDT"
     # session = DatabaseUtils.get_db_session()  # 确保返回的是 Session 对象
@@ -106,6 +136,3 @@ if __name__ == '__main__':
     # post_order_list: list[PostOrderDB] = query.all()
     # for post_order in post_order_list:
     #     print(post_order.algo_id)
-
-
-
