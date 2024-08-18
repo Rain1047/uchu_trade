@@ -33,7 +33,6 @@ class EnumOrdType(Enum):
     OCO = 'oco'
     TRIGGER = 'trigger'
     MOVE_ORDER_STOP = 'move_order_stop'
-    TWAP = 'twap'
 
 
 class EnumTriggerPxType(Enum):
@@ -81,3 +80,7 @@ class EnumOrderStatus(Enum):
     OPEN = "open"
     CLOSE = "close"
 
+
+class EnumTpOrdKind(Enum):
+    CONDITIONAL = 'conditional'
+    LIMIT = "limit"
