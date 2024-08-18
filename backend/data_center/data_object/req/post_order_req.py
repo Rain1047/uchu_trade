@@ -35,7 +35,8 @@ class PostOrderReq(BaseModel):
     def default_post_order_req():
         return PostOrderReq(
             tradeEnv=EnumTradeEnv.DEMO.value,
-            tdMode=EnumTdMode.ISOLATED_MARGIN.value,
+            tradeType="1",
+            tdMode=EnumTdMode.CASH.value,
             ordType=EnumOrdType.MARKET.value,
             slOrdPx="-1"
         )

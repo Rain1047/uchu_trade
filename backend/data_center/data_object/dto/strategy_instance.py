@@ -15,9 +15,9 @@ class StrategyInstance(BaseModel):
     # 允许交易方向
     side: str = "all"
     # 每笔交易损失
-    lossPerTrans: int = 0
+    lossPerTrans: Optional[int] = 0
     # 实例已成交的订单数量
-    positionCount: int = 0
+    positionCount: Optional[int] = 0
     # 时间窗口 eg.1D, 4H
     timeFrame: str
     # 订单信息

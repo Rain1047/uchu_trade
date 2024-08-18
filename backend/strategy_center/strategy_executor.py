@@ -1,5 +1,4 @@
 import sys
-import os
 from sqlalchemy import or_
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
@@ -12,16 +11,11 @@ from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import time
-import okx.MarketData as MarketData
 from backend.strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
 from backend.data_center.data_object.dao.st_instance_dao import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-import multiprocessing
-from backend.service.post_order_service import *
 from backend.data_center.data_object.req.post_order_req import PostOrderReq
 from backend.service.utils import *
-from backend.service.okx_api import *
 import logging
 import datetime
 
@@ -81,7 +75,7 @@ class StrategyExecutor:
             print(f"Trade Pair:{st_instance.trade_pair}, Result:{res.signal}")
 
             if res.signal:
-                post_order_req = post_order_request(res, st)
+                post_order_req = get_post_order_request(res, st)
                 try:
                     result = trade_api.post_order(post_order_req)
                     print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
@@ -90,7 +84,8 @@ class StrategyExecutor:
                         st_instance.trade_pair,
                         result['data'][0]['ordId']
                     )
-                    order_instance = get_order_instance_from_result(result, result_info)
+                    order_instance = FormatUtils.dict2dao(OrderInstance, result)
+                    # order_instance = get_order_instance_from_result(result, result_info)
                     # 将 OrderInstance 对象添加到会话中
                     if CheckUtils.is_not_empty(order_instance):
                         DatabaseUtils.save(order_instance)
@@ -124,7 +119,7 @@ class StrategyExecutor:
         )
 
 
-def post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance) -> PostOrderReq:
+def get_post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance) -> PostOrderReq:
     return PostOrderReq(
         tradeEnv=strategy.env,
         instId=strategy.tradePair,
