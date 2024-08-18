@@ -1,6 +1,6 @@
 import sys
 from sqlalchemy import or_
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from backend.service.trade_api import TradeAPIWrapper
 from backend.service.utils import *
@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
 from backend.data_center.data_object.dao.st_instance_dao import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-from backend.data_center.data_object.req.post_order_req import PostOrderReq
+from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.service.utils import *
 import logging
 import datetime
@@ -79,13 +79,12 @@ class StrategyExecutor:
                 try:
                     result = trade_api.post_order(post_order_req)
                     print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
-                    result_info = okx.trade.get_order_info(
-                        EnumTradeType.DEMO.value,
-                        st_instance.trade_pair,
-                        result['data'][0]['ordId']
+                    result_info = okx.trade_api.get_order(
+                        instId=st_instance.trade_pair,
+                        ordId=result['data'][0]['ordId'],
+                        clOrdId=result['data'][0]['clOrdId']
                     )
                     order_instance = FormatUtils.dict2dao(OrderInstance, result)
-                    # order_instance = get_order_instance_from_result(result, result_info)
                     # 将 OrderInstance 对象添加到会话中
                     if CheckUtils.is_not_empty(order_instance):
                         DatabaseUtils.save(order_instance)

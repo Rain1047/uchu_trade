@@ -1,13 +1,11 @@
-from typing import Optional, Dict, List
+from typing import Dict, List
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.dao.post_order import PostOrderDB
-from backend.data_center.data_object.req.post_order_req import PostOrderReq
+from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
 from backend.service.decorator import *
-from backend.service.okx_api import *
-from backend.data_center.data_object.enum_obj import *
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.utils import *
 from backend.constants import *
@@ -34,9 +32,9 @@ class TradeAPIWrapper:
                 side=post_req.side,
                 posSide=post_req.posSide,
                 ordType=post_req.ordType,
-                px=req.px,
-                slTriggerPx=req.slTriggerPx,
-                slOrdPx=req.slOrdPx
+                px=post_req.px,
+                slTriggerPx=post_req.slTriggerPx,
+                slOrdPx=post_req.slOrdPx
             )
         elif post_req.ordType in ["conditional", "oco", "trigger", "move_order_stop"]:
             return self.okx.trade.place_algo_order(
@@ -122,9 +120,14 @@ if __name__ == '__main__':
     print(f"当前环境：{tradeApi_demo.env}")
     print(f"当前环境：{tradeApi_demo.okx.env}")
 
-    req = StopLossReq()
-    req.instId = "ETH-USDT"
-    tradeApi_demo.stop_loss(req)
+    # 下单
+
+
+
+    # 止损
+    # req = StopLossReq()
+    # req.instId = "ETH-USDT"
+    # tradeApi_demo.stop_loss(req)
 
     # 查询当前未结束的止损订单
     # instId = "ETH-USDT"
@@ -136,3 +139,5 @@ if __name__ == '__main__':
     # post_order_list: list[PostOrderDB] = query.all()
     # for post_order in post_order_list:
     #     print(post_order.algo_id)
+
+
