@@ -10,19 +10,19 @@ class PostAlgoOrderReq(BaseModel):
     """
     # 基础参数
     instId: str = ''
-    tdMode: EnumTdMode = ''
+    tdMode: EnumTdMode = EnumTdMode.CASH
     side: EnumSide = ''
     posSide: Optional[EnumPosSide] = ''
-    ordType: EnumOrdType = ''
+    ordType: EnumAlgoOrdType = EnumAlgoOrdType.CONDITIONAL
     sz: str = ''  # 委托数量
     algoClOrdId: Optional[str] = ''  # algo-order id
 
-    # 计划委托
+    # 计划委托 - 当ordType为trigger时有效
     triggerPx: str = ''  # 计划委托触发价
     ordPx: str = ''  # 计划委托价, -1时执行市价委托
     triggerPxType: EnumTriggerPxType = ''
 
-    # 止盈止损
+    # 止盈止损 - 当ordType为conditional/oco时有效，conditional为单向，oco为双向
     # 止盈
     tpOrdPx: Optional[str] = ''
     tpTriggerPxType: Optional[EnumTriggerPxType] = ''

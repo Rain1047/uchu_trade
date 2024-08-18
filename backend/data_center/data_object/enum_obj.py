@@ -28,11 +28,17 @@ class EnumPosSide(Enum):
 
 
 class EnumOrdType(Enum):
-    MARKET = "market"
-    CONDITIONAL = 'conditional'
-    OCO = 'oco'
-    TRIGGER = 'trigger'
-    MOVE_ORDER_STOP = 'move_order_stop'
+    # place order
+    MARKET = "market"  # 市价
+    LIMIT = "limit"  # 限价
+
+
+class EnumAlgoOrdType(Enum):
+    # place algo order
+    CONDITIONAL = 'conditional'  # 单向止盈止损
+    OCO = 'oco'  # 双向止盈止损
+    TRIGGER = 'trigger'  # 计划委托
+    MOVE_ORDER_STOP = 'move_order_stop'  # 移动止盈止损
 
 
 class EnumTriggerPxType(Enum):
