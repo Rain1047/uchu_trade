@@ -44,7 +44,7 @@ class TradeAPIWrapper:
         return self.tradeAPI.get_algo_order_details(algoId=algoId, algoClOrdId=algoClOrdId)
 
     @add_docstring("获取未完成策略委托单列表")
-    def get_order_algos_list(self, ordType: Optional[str] = EnumOrdType.CONDITIONAL.value,
+    def get_order_algos_list(self, ordType: Optional[str] = EnumOrdType.MARKET.value,
                              algoId='', instType='',
                              instId='', after='',
                              before='', limit='',
