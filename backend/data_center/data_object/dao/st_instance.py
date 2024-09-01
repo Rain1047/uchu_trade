@@ -1,7 +1,11 @@
+from typing import List
+
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+
+from backend.service.utils import DatabaseUtils
 
 # 创建基类
 Base = declarative_base()
@@ -25,33 +29,34 @@ class StInstance(Base):
     gmt_modified = Column(DateTime, nullable=False, comment='更新时间')
 
 
+def query_all_st_instance() -> List[StInstance]:
+    return DatabaseUtils.get_db_session().query(StInstance).all()
+
+
 if __name__ == '__main__':
-    # 创建数据库连接引擎
-    engine = create_engine('mysql+mysqlconnector://root:rain1104@localhost/trade_db')
 
-    # 创建会话类
-    Session = sessionmaker(bind=engine)
+    session = DatabaseUtils.get_db_session()
 
-    # 创建会话实例
-    session = Session()
+    # 查询所有策略实例
 
-    # 创建一条记录
-    new_instance = StInstance(
-        name='比特币双布林带策略',
-        trade_pair='BTC-USDT',
-        position=1000,
-        time_frame="4H",
-        entry_st_code='entry_code',
-        exit_st_code='exit_code',
-        gmt_create=datetime.now(),
-        gmt_modified=datetime.now()
-    )
 
-    # 将记录添加到会话并提交
-    # 查询所有订单实例
-    st_instance_list = session.query(StInstance).all()
-    for st_instance in st_instance_list:
-        print(st_instance.id,  st_instance.trade_pair)
-
-    # 关闭会话
-    session.close()
+    # # 创建一条记录
+    # new_instance = StInstance(
+    #     name='比特币双布林带策略',
+    #     trade_pair='BTC-USDT',
+    #     position=1000,
+    #     time_frame="4H",
+    #     entry_st_code='entry_code',
+    #     exit_st_code='exit_code',
+    #     gmt_create=datetime.now(),
+    #     gmt_modified=datetime.now()
+    # )
+    #
+    # # 将记录添加到会话并提交
+    # # 查询所有订单实例
+    # st_instance_list = session.query(StInstance).all()
+    # for st_instance in st_instance_list:
+    #     print(st_instance.id, st_instance.trade_pair)
+    #
+    # # 关闭会话
+    # session.close()

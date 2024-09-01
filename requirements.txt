@@ -13,3 +13,4 @@ python-okx==0.3.2
 apscheduler~=3.10.4
 backtrader~=1.9.78.123
 celery~=5.3.6
+tvdatafeed~=2.1.0

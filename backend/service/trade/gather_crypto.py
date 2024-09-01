@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 
+
 def get_top_cryptos():
     # CoinGecko API endpoint for fetching cryptocurrency data
     api_url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -85,6 +86,7 @@ def get_crypto_price_data(crypto_id, start_date, end_date):
         print(f"Error: {response.status_code}")
         return None
 
+
 def get_top_cryptos_price_data(start_date, end_date):
     top_cryptos = get_top_cryptos()
     crypto_data = []
@@ -104,6 +106,7 @@ def get_top_cryptos_price_data(start_date, end_date):
                 crypto_data.append(crypto_info)
 
     return crypto_data
+
 
 def get_crypto_id(crypto_symbol):
     # CoinGecko API endpoint for fetching list of cryptocurrencies
@@ -131,7 +134,7 @@ def get_crypto_id(crypto_symbol):
 
 
 if __name__ == "__main__":
-    start_date = "2023-09-01"
+    start_date = "2024-02-01"
     end_date = datetime.now().strftime("%Y-%m-%d")
 
     top_cryptos_data = get_top_cryptos_price_data(start_date, end_date)

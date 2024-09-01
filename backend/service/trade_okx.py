@@ -1,5 +1,5 @@
 import okx.Trade as Trade
-from backend.data_center.data_object.req.post_order_req import PostOrderReq
+from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.service.utils import *
 
 

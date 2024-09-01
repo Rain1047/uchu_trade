@@ -4,4 +4,7 @@
 
 ## 开发日志
 
-[Dev Log](https://github.com/Rain1047/uchu_trade/blob/master/DEV_LOG.md)
+[DEV LOG.md](log%2FDEV_LOG.md)
+
+
+[TRADE_LOG.md](log%2FTRADE_LOG.md)

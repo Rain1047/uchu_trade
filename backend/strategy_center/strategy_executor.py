@@ -1,20 +1,20 @@
 import sys
 from sqlalchemy import or_
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from backend.service.trade_api import TradeAPIWrapper
 from backend.service.utils import *
 
-from backend.data_center.data_object.dao.od_instance_dao import OrderInstance
+from backend.data_center.data_object.dao.order_instance import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
-from backend.data_center.data_object.dao.st_instance_dao import StInstance
+from backend.data_center.data_object.dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-from backend.data_center.data_object.req.post_order_req import PostOrderReq
+from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.service.utils import *
 import logging
 import datetime
@@ -59,7 +59,8 @@ class StrategyExecutor:
         if self.instance_list:
             with ProcessPoolExecutor() as executor:
                 # 使用 lambda 传递额外的参数
-                futures = [executor.submit(self.sub_task, instance, self.env) for instance in self.instance_list]
+                futures = [executor.submit(self.sub_task, instance, self.env)
+                           for instance in self.instance_list]
                 # 等待所有 futures 完成
                 for future in futures:
                     future.result()
@@ -71,29 +72,31 @@ class StrategyExecutor:
         try:
             st = self.__do2dto(st_instance)
             print(f"Sub Task Processing...")
+            # 1. 执行策略，获取结果
             res = strategy_methods[st_instance.entry_st_code](st)
             print(f"Trade Pair:{st_instance.trade_pair}, Result:{res.signal}")
 
+            # 2. 当交易信号为True时
             if res.signal:
                 post_order_req = get_post_order_request(res, st)
-                try:
-                    result = trade_api.post_order(post_order_req)
-                    print(f"{datetime.datetime.now()}: {st_instance.trade_pair} trade result: {result}")
-                    result_info = okx.trade.get_order_info(
-                        EnumTradeType.DEMO.value,
-                        st_instance.trade_pair,
-                        result['data'][0]['ordId']
-                    )
-                    order_instance = FormatUtils.dict2dao(OrderInstance, result)
-                    # order_instance = get_order_instance_from_result(result, result_info)
-                    # 将 OrderInstance 对象添加到会话中
-                    if CheckUtils.is_not_empty(order_instance):
-                        DatabaseUtils.save(order_instance)
-                        print(f"{datetime.datetime.now()}: result_info: {result_info}")
-                except Exception as e1:
-                    print(f"Post Order Error: {e1}")
+                # 2.1 方向为BUY
+                if res.side == EnumSide.BUY:
+                    try:
+                        result = trade_api.post_order(post_order_req)
+                        print(f"{datetime.datetime.now()}: {st_instance.trade_pair} "
+                              f"trade result: {result}")
+                        order_instance = FormatUtils.dict2dao(OrderInstance, result)
+                        if CheckUtils.is_not_empty(order_instance):
+                            DatabaseUtils.save(order_instance)
+                    except Exception as e1:
+                        print(f"Post Order Error: {e1}")
+                # 2.2 方向为SELL
+                if res.side == EnumSide.SELL:
+                    pass
+            # 无交易信号时，跳过
             if not res.signal:
-                print(f"{datetime.datetime.now()}: {st_instance.trade_pair} not right time to entry")
+                print(f"{datetime.datetime.now()}: "
+                      f"{st_instance.trade_pair} not right time to entry")
         except Exception as e2:
             print(f"{datetime.datetime.now()}: Error processing st_instance: {e2}")
 
@@ -123,7 +126,7 @@ def get_post_order_request(result: StrategyExecuteResult, strategy: StrategyInst
     return PostOrderReq(
         tradeEnv=strategy.env,
         instId=strategy.tradePair,
-        tdMode=EnumTdMode.CASH.value,
+        tdMode=EnumTdMode.CASH if result.side == EnumSide.BUY else EnumTdMode.ISOLATED,
         sz=result.sz,
         side=result.side,
         ordType=EnumOrdType.MARKET.value,
