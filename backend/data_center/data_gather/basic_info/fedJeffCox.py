@@ -1,8 +1,11 @@
+from datetime import datetime
+
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
-from backend.data_center.data_object.dao.fn_instance_dao import FnInstance
+from backend.data_center.data_object.dao.fn_instance import FnInstance
+from backend.service.utils import DatabaseUtils
 
 
 def get_jeff_cox_list():

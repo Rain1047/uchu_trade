@@ -6,8 +6,8 @@ from backend.service.utils import *
 Base = declarative_base()
 
 
-class PostOrderDB(Base):
-    __tablename__ = 'post_order_history'
+class AlgoOrderInstance(Base):
+    __tablename__ = 'algo_order_instance'
 
     # 字段定义
     algo_cl_ord_id = Column(String, comment='客户自定义策略订单ID')
