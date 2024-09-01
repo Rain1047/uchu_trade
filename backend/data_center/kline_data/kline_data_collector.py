@@ -40,12 +40,20 @@ class KlineDataCollector:
             # 如果文件不存在，直接保存数据（包括表头）
             df.to_csv(filename, mode='a', index=True)
 
+    def batch_collect_data(self):
+        item_list: List[SymbolInstance] = query_all_symbol_instance()
+        for item in item_list:
+            print(f"{item.symbol}, {item.interval} Collected")
+            self.collect_data(item.symbol, Interval(item.interval))
+
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
-    tv.collect_data('SOL', Interval.in_daily)
+    # tv.collect_data('SOL', Interval.in_daily)
+    #
+    # collect_list: List[SymbolInstance] = query_all_symbol_instance()
+    # for collect in collect_list:
+    #     print(collect.symbol, collect.interval)
+    #     tv.collect_data(collect.symbol, Interval(collect.interval))
+    tv.batch_collect_data()
 
-    collect_list: List[SymbolInstance] = query_all_symbol_instance()
-    for collect in collect_list:
-        print(collect.symbol, collect.interval)
-        tv.collect_data(collect.symbol, Interval(collect.interval))
