@@ -10,7 +10,7 @@ import yfinance as yf
 if __name__ == '__main__':
     tv = TvDatafeed(username, password)
     suffix = "USDT"
-    symbol = 'BTC' + suffix
+    symbol = 'SOL' + suffix
     interval = Interval.in_daily
     df = tv.get_hist(symbol=symbol,
                      exchange='Binance',
