@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 from tvDatafeed import TvDatafeed, Interval
-
 from backend.service.utils import ConfigUtils
+from backend.data_center.data_object.dao.symbol_instance import *
 
 
 class KlineDataCollector:
@@ -44,3 +44,8 @@ class KlineDataCollector:
 if __name__ == '__main__':
     tv = KlineDataCollector()
     tv.collect_data('SOL', Interval.in_daily)
+
+    collect_list: List[SymbolInstance] = query_all_symbol_instance()
+    for collect in collect_list:
+        print(collect.symbol, collect.interval)
+        tv.collect_data(collect.symbol, Interval(collect.interval))

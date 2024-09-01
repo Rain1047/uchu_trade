@@ -1,6 +1,9 @@
 # 创建基类
+from typing import List
+
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import declarative_base
+from tvDatafeed import TvDatafeed, Interval
 
 from backend.service.utils import DatabaseUtils
 
@@ -14,14 +17,10 @@ class SymbolInstance(Base):
     symbol = Column(String(255), nullable=False, comment='交易对')
     interval = Column(String(255), nullable=False, comment='时间窗口')
 
-    # 查询方法
-
 
 def query_symbol_instance(symbol, interval) -> SymbolInstance:
     session = DatabaseUtils.get_db_session()
     return session.query(SymbolInstance).filter_by(symbol=symbol, interval=interval).first()
-
-    # 添加方法
 
 
 def add_symbol_instance(symbol, interval):
@@ -31,10 +30,18 @@ def add_symbol_instance(symbol, interval):
     session.commit()
 
 
-if __name__ == '__main__':
-    # 添加一个新的交易对实例
-    add_symbol_instance('ETH', '4H')
+def query_all_symbol_instance() -> List[SymbolInstance]:
+    return DatabaseUtils.get_db_session().query(SymbolInstance).all()
 
-    # 查询交易对实例
-    result = query_symbol_instance('BTC', '4H')
-    print(result.symbol, result.interval)
+
+if __name__ == '__main__':
+    # # 添加一个新的交易对实例
+    add_symbol_instance('SOL', Interval.in_daily.value)
+
+    # # 查询交易对实例
+    # result = query_symbol_instance('BTC', '4H')
+    # print(result.symbol, result.interval)
+
+    resList: List[SymbolInstance] = query_all_symbol_instance()
+    for res in resList:
+        print(res.symbol, res.interval)
