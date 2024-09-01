@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from pandas import DataFrame
 from tvDatafeed import TvDatafeed, Interval
 from backend.service.utils import ConfigUtils
 from backend.data_center.data_object.dao.symbol_instance import *
@@ -46,6 +47,15 @@ class KlineDataCollector:
             print(f"{item.symbol}, {item.interval} Collected")
             self.collect_data(item.symbol, Interval(item.interval))
 
+    @staticmethod
+    def query_kline_data(symbol: str, interval: Interval) -> DataFrame | None:
+        # 定义CSV文件名
+        filename = f'{symbol}-{interval.value}.csv'
+        if os.path.exists(filename):
+            return pd.read_csv(filename, index_col='datetime')
+        else:
+            return None
+
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
@@ -55,5 +65,5 @@ if __name__ == '__main__':
     # for collect in collect_list:
     #     print(collect.symbol, collect.interval)
     #     tv.collect_data(collect.symbol, Interval(collect.interval))
-    tv.batch_collect_data()
-
+    # tv.batch_collect_data()
+    print(tv.query_kline_data('BTC', Interval.in_4_hour))
