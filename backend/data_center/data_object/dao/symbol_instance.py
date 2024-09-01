@@ -1,0 +1,40 @@
+# 创建基类
+from sqlalchemy import Column, String, Integer
+from sqlalchemy.orm import declarative_base
+
+from backend.service.utils import DatabaseUtils
+
+Base = declarative_base()
+
+
+# 定义 ORM 模型类
+class SymbolInstance(Base):
+    __tablename__ = 'symbol_instance'
+    id = Column(Integer, primary_key=True, autoincrement=True, comment='交易对实例ID')
+    symbol = Column(String(255), nullable=False, comment='交易对')
+    interval = Column(String(255), nullable=False, comment='时间窗口')
+
+    # 查询方法
+
+
+def query_symbol_instance(symbol, interval) -> SymbolInstance:
+    session = DatabaseUtils.get_db_session()
+    return session.query(SymbolInstance).filter_by(symbol=symbol, interval=interval).first()
+
+    # 添加方法
+
+
+def add_symbol_instance(symbol, interval):
+    session = DatabaseUtils.get_db_session()
+    new_symbol_instance = SymbolInstance(symbol=symbol, interval=interval)
+    session.add(new_symbol_instance)
+    session.commit()
+
+
+if __name__ == '__main__':
+    # 添加一个新的交易对实例
+    add_symbol_instance('ETH', '4H')
+
+    # 查询交易对实例
+    result = query_symbol_instance('BTC', '4H')
+    print(result.symbol, result.interval)
