@@ -37,7 +37,7 @@ def get_jeff_cox_list():
 def store_jeff_cox_detail():
     global key_points
     jeff_cox_list = get_jeff_cox_list()
-    link = jeff_cox_list[0]
+    print("Jeff Cox List:", jeff_cox_list)
     session = DatabaseUtils.get_db_session()
     for link in jeff_cox_list:
         response = requests.get(link)
