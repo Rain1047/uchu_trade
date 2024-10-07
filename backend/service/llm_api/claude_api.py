@@ -2,7 +2,6 @@ from backend.service.utils import ConfigUtils
 import anthropic
 
 config = ConfigUtils.get_config()
-config['claude_secret_key']
 
 if __name__ == '__main__':
     print(config['claude_secret_key'])
