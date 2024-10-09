@@ -25,6 +25,11 @@ def query_symbol_instance(symbol, interval) -> SymbolInstance:
 
 def add_symbol_instance(symbol, interval):
     session = DatabaseUtils.get_db_session()
+    # 检查是否已存在相同的记录
+    existing_instance = session.query(SymbolInstance).filter_by(symbol=symbol, interval=interval).first()
+    if existing_instance:
+        print(f"Symbol: {symbol} Interval: {interval} already exists.")
+        return
     new_symbol_instance = SymbolInstance(symbol=symbol, interval=interval)
     session.add(new_symbol_instance)
     session.commit()
@@ -36,7 +41,8 @@ def query_all_symbol_instance() -> List[SymbolInstance]:
 
 if __name__ == '__main__':
     # # 添加一个新的交易对实例
-    add_symbol_instance('SOL', Interval.in_daily.value)
+    add_symbol_instance('ETH', Interval.in_daily.value)
+    add_symbol_instance('SOL', Interval.in_4_hour.value)
 
     # # 查询交易对实例
     # result = query_symbol_instance('BTC', '4H')
@@ -45,3 +51,4 @@ if __name__ == '__main__':
     resList: List[SymbolInstance] = query_all_symbol_instance()
     for res in resList:
         print(res.symbol, res.interval)
+    print(f"total count:{len(resList)}")
