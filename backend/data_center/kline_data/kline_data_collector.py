@@ -45,8 +45,10 @@ class KlineDataCollector:
     def batch_collect_data(self):
         item_list: List[SymbolInstance] = query_all_symbol_instance()
         for item in item_list:
-            print(f"{item.symbol}, {item.interval} Collected")
+            print(f"{item.symbol}, {item.interval} Start Collecting.")
             self.collect_data(item.symbol, Interval(item.interval))
+            print(f"{item.symbol}, {item.interval} Collecting Finished.")
+        print("Batch Collecting Finished.")
 
     @staticmethod
     def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
@@ -81,7 +83,8 @@ def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
-    tv.collect_data('BTC', Interval.in_daily)
+    # tv.collect_data('BTC', Interval.in_daily)
+    tv.batch_collect_data()
 
     # tv.get_abspath()
     #
