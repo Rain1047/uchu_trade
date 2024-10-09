@@ -1,6 +1,8 @@
 import os
+from typing import Optional
 
 import pandas as pd
+from pandas import DataFrame
 from tvDatafeed import TvDatafeed, Interval
 from backend.service.utils import ConfigUtils
 from backend.data_center.data_object.dao.symbol_instance import *
@@ -43,17 +45,54 @@ class KlineDataCollector:
     def batch_collect_data(self):
         item_list: List[SymbolInstance] = query_all_symbol_instance()
         for item in item_list:
-            print(f"{item.symbol}, {item.interval} Collected")
+            print(f"{item.symbol}, {item.interval} Start Collecting.")
             self.collect_data(item.symbol, Interval(item.interval))
+            print(f"{item.symbol}, {item.interval} Collecting Finished.")
+        print("Batch Collecting Finished.")
+
+    @staticmethod
+    def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
+        # 定义CSV文件名
+        filename = f'{symbol}-{interval.value}.csv'
+        if os.path.exists(filename):
+            return pd.read_csv(filename, index_col='datetime')
+        else:
+            # 创建空dataframe
+            return pd.DataFrame()
+
+    @staticmethod
+    def get_abspath(symbol: Optional[str], interval: Optional[Interval]) -> str:
+        # Get the directory of the current script
+        if symbol is None or interval is None:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            return os.path.dirname(os.path.realpath(__file__))
+        else:
+            file_name = f'{symbol}-{interval.value}.csv'
+            return os.path.join(os.path.dirname(os.path.realpath(__file__)), file_name)
+
+
+def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
+    # 定义CSV文件名
+    filename = f'{symbol}-{interval.value}.csv'
+    if os.path.exists(filename):
+        return pd.read_csv(filename, index_col='datetime')
+    else:
+        # 创建空dataframe
+        return pd.DataFrame()
 
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
-    # tv.collect_data('SOL', Interval.in_daily)
+    # tv.collect_data('BTC', Interval.in_daily)
+    tv.batch_collect_data()
+
+    # tv.get_abspath()
     #
     # collect_list: List[SymbolInstance] = query_all_symbol_instance()
     # for collect in collect_list:
     #     print(collect.symbol, collect.interval)
     #     tv.collect_data(collect.symbol, Interval(collect.interval))
-    tv.batch_collect_data()
-
+    # tv.batch_collect_data()
+    # df = query_kline_data('BTC', Interval.in_daily)
+    # print(df.dtypes)
+    # print(df.index)
