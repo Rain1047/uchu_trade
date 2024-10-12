@@ -41,8 +41,10 @@ def query_all_symbol_instance() -> List[SymbolInstance]:
 
 if __name__ == '__main__':
     # # 添加一个新的交易对实例
-    add_symbol_instance('ETH', Interval.in_daily.value)
-    add_symbol_instance('SOL', Interval.in_4_hour.value)
+    add_symbol_instance('BTC', Interval.in_15_minute.value)
+    add_symbol_instance('BTC', Interval.in_5_minute.value)
+    add_symbol_instance('BTC', Interval.in_1_hour.value)
+    add_symbol_instance('BTC', Interval.in_2_hour.value)
 
     # # 查询交易对实例
     # result = query_symbol_instance('BTC', '4H')
