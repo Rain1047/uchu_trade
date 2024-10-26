@@ -14,3 +14,5 @@ apscheduler~=3.10.4
 backtrader~=1.9.78.123
 celery~=5.3.6
 tvdatafeed~=2.1.0
+anthropic~=0.35.0
+numpy~=1.25.2
