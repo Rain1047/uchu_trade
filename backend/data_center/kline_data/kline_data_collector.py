@@ -86,7 +86,7 @@ def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
-    tv.collect_data('BTC', Interval.in_daily)
+    # tv.collect_data('BTC', Interval.in_daily)
 
     tv.batch_collect_data()
 
