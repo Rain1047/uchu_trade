@@ -4,6 +4,8 @@ from typing import Optional
 import pandas as pd
 from pandas import DataFrame
 from tvDatafeed import TvDatafeed, Interval
+
+from backend.data_center.kline_data.indicator_wrapper import IndicatorWrapper
 from backend.service.utils import ConfigUtils
 from backend.data_center.data_object.dao.symbol_instance import *
 
@@ -23,6 +25,7 @@ class KlineDataCollector:
                               exchange='Binance',
                               interval=interval,
                               n_bars=5000)
+        df = IndicatorWrapper.add_indicator(df)
         # 定义CSV文件名
         filename = f'{ticker}-{interval.value}.csv'
         if os.path.exists(filename):
@@ -83,7 +86,8 @@ def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
 
 if __name__ == '__main__':
     tv = KlineDataCollector()
-    # tv.collect_data('BTC', Interval.in_daily)
+    tv.collect_data('BTC', Interval.in_daily)
+
     tv.batch_collect_data()
 
     # tv.get_abspath()
