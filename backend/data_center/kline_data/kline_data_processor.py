@@ -1,8 +1,10 @@
 import talib as ta
 from pandas import DataFrame
+import pandas as pd
+import numpy as np
 
 
-class IndicatorWrapper:
+class KlineDataProcessor:
 
     @staticmethod
     def add_indicator(df: DataFrame) -> DataFrame:
@@ -25,6 +27,23 @@ class IndicatorWrapper:
 
         return df
 
+    @staticmethod
+    def format_result(df: DataFrame) -> DataFrame:
+        df = df[['datetime', 'open', 'high', 'low', 'close', 'volume', 'buy_sig', 'sell_sig']].copy()
+        df['stop_loss'] = 0.0
+        # Rename 'datetime' column to ensure it's in the desired format
+        df['datetime'] = pd.to_datetime(df['datetime'])
 
-
+        # Set the data types for the new DataFrame
+        return df.astype({
+            'datetime': 'datetime64[ns]',
+            'open': 'float64',
+            'high': 'float64',
+            'low': 'float64',
+            'close': 'float64',
+            'volume': 'int64',  # Change to int64 as specified
+            'buy_sig': 'int64',
+            'sell_sig': 'int64',
+            'stop_loss': 'float64'  # Assuming you want this column as well
+        })
 

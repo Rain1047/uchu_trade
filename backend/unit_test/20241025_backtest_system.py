@@ -10,6 +10,7 @@ class SignalData(bt.feeds.PandasData):
         ('buy_sig', -1),
         ('sell_sig', -1),
         ('stop_loss', -1),
+        ('take_profit', -1),
     )
 
 
@@ -165,7 +166,8 @@ def run_backtest(df, initial_cash=100000.0, risk_percent=2.0, commission=0.001):
         volume='volume',
         buy_sig='buy_sig',
         sell_sig='sell_sig',
-        stop_loss='stop_loss'
+        stop_loss='stop_loss',
+        take_profit='take_profit'
     )
 
     cerebro.adddata(data)
