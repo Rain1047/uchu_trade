@@ -148,3 +148,7 @@ npm install --legacy-peer-deps
 回血，继续开发ing～
 
 回测系统的开发迫在眉睫了。
+
+## 2024-10-27
+
+新增回测系统的框架，调试perfect_order策略，并且进行回测。
