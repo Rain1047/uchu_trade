@@ -6,9 +6,11 @@ import okx.Funding as Funding
 import okx.SpreadTrading as SpreadTrading
 from typing import Optional, Dict
 
-from backend.data_center.data_object.dao.order_detail import OrderDetailDB
+from backend.data_center.data_object.dao.fills_history import FillsHistory
+from backend.data_center.data_object.dao.order_detail import OrderDetail
 from backend.data_center.data_object.enum_obj import *
 from backend.service.data_api import *
+from backend.constant.okx_code import *
 
 dbApi = DataAPIWrapper()
 
@@ -89,7 +91,7 @@ class TradeAPIWrapper:
                     px: Optional[str] = '',
                     slOrdPx: Optional[str] = "-1",
                     tdMode: Optional[str] = EnumTdMode.CASH.value,
-                    ordType: Optional[str] = EnumOrdType.CONDITIONAL.value,
+                    ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
                     clOrdId: Optional[str] = '',
                     ) -> Dict:
         return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
@@ -109,7 +111,7 @@ class TradeAPIWrapper:
                          slOrdPx: Optional[str] = '',
                          side: Optional[str] = EnumSide.BUY.value,
                          tdMode: Optional[str] = EnumTdMode.CASH.value,
-                         ordType: Optional[str] = EnumOrdType.CONDITIONAL.value,
+                         ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
                          ) -> Dict:
         return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
                                               side=side, posSide=posSide,
@@ -210,20 +212,31 @@ if __name__ == "__main__":
     '''
     # print(okx.trade.get_trade_fills_history(instType="SPOT"))
     # print(okx.trade.get_orders_history_archive())
-    dbApi.insert_order_details(okx.trade.get_orders_history_archive(), OrderDetailDB)
+    # dbApi.insert2db(okx.trade.get_orders_history_archive(), OrderDetail)
 
-    # 现货模式限价单
-    result = okx_demo.trade.place_order(
-        instId="ETh-USDT",
-        tdMode="cash",
-        side="sell",
-        ordType="limit",
-        # px="2.15",  # 委托价格
-        sz="0.5",  # 委托数量
-        slTriggerPx="100",
-        slOrdPx="90"
-    )
+    # 三个月的交易明细
+    result = okx.trade.get_trade_fills_history(instType="SPOT")
     print(result)
+    code = result['code']
+    msg = result['msg']
+    if code == SUCCESS_CODE:
+        dbApi.insert2db(result, FillsHistory)
+        # FillsHistory.insert_response_to_db(result, FillsHistory)
+    else:
+        print(code, msg)
+
+    # # 现货模式限价单
+    # result = okx_demo.trade.place_order(
+    #     instId="ETh-USDT",
+    #     tdMode="cash",
+    #     side="sell",
+    #     ordType="limit",
+    #     # px="2.15",  # 委托价格
+    #     sz="0.5",  # 委托数量
+    #     slTriggerPx="100",
+    #     slOrdPx="90"
+    # )
+    # print(result)
     #
     # result = okx_demo.trade.place_algo_order(
     #     instId="ETH-USDT",

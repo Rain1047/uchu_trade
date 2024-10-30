@@ -6,7 +6,7 @@ from backend.service.utils import *
 class DataAPIWrapper:
 
     @staticmethod
-    def insert_order_details(api_response, db_model_class):
+    def insert2db(api_response, db_model_class):
         session = DatabaseUtils.get_db_session()
         data = api_response.get('data', [])
         for response in data:

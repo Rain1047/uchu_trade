@@ -8,7 +8,7 @@ from backend.service.data_api import DataAPIWrapper
 from backend.service.decorator import *
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.utils import *
-from backend.constants import *
+from backend.constant.okx_code import *
 
 
 class TradeAPIWrapper:
@@ -109,7 +109,7 @@ class TradeAPIWrapper:
             result.get('data')[0]['u_time'] = str(DateUtils.milliseconds())
             result.get('data')[0]['status'] = 'open'
             result.get('data')[0]['env'] = self.env
-            self.dbApi.insert_order_details(result, AlgoOrderInstance)
+            self.dbApi.insert2db(result, AlgoOrderInstance)
         else:
             print(f"止损订单下单失败，原因：{result.get('msg')}")
         return result

@@ -91,3 +91,59 @@ class EnumOrderStatus(Enum):
 class EnumTpOrdKind(Enum):
     CONDITIONAL = 'conditional'
     LIMIT = "limit"
+
+
+class EnumSubType(Enum):
+    BUY = ('1', '买入')
+    SELL = ('2', '卖出')
+    OPEN_LONG = ('3', '开多')
+    OPEN_SHORT = ('4', '开空')
+    CLOSE_LONG = ('5', '平多')
+    CLOSE_SHORT = ('6', '平空')
+    FORCE_CLOSE_LONG = ('100', '强减平多')
+    FORCE_CLOSE_SHORT = ('101', '强减平空')
+    FORCE_BUY = ('102', '强减买入')
+    FORCE_SELL = ('103', '强减卖出')
+    FORCE_CLOSE = ('104', '强平平多')
+    FORCE_CLOSE_SHORT_2 = ('105', '强平平空')
+    FORCE_BUY_2 = ('106', '强平买入')
+    FORCE_SELL_2 = ('107', '强平卖出')
+    FORCE_SWAP_IN = ('110', '强平换币转入')
+    FORCE_SWAP_OUT = ('111', '强平换币转出')
+    SYSTEM_SWAP_IN = ('118', '系统换币转入')
+    SYSTEM_SWAP_OUT = ('119', '系统换币转出')
+    AUTO_DECREASE_CLOSE_LONG = ('125', '自动减仓平多')
+    AUTO_DECREASE_CLOSE_SHORT = ('126', '自动减仓平空')
+    AUTO_DECREASE_BUY = ('127', '自动减仓买入')
+    AUTO_DECREASE_SELL = ('128', '自动减仓卖出')
+    ONE_CLICK_BORROW_AUTO_BORROW = ('212', '一键借币的自动借币')
+    ONE_CLICK_BORROW_AUTO_RETURN = ('213', '一键借币的自动还币')
+    BLOCK_TRADE_BUY = ('204', '大宗交易买')
+    BLOCK_TRADE_SELL = ('205', '大宗交易卖')
+    BLOCK_TRADE_OPEN_LONG = ('206', '大宗交易开多')
+    BLOCK_TRADE_OPEN_SHORT = ('207', '大宗交易开空')
+    BLOCK_TRADE_CLOSE_LONG = ('208', '大宗交易平多')
+    BLOCK_TRADE_CLOSE_SHORT = ('209', '大宗交易平空')
+    SPREAD_TRADE_BUY = ('270', '价差交易买')
+    SPREAD_TRADE_SELL = ('271', '价差交易卖')
+    SPREAD_TRADE_OPEN_LONG = ('272', '价差交易开多')
+    SPREAD_TRADE_OPEN_SHORT = ('273', '价差交易开空')
+    SPREAD_TRADE_CLOSE_LONG = ('274', '价差交易平多')
+    SPREAD_TRADE_CLOSE_SHORT = ('275', '价差交易平空')
+
+    def __new__(cls, value, description):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.description = description
+        return obj
+
+    @classmethod
+    def get_description(cls, value):
+        for item in cls:
+            if item.value == value:
+                return item.description
+        return None
+
+if __name__ == '__main__':
+    # 使用示例
+    print(EnumSubType.get_description('275'))  # 输出: 价差交易平空
