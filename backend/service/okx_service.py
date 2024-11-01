@@ -215,15 +215,19 @@ if __name__ == "__main__":
     # dbApi.insert2db(okx.trade.get_orders_history_archive(), OrderDetail)
 
     # 三个月的交易明细
-    result = okx.trade.get_trade_fills_history(instType="SPOT")
+    # result = okx.trade.get_trade_fills_history(instType="SPOT")
+    # print(result)
+    # code = result['code']
+    # msg = result['msg']
+    # if code == SUCCESS_CODE:
+    #     dbApi.insert2db(result, FillsHistory)
+    #     # FillsHistory.insert_response_to_db(result, FillsHistory)
+    # else:
+    #     print(code, msg)
+
+    req = PageRequest()
+    result = dbApi.page(req, FillsHistory)
     print(result)
-    code = result['code']
-    msg = result['msg']
-    if code == SUCCESS_CODE:
-        dbApi.insert2db(result, FillsHistory)
-        # FillsHistory.insert_response_to_db(result, FillsHistory)
-    else:
-        print(code, msg)
 
     # # 现货模式限价单
     # result = okx_demo.trade.place_order(
