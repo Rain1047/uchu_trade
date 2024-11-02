@@ -226,6 +226,8 @@ if __name__ == "__main__":
     #     print(code, msg)
 
     req = PageRequest()
+    req.pageSize = 10
+    req.pageNum = 2
     result = dbApi.page(req, FillsHistory)
     print(result)
 
