@@ -7,28 +7,12 @@ import './App.css';
 import DataGridDemo from "./account/tradetable.";
 import CollapsibleDataGrid from "./account/CollapsDataGrid";
 import TradeHistoryTable from "./trade/history";
+import { darkTheme} from "./theme";
 import './index.css';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import './styles/global.css';
 
-const darkTheme = createTheme({
-  palette: {
-    type: 'dark',
-    primary: {
-      main: '#5eddac',
-    },
-    secondary: {
-      main: '#f57ad0',
-    },
-    background: {
-      default: '#131313',
-      paper: '#222',
-    },
-    text: {
-      primary: '#fff',
-      secondary: '#888',
-    },
-  },
-});
+
 
 function App() {
   return (

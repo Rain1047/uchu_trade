@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+  background-color: #131313;
+  color: #fff;
+}
+
+/* 自定义滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 其他全局样式 */
+.MuiChip-root.buyChip {
+  background-color: #5eddac !important;
+  color: #000 !important;
+}
+
+.MuiChip-root.sellChip {
+  background-color: #f57ad0 !important;
+  color: #000 !important;
+}
