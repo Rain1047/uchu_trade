@@ -8,16 +8,18 @@ from .settings import settings
 
 limiter = Limiter(key_func=get_remote_address)
 
-def setup_middleware(app: FastAPI) -> None:
-    # CORS
+
+def setup_middleware(app):
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://127.0.0.1:3000"
+        ],
         allow_credentials=True,
-        allow_methods=settings.ALLOWED_METHODS,
-        allow_headers=settings.ALLOWED_HEADERS,
-        expose_headers=["*"],
-        max_age=settings.CORS_MAX_AGE,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     # Trusted Hosts
