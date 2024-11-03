@@ -194,6 +194,33 @@ class OKXAPIWrapper:
         self.config = ConfigUtils.get_config()
 
 
+def get_fill_history(req: Optional[PageRequest] = None):
+    """
+    获取成交历史记录，支持分页查询
+
+    Args:
+        req (Optional[PageRequest]): 分页请求参数，如果为None则使用默认值
+
+    Returns:
+        dict: 包含分页数据的字典，格式如下:
+        {
+            "items": List[FillsHistory],
+            "total_count": int,
+            "page_size": int,
+            "page_num": int
+        }
+    """
+    # 使用默认分页参数，如果请求为空
+    page_request = req or PageRequest(
+        pageSize=10,
+        pageNum=1
+    )
+
+    # 调用数据库API获取数据
+    return dbApi.page(page_request, FillsHistory)
+
+
+
 # 示例用法
 if __name__ == "__main__":
     okx = OKXAPIWrapper()
@@ -229,6 +256,8 @@ if __name__ == "__main__":
     req.pageSize = 10
     req.pageNum = 2
     result = dbApi.page(req, FillsHistory)
+    # 如果result是空，说明数据库中没有数据
+
     print(result)
 
     # # 现货模式限价单

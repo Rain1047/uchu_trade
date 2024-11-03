@@ -3,7 +3,7 @@ fastapi~=0.110.2
 g4f==0.1.9.0
 openai==1.3.3
 pandas==2.0.3
-pydantic==2.3.0
+pydantic~=2.9.2
 python-dotenv==1.0.0
 requests==2.31.0
 SQLAlchemy~=1.4.51
@@ -16,3 +16,4 @@ celery~=5.3.6
 tvdatafeed~=2.1.0
 anthropic~=0.35.0
 numpy~=1.25.2
+slowapi~=0.1.9

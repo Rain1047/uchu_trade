@@ -64,39 +64,47 @@ function TradeHistoryTable() {
 
     // 添加数据获取函数
     const fetchData = () => {
-        const queryParams = new URLSearchParams({
+        const requestData = {
             pageSize: filters.pageSize,
             pageNum: filters.pageNum,
             inst_id: filters.inst_id,
             fill_start_time: filters.fill_start_time,
             fill_end_time: filters.fill_end_time
-        }).toString();
+        };
 
-        fetch(`http://127.0.0.1:8000/api/trades?${queryParams}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (!data.data?.items || data.data.items.length === 0) {
-                        console.log('No data returned, using mock data');
-                        setTradeData(mockData);
-                    } else {
-                        setTradeData({
-                            items: data.data?.items || [],
-                            total_count: data.data?.total_count || 0,
-                            page_size: data.data?.page_size || 10,
-                            page_num: data.data?.page_num || 1
-                        });
-                    }
-                } else {
-                    console.log('API request failed, using mock data');
+        fetch('http://127.0.0.1:8000/api/trades/history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // 如果需要认证，可以添加
+                // 'Authorization': 'Bearer your-token'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (!data.data?.items || data.data.items.length === 0) {
+                    console.log('No data returned, using mock data');
                     setTradeData(mockData);
+                } else {
+                    setTradeData({
+                        items: data.data?.items || [],
+                        total_count: data.data?.total_count || 0,
+                        page_size: data.data?.page_size || 10,
+                        page_num: data.data?.page_num || 1
+                    });
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching trades:', error);
-                console.log('Error occurred, using mock data');
+            } else {
+                console.log('API request failed, using mock data');
                 setTradeData(mockData);
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching trades:', error);
+            console.log('Error occurred, using mock data');
+            setTradeData(mockData);
+        });
     };
 
     // 添加 useEffect

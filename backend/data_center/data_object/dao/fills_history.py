@@ -5,6 +5,7 @@ from backend.service.utils import DatabaseUtils, FormatUtils
 
 Base = declarative_base()
 
+
 class FillsHistory(Base):
     __tablename__ = 'fills_history'
 
