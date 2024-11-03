@@ -1,4 +1,5 @@
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.service.req.page_req import PageRequest
 from backend.service.res.res_utils import StdPageResult
@@ -45,37 +46,67 @@ class DataAPIWrapper:
         session.commit()
 
     @staticmethod
-    def page(request: PageRequest, db_model_class):
-        session = DatabaseUtils.get_db_session()
+    def page(request, db_model_class) -> StdPageResult:
+        """
+        Generic pagination method for database queries.
 
-        # Extract pagination and filter parameters from the request
-        page_size = request.pageSize
-        page_num = request.pageNum
-        inst_id = request.inst_id
-        fill_start_time = request.fill_start_time
-        fill_end_time = request.fill_end_time
+        Args:
+            request: The request object containing pagination and filter parameters
+            db_model_class: The SQLAlchemy model class to query
 
-        # Build the base query
-        query = session.query(db_model_class)
+        Returns:
+            StdPageResult: A standardized page result containing the queried data
+        """
+        session = None
+        try:
+            session = DatabaseUtils.get_db_session()
 
-        # Apply filters if provided
-        if inst_id is not None and inst_id != '':
-            query = query.filter(db_model_class.inst_id == inst_id)
+            # Extract pagination and filter parameters from the request
+            page_size = request.pageSize
+            page_num = request.pageNum
+            inst_id = request.inst_id
+            fill_start_time = request.fill_start_time
+            fill_end_time = request.fill_end_time
 
-        if fill_start_time is not None and fill_start_time != '':
-            query = query.filter(db_model_class.fill_time >= fill_start_time)
+            # Build the base query
+            query = session.query(db_model_class)
 
-        if fill_end_time is not None and fill_end_time != '':
-            query = query.filter(db_model_class.fill_time <= fill_end_time)
+            # Apply filters if provided
+            if inst_id is not None and inst_id != '':
+                query = query.filter(db_model_class.inst_id == inst_id)
 
-        # Apply pagination
-        offset = (page_num - 1) * page_size
-        results = query.limit(page_size).offset(offset).all()
+            if fill_start_time is not None and fill_start_time != '':
+                query = query.filter(db_model_class.fill_time >= fill_start_time)
 
-        # Convert results to JSON-compatible format
-        items = [FormatUtils.dao2dict(item) for item in results]
+            if fill_end_time is not None and fill_end_time != '':
+                query = query.filter(db_model_class.fill_time <= fill_end_time)
 
-        # Get total count of records for pagination metadata
-        total_count = query.count()
+            # Apply pagination
+            offset = (page_num - 1) * page_size
+            results = query.limit(page_size).offset(offset).all()
 
-        return StdPageResult.success(items, page_size, page_num, total_count)
+            # Convert results to JSON-compatible format
+            items = [FormatUtils.dao2dict(item) for item in results]
+
+            # Get total count of records for pagination metadata
+            total_count = query.count()
+
+            return StdPageResult.success(items, page_size, page_num, total_count)
+
+        except SQLAlchemyError as e:
+            # 数据库相关错误
+            print(f"Database error occurred: {str(e)}")
+            return StdPageResult.error(f"Database error: {str(e)}")
+
+        except Exception as e:
+            # 其他未预期的错误
+            print(f"Unexpected error occurred: {str(e)}")
+            return StdPageResult.error(f"Unexpected error: {str(e)}")
+
+        finally:
+            # 确保会话被正确关闭
+            if session:
+                try:
+                    session.close()
+                except Exception as e:
+                    print(f"Error closing database session: {str(e)}")
