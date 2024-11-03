@@ -1,9 +1,15 @@
-from pydantic_settings import BaseSettings
+from pathlib import Path
+from pydantic import BaseModel, Field
 from typing import List
 from functools import lru_cache
+import os
+
+# 打印当前工作目录和文件位置
+print("Current working directory:", os.getcwd())
+print("Settings file location:", Path(__file__).absolute())
 
 
-class Settings(BaseSettings):
+class Settings(BaseModel):
     # Environment
     ENV: str = "development"
     DEBUG: bool = True
@@ -13,24 +19,32 @@ class Settings(BaseSettings):
     API_PORT: int = 8000
 
     # CORS Settings
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1"]
-    ALLOWED_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    ALLOWED_HEADERS: List[str] = [
+    ALLOWED_ORIGINS: List[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://127.0.0.1:3000"
+        ]
+    )
+    ALLOWED_METHODS: List[str] = Field(default_factory=lambda: ["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    ALLOWED_HEADERS: List[str] = Field(default_factory=lambda: [
         "Content-Type",
         "Authorization",
         "Accept",
         "Origin",
         "X-Requested-With"
-    ]
+    ])
     CORS_MAX_AGE: int = 600
 
-    # Rate Limiting
+    RATE_LIMIT: str = "100/hour"  # 根据需要设置默认值
+
+    ALLOWED_HOSTS: str = "localhost,127.0.0.1"
+
     RATE_LIMIT_ENABLED: bool = True
-    RATE_LIMIT: str = "100/minute"
 
     class Config:
         env_file = ".env"
+        env_file_encoding = 'utf-8'
 
     @property
     def cors_origins(self) -> List[str]:
@@ -45,3 +59,6 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+
+if __name__ == '__main__':
+    print(f"ALLOWED_ORIGINS: {settings.ALLOWED_ORIGINS}")
