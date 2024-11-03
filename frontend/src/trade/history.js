@@ -26,99 +26,7 @@ import {
   ArrowBack as ArrowBackIcon
 } from '@material-ui/icons';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(3),
-    backgroundColor: '#131313',
-    minHeight: '100vh'
-  },
-  header: {
-    marginBottom: theme.spacing(3),
-    color: '#fff'
-  },
-  mockData: {
-    marginLeft: theme.spacing(1),
-    color: '#f59e0b'
-  },
-  card: {
-    backgroundColor: '#222',
-    marginBottom: theme.spacing(3),
-    border: '1px solid #444'
-  },
-  input: {
-    '& .MuiInputBase-input': {
-      color: '#fff'
-    },
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-        borderColor: '#444'
-      },
-      '&:hover fieldset': {
-        borderColor: '#666'
-      }
-    },
-    '& .MuiInputLabel-root': {
-      color: '#888'
-    }
-  },
-  table: {
-    backgroundColor: '#222',
-    '& .MuiTableCell-head': {
-      backgroundColor: '#1a1a1a',
-      color: '#888',
-      borderBottom: '1px solid #444'
-    },
-    '& .MuiTableCell-body': {
-      color: '#fff',
-      borderBottom: '1px solid #444'
-    }
-  },
-  buyChip: {
-    backgroundColor: '#5eddac',
-    color: '#000'
-  },
-  sellChip: {
-    backgroundColor: '#f57ad0',
-    color: '#000'
-  },
-  pagination: {
-    backgroundColor: '#1a1a1a',
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTop: '1px solid #444'
-  },
-  button: {
-    backgroundColor: '#222',
-    color: '#fff',
-    borderColor: '#444',
-    '&:hover': {
-      backgroundColor: '#2a2a2a'
-    },
-    '&.Mui-disabled': {
-      color: '#666',
-      borderColor: '#333'
-    }
-  },
-  select: {
-    backgroundColor: '#131313',
-    color: '#fff',
-    '& .MuiSelect-icon': {
-      color: '#fff'
-    }
-  },
-  rawData: {
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
-    padding: theme.spacing(2),
-    borderRadius: theme.shape.borderRadius,
-    overflowX: 'auto'
-  }
-}));
-
 function TradeHistoryTable() {
-    const classes = useStyles();
     // 添加 mock 数据定义
     const mockData = {
         items: [
@@ -241,17 +149,17 @@ function TradeHistoryTable() {
     };
 
     return (
-        <Container className={classes.root}>
-            <Typography variant="h5" className={classes.header}>
+        <Container>
+            <Typography variant="h5">
                 Trade History
                 {tradeData === mockData && (
-                    <Typography variant="caption" className={classes.mockData}>
+                    <Typography variant="caption">
                         (Using Mock Data)
                     </Typography>
                 )}
             </Typography>
 
-            <Card className={classes.card}>
+            <Card>
                 <CardContent>
                     <Grid container spacing={3}>
                         <Grid item xs={12} md={4}>
@@ -262,7 +170,6 @@ function TradeHistoryTable() {
                                 label="Instrument ID"
                                 value={filters.inst_id}
                                 onChange={handleFilterChange}
-                                className={classes.input}
                             />
                         </Grid>
                         <Grid item xs={12} md={4}>
@@ -274,7 +181,6 @@ function TradeHistoryTable() {
                                 label="Start Time"
                                 value={filters.fill_start_time}
                                 onChange={handleFilterChange}
-                                className={classes.input}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
@@ -287,7 +193,6 @@ function TradeHistoryTable() {
                                 label="End Time"
                                 value={filters.fill_end_time}
                                 onChange={handleFilterChange}
-                                className={classes.input}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
@@ -297,7 +202,7 @@ function TradeHistoryTable() {
 
             <Paper>
                 <TableContainer>
-                    <Table className={classes.table}>
+                    <Table>
                         <TableHead>
                             <TableRow>
                                 <TableCell>Trade ID</TableCell>
@@ -317,7 +222,6 @@ function TradeHistoryTable() {
                                     <TableCell>
                                         <Chip
                                             label={row.side?.toUpperCase()}
-                                            className={row.side === 'buy' ? classes.buyChip : classes.sellChip}
                                             size="small"
                                         />
                                     </TableCell>
@@ -331,11 +235,10 @@ function TradeHistoryTable() {
                     </Table>
                 </TableContainer>
 
-                <Box className={classes.pagination}>
+                <Box>
                     <Select
                         value={filters.pageSize}
                         onChange={handleRowsPerPageChange}
-                        className={classes.select}
                         variant="outlined"
                     >
                         <MenuItem value={5}>5 per page</MenuItem>
@@ -348,7 +251,6 @@ function TradeHistoryTable() {
                         <IconButton
                             onClick={() => handlePageChange(filters.pageNum - 1)}
                             disabled={filters.pageNum === 1}
-                            className={classes.button}
                         >
                             <ArrowBackIcon />
                         </IconButton>
@@ -358,7 +260,6 @@ function TradeHistoryTable() {
                         <IconButton
                             onClick={() => handlePageChange(filters.pageNum + 1)}
                             disabled={filters.pageNum >= Math.ceil(tradeData.total_count / filters.pageSize)}
-                            className={classes.button}
                         >
                             <ArrowForwardIcon />
                         </IconButton>
@@ -370,7 +271,7 @@ function TradeHistoryTable() {
                 <Typography variant="h6" style={{ color: '#fff', marginBottom: '16px' }}>
                     Raw Trade Data
                 </Typography>
-                <pre className={classes.rawData}>
+                <pre>
                     {JSON.stringify(tradeData, null, 2)}
                 </pre>
             </Box>
