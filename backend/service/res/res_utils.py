@@ -65,27 +65,28 @@ class StdPageResult(StdResult):
         return self.page_num
 
     @classmethod
-    def success(cls, data=None, message="Operation successful"):
+    def success(items,page_size, page_num,total_count, message="Operation successful"):
         """
         Override success method to handle pagination specific data
         """
-        if isinstance(data, dict) and all(k in data for k in ["items", "page_size", "page_num", "total_count"]):
-            return cls(True, message, data)
-
-        # 构造分页数据结构
-        page_data = {
-            "items": data.get("items", []),
-            "total_count": data.get("total_count", 0),
-            "page_size": data.get("page_size", 10),
-            "page_num": data.get("page_num", 1)
+        return {
+            "success": True,
+            "message": message,
+            "data": {
+                "items": items,
+                "total_count": total_count,
+                "page_size": page_size,
+                "page_num": page_num
+            }
         }
-        return cls(True, message, page_data)
 
-    @classmethod
-    def error(cls, message="Operation failed", data=None):
-        """创建失败的分页结果"""
-        return cls(False, message)
-
+    @staticmethod
+    def error(message="Operation failed", data=None):
+        return {
+            "success": False,
+            "message": message,
+            "data": data
+        }
 
 
 if __name__ == '__main__':
