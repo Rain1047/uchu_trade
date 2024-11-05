@@ -194,7 +194,7 @@ class OKXAPIWrapper:
         self.config = ConfigUtils.get_config()
 
 
-def get_fill_history(req: Optional[PageRequest] = None):
+def get_fill_history(req: Optional[PageRequest] = None) -> dict:
     """
     获取成交历史记录，支持分页查询
 

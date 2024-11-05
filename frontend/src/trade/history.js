@@ -26,7 +26,31 @@ import {
   ArrowBack as ArrowBackIcon
 } from '@material-ui/icons';
 
+const useStyles = makeStyles((theme) => ({
+  paginationContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: theme.spacing(2),
+    gap: theme.spacing(2)
+  },
+  buyChip: {
+    backgroundColor: '#1b5e20',  // 深绿色
+    color: '#fff'
+  },
+  sellChip: {
+    backgroundColor: '#b71c1c',  // 深红色
+    color: '#fff'
+  }
+}));
+
 function TradeHistoryTable() {
+    const classes = useStyles();
+    // 修改渲染买卖方向的部分
+    const getSideChipStyle = (side) => {
+        return side.toLowerCase() === 'buy' ? classes.buyChip : classes.sellChip;
+    };
+
     // 添加 mock 数据定义
     const mockData = {
         items: [
@@ -231,6 +255,7 @@ function TradeHistoryTable() {
                                         <Chip
                                             label={row.side?.toUpperCase()}
                                             size="small"
+                                            className={getSideChipStyle(row.side)}
                                         />
                                     </TableCell>
                                     <TableCell>{row.fill_px}</TableCell>
@@ -243,7 +268,7 @@ function TradeHistoryTable() {
                     </Table>
                 </TableContainer>
 
-                <Box>
+                <Box className={classes.paginationContainer}>
                     <Select
                         value={filters.pageSize}
                         onChange={handleRowsPerPageChange}
@@ -266,6 +291,7 @@ function TradeHistoryTable() {
                             Page {filters.pageNum} of {Math.ceil(tradeData.total_count / filters.pageSize)}
                         </Typography>
                         <IconButton
+                            size="small"
                             onClick={() => handlePageChange(filters.pageNum + 1)}
                             disabled={filters.pageNum >= Math.ceil(tradeData.total_count / filters.pageSize)}
                         >
@@ -274,15 +300,6 @@ function TradeHistoryTable() {
                     </Box>
                 </Box>
             </Paper>
-
-            <Box mt={4}>
-                <Typography variant="h6" style={{ color: '#fff', marginBottom: '16px' }}>
-                    Raw Trade Data
-                </Typography>
-                <pre>
-                    {JSON.stringify(tradeData, null, 2)}
-                </pre>
-            </Box>
         </Container>
     );
 }

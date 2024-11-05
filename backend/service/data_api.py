@@ -46,7 +46,7 @@ class DataAPIWrapper:
         session.commit()
 
     @staticmethod
-    def page(request, db_model_class) -> StdPageResult:
+    def page(request, db_model_class) -> dict:
         """
         Generic pagination method for database queries.
 
@@ -91,22 +91,22 @@ class DataAPIWrapper:
             # Get total count of records for pagination metadata
             total_count = query.count()
 
-            return StdPageResult.success(items, page_size, page_num, total_count)
-
-        except SQLAlchemyError as e:
-            # 数据库相关错误
-            print(f"Database error occurred: {str(e)}")
-            return StdPageResult.error(f"Database error: {str(e)}")
-
+            return {
+                "success": True,
+                "data": {
+                    "items": items,
+                    "total_count": total_count,
+                    "page_size": page_size,
+                    "page_num": page_num
+                }
+            }
         except Exception as e:
-            # 其他未预期的错误
-            print(f"Unexpected error occurred: {str(e)}")
-            return StdPageResult.error(f"Unexpected error: {str(e)}")
-
+            print(f"Error: {str(e)}")
+            return {
+                "success": False,
+                "message": str(e),
+                "data": None
+            }
         finally:
-            # 确保会话被正确关闭
             if session:
-                try:
-                    session.close()
-                except Exception as e:
-                    print(f"Error closing database session: {str(e)}")
+                session.close()
