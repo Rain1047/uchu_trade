@@ -41,7 +41,12 @@ const useStyles = makeStyles((theme) => ({
   sellChip: {
     backgroundColor: '#b71c1c',  // 深红色
     color: '#fff'
-  }
+  },
+  pageControl: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1)  // 减小间距使组件更紧凑
+    }
 }));
 
 function TradeHistoryTable() {
@@ -280,7 +285,7 @@ function TradeHistoryTable() {
                         <MenuItem value={50}>50 per page</MenuItem>
                     </Select>
 
-                    <Box display="flex" alignItems="center">
+                    <Box display="flex" alignItems="center" className={classes.pageControl}>
                         <IconButton
                             onClick={() => handlePageChange(filters.pageNum - 1)}
                             disabled={filters.pageNum === 1}
