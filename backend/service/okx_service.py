@@ -220,7 +220,6 @@ def get_fill_history(req: Optional[PageRequest] = None) -> dict:
     return dbApi.page(page_request, FillsHistory)
 
 
-
 # 示例用法
 if __name__ == "__main__":
     okx = OKXAPIWrapper()
@@ -242,15 +241,15 @@ if __name__ == "__main__":
     # dbApi.insert2db(okx.trade.get_orders_history_archive(), OrderDetail)
 
     # 三个月的交易明细
-    # result = okx.trade.get_trade_fills_history(instType="SPOT")
-    # print(result)
-    # code = result['code']
-    # msg = result['msg']
-    # if code == SUCCESS_CODE:
-    #     dbApi.insert2db(result, FillsHistory)
-    #     # FillsHistory.insert_response_to_db(result, FillsHistory)
-    # else:
-    #     print(code, msg)
+    result = okx.trade.get_trade_fills_history(instType="SPOT")
+    print(result)
+    code = result['code']
+    msg = result['msg']
+    if code == SUCCESS_CODE:
+        dbApi.insert2db(result, FillsHistory)
+        # FillsHistory.insert_response_to_db(result, FillsHistory)
+    else:
+        print(code, msg)
 
     req = PageRequest()
     req.pageSize = 10

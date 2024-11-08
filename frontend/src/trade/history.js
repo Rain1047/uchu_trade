@@ -46,6 +46,22 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1)  // 减小间距使组件更紧凑
+    },
+  noteField: {
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.23)',
+            },
+            '&:hover fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main,
+            }
+        },
+        '& .MuiInputBase-input': {
+            color: theme.palette.text.primary,
+        }
     }
 }));
 
@@ -90,6 +106,12 @@ function TradeHistoryTable() {
         fill_start_time: '',
         fill_end_time: ''
     });
+
+    // 计算 Amount 的辅助函数
+    const calculateAmount = (price, size, fee) => {
+        const amount = (parseFloat(price) * parseFloat(size)) + parseFloat(fee);
+        return amount.toFixed(2);  // 保留两位小数
+    };
 
     // 添加数据获取函数
     const fetchData = () => {
@@ -148,6 +170,17 @@ function TradeHistoryTable() {
         setFilters(prev => ({
             ...prev,
             pageNum: newPage
+        }));
+    };
+
+    // 在 TradeHistoryTable 组件内添加 notes 状态
+    const [notes, setNotes] = useState({});  // 用于存储每个交易的笔记
+
+    // 添加处理笔记更新的函数
+    const handleNoteChange = (tradeId, value) => {
+        setNotes(prev => ({
+            ...prev,
+            [tradeId]: value
         }));
     };
 
@@ -246,30 +279,45 @@ function TradeHistoryTable() {
                                 <TableCell>Instrument</TableCell>
                                 <TableCell>Side</TableCell>
                                 <TableCell>Price</TableCell>
-                                <TableCell>Size</TableCell>
-                                <TableCell>Fee</TableCell>
+                                {/*<TableCell>Size</TableCell>*/}
+                                <TableCell>Amount</TableCell>
                                 <TableCell>Time</TableCell>
+                                <TableCell>Note</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(tradeData.items || []).map((row) => (
-                                <TableRow key={row.trade_id} hover>
-                                    <TableCell>{row.trade_id}</TableCell>
-                                    <TableCell>{row.inst_id}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={row.side?.toUpperCase()}
-                                            size="small"
-                                            className={getSideChipStyle(row.side)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{row.fill_px}</TableCell>
-                                    <TableCell>{row.fill_sz}</TableCell>
-                                    <TableCell>{row.fee}</TableCell>
-                                    <TableCell>{formatTimestamp(row.fill_time)}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
+                        {(tradeData.items || []).map((row) => (
+                            <TableRow key={row.trade_id} hover>
+                                <TableCell>{row.trade_id}</TableCell>
+                                <TableCell>{row.inst_id}</TableCell>
+                                <TableCell>
+                                    <Chip
+                                        label={row.side?.toUpperCase()}
+                                        size="small"
+                                        className={getSideChipStyle(row.side)}
+                                    />
+                                </TableCell>
+                                <TableCell>{row.fill_px}</TableCell>
+                                <TableCell>
+                                    {calculateAmount(row.fill_px, row.fill_sz, row.fee)}
+                                </TableCell>
+                                <TableCell>{formatTimestamp(row.fill_time)}</TableCell>
+                                <TableCell>
+                                    <TextField
+                                        size="small"
+                                        variant="outlined"
+                                        value={notes[row.trade_id] || ''}
+                                        onChange={(e) => handleNoteChange(row.trade_id, e.target.value)}
+                                        placeholder="Add note..."
+                                        multiline
+                                        maxRows={4}
+                                        fullWidth
+                                        style={{ minWidth: '200px' }}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
                     </Table>
                 </TableContainer>
 
