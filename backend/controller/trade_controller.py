@@ -37,7 +37,6 @@ async def get_fills_history(request: PageRequest):
 
         if page_result.get("success"):
             return page_result
-
         else:
             mock_data = {
                 "items": [
@@ -55,12 +54,10 @@ async def get_fills_history(request: PageRequest):
                 "page_size": request.pageSize,
                 "page_num": request.pageNum
             }
-
             return TradeResponse(
                 success=True,
                 data=mock_data
             )
-
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
         raise HTTPException(

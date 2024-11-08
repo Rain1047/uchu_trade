@@ -11,187 +11,14 @@ from backend.data_center.data_object.dao.order_detail import OrderDetail
 from backend.data_center.data_object.enum_obj import *
 from backend.service.data_api import *
 from backend.constant.okx_code import *
+from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+
+# 设置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 dbApi = DataAPIWrapper()
-
-
-def singleton(cls):
-    instances = {}
-
-    def get_instance(*args, **kwargs):
-        env = kwargs.get('env', EnumTradeEnv.MARKET.value)
-        if env not in instances:
-            instances[env] = cls(*args, **kwargs)
-        return instances[env]
-
-    return get_instance
-
-
-def add_docstring(docstring: str):
-    def decorator(func):
-        func.__doc__ = docstring
-        return func
-
-    return decorator
-
-
-class AccountAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.accountAPI = Account.AccountAPI(apikey, secretkey, passphrase, False, flag)
-
-    @add_docstring("获取账户余额")
-    def get_account_balance(self) -> Dict:
-        return self.accountAPI.get_account_balance()
-
-    @add_docstring("账户持仓信息 - 期货交易")
-    def get_positions(self) -> Dict:
-        return self.accountAPI.get_positions()
-
-    @add_docstring("账户历史持仓信息")
-    def get_positions_history(self) -> Dict:
-        return self.accountAPI.get_positions_history()
-
-    @add_docstring("账户账单流水")
-    def get_account_bills_archive(self) -> Dict:
-        return self.accountAPI.get_account_bills_archive()
-
-
-class TradeAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag)
-
-    @add_docstring("获取成交明细（近三个月）")
-    def get_trade_fills_history(self, instType: str, **kwargs) -> Dict:
-        return self.tradeAPI.get_fills_history(instType=instType, **kwargs)
-
-    @add_docstring("获取历史订单记录（近三个月）")
-    def get_orders_history_archive(self, instType: Optional[str] = EnumInstanceType.SPOT.value, **kwargs) -> json:
-        return self.tradeAPI.get_orders_history_archive(instType=instType, **kwargs)
-
-    @add_docstring("获取订单信息")
-    def get_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
-        return self.tradeAPI.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
-
-    @add_docstring("撤销订单")
-    def cancel_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
-        return self.tradeAPI.cancel_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
-
-    @add_docstring("撤销策略订单")
-    def cancel_algo_order(self, algo_orders: list) -> Dict:
-        return self.tradeAPI.cancel_algo_order(algo_orders)
-
-    @add_docstring("下单")
-    def place_order(self, instId: str,
-                    sz: str,
-                    side: Optional[str] = EnumSide.BUY.value,  # 订单方向
-                    posSide: Optional[str] = '',  # 持仓方向
-                    tpTriggerPx: Optional[str] = '',
-                    tpOrdPx: Optional[str] = '',
-                    slTriggerPx: Optional[str] = '',
-                    px: Optional[str] = '',
-                    slOrdPx: Optional[str] = "-1",
-                    tdMode: Optional[str] = EnumTdMode.CASH.value,
-                    ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
-                    clOrdId: Optional[str] = '',
-                    ) -> Dict:
-        return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz,
-                                         side=side, posSide=posSide,
-                                         ordType=ordType, px=px,
-                                         slTriggerPx=slTriggerPx,
-                                         slOrdPx=slOrdPx)
-
-    @add_docstring("策略下单")
-    def place_algo_order(self, instId: str,
-                         sz: str,
-                         posSide: Optional[str] = '',
-                         tpTriggerPx: Optional[str] = '',
-                         tpOrdPx: Optional[str] = '',
-                         algoClOrdId: Optional[str] = '',
-                         slTriggerPx: Optional[str] = '',
-                         slOrdPx: Optional[str] = '',
-                         side: Optional[str] = EnumSide.BUY.value,
-                         tdMode: Optional[str] = EnumTdMode.CASH.value,
-                         ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
-                         ) -> Dict:
-        return self.tradeAPI.place_algo_order(instId=instId, tdMode=tdMode, sz=sz,
-                                              side=side, posSide=posSide,
-                                              ordType=ordType,
-                                              algoClOrdId=algoClOrdId,
-                                              slTriggerPx=slTriggerPx,
-                                              slOrdPx=slOrdPx)
-
-
-class FundingAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.fundingAPI = Funding.FundingAPI(apikey, secretkey, passphrase, False, flag)
-
-    @add_docstring("获取币种列表")
-    def get_currencies(self) -> Dict:
-        return self.fundingAPI.get_currencies()
-
-
-class MarketAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.marketAPI = Market.MarketAPI(apikey, secretkey, passphrase, False, flag)
-
-    @add_docstring("通过Ticker Symbol来获取行情")
-    def get_ticker(self, instId: str):
-        return self.marketAPI.get_ticker(instId=instId)
-
-    @add_docstring("通过Ticker Symbol获取k线")
-    def get_candlesticks(self, instId: str, bar: Optional[str] = EnumTimeFrame.D1_L.value) -> Dict:
-        return self.marketAPI.get_candlesticks(instId=instId, bar=bar)
-
-    @add_docstring("通过Ticker Symbol获取k线，并返回DataFrame")
-    def get_candlesticks_df(self, instId: str, bar: Optional[str] = EnumTimeFrame.D1_L.value) -> pd.DataFrame:
-        return FormatUtils.dict2df(self.marketAPI.get_candlesticks(instId=instId, bar=bar))
-
-
-@singleton
-class PublicDataAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.publicAPI = PublicData.PublicAPI(apikey, secretkey, passphrase, False, flag)
-
-    @add_docstring("张币转换")
-    def get_convert_contract_coin(self, instId: str, px: str, sz: str, unit: Optional[str] = "usds"):
-        self.publicAPI.get_convert_contract_coin(instId=instId, sz=sz, px=px, unit=unit)
-
-
-class SpreadAPIWrapper:
-    def __init__(self, apikey, secretkey, passphrase, flag):
-        self.spreadAPI = SpreadTrading.SpreadTradingAPI(apikey, secretkey, passphrase, False, flag)
-
-    def get_order_details(self, clOrdId: Optional[str], ordId: Optional[str]) -> Dict:
-        return self.spreadAPI.get_order_details(clOrdId=clOrdId, ordId=ordId)
-
-
-@singleton
-class OKXAPIWrapper:
-    def __init__(self, env: Optional[str] = EnumTradeEnv.MARKET.value):
-        if hasattr(self, '_initialized') and self._initialized:
-            return
-
-        self.env = env
-        self._load_config()
-
-        self.apikey = self.config['apikey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['apikey']
-        self.secretkey = self.config['secretkey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config[
-            'secretkey']
-        self.passphrase = self.config['passphrase']
-        self.flag = "1" if self.env == EnumTradeEnv.DEMO.value else "0"
-
-        self.account = AccountAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-        self.trade = TradeAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-        self.market = MarketAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-        self.publicData = PublicDataAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-        self.funding = FundingAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-        self.spread = SpreadAPIWrapper(self.apikey, self.secretkey, self.passphrase, self.flag)
-
-        self._initialized = True
-        print("{} OKX API initialized.".format(self.env))
-
-    def _load_config(self):
-        self.config = ConfigUtils.get_config()
+okx = OKXAPIWrapper()
 
 
 def get_fill_history(req: Optional[PageRequest] = None) -> dict:
@@ -210,19 +37,29 @@ def get_fill_history(req: Optional[PageRequest] = None) -> dict:
             "page_num": int
         }
     """
+    try:
+        result = okx.trade.get_trade_fills_history(instType="SPOT")
+        code = result['code']
+        msg = result['msg']
+        if code == SUCCESS_CODE:
+            dbApi.insert2db(result, FillsHistory)
+        else:
+            print(code, msg)
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}")
+
     # 使用默认分页参数，如果请求为空
     page_request = req or PageRequest(
         pageSize=10,
         pageNum=1
     )
-
     # 调用数据库API获取数据
     return dbApi.page(page_request, FillsHistory)
 
 
 # 示例用法
 if __name__ == "__main__":
-    okx = OKXAPIWrapper()
+
     okx_demo = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
     # print(okx.apikey)
     # print(okx_demo.apikey)
@@ -241,12 +78,11 @@ if __name__ == "__main__":
     # dbApi.insert2db(okx.trade.get_orders_history_archive(), OrderDetail)
 
     # 三个月的交易明细
-    result = okx.trade.get_trade_fills_history(instType="SPOT")
-    print(result)
-    code = result['code']
-    msg = result['msg']
+    res = okx.trade.get_trade_fills_history(instType="SPOT")
+    code = res['code']
+    msg = res['msg']
     if code == SUCCESS_CODE:
-        dbApi.insert2db(result, FillsHistory)
+        dbApi.insert2db(res, FillsHistory)
         # FillsHistory.insert_response_to_db(result, FillsHistory)
     else:
         print(code, msg)

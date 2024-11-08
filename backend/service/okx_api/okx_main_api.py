@@ -16,7 +16,7 @@ from backend.data_center.data_object.enum_obj import *
 
 @singleton
 class OKXAPIWrapper:
-    def __init__(self, env: Optional[str] = EnumTradeEnv.DEMO.value):
+    def __init__(self, env: Optional[str] = EnumTradeEnv.MARKET.value):
         if hasattr(self, '_initialized') and self._initialized:
             return
 
