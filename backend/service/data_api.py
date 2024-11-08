@@ -81,6 +81,8 @@ class DataAPIWrapper:
             if fill_end_time is not None and fill_end_time != '':
                 query = query.filter(db_model_class.fill_time <= fill_end_time)
 
+            query = query.order_by(db_model_class.fill_time.desc())
+
             # Apply pagination
             offset = (page_num - 1) * page_size
             results = query.limit(page_size).offset(offset).all()
