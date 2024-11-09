@@ -131,7 +131,7 @@ function TradeHistoryTable() {
       fill_end_time: filters.fill_end_time
     };
 
-    fetch('http://127.0.0.1:8000/api/trades/list_history', {
+    fetch('http://127.0.0.1:8000/api/trade/list_history', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

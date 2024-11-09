@@ -13,7 +13,7 @@ import Layout from './components/Layout';
 import {Container, Typography} from "@material-ui/core";
 import UpdateStrategy from "./strategy/UpdateStrategy";
 import ListStrategy from "./strategy/ListStrategy";
-
+import Strategy from "./strategy/index"
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -58,6 +58,7 @@ function App() {
                             <Route path="/trade/history" element={<TradeHistoryTable />} />
                             <Route path="/strategy/UpdateStrategy" element={<UpdateStrategy />} />
                             <Route path="/strategy/ListStrategy" element={<ListStrategy />} />
+                            <Route path="/strategy" element={<Strategy />} />
                         </Routes>
                     </Layout>
                 </Router>
