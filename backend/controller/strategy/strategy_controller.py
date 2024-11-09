@@ -13,6 +13,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.post("/create_strategy")  # 注意这里使用 router 而不是 app
-async def get_fills_history(request: StrategyCreateOrUpdateRequest):
+@router.post("/create_strategy")
+async def create_strategy_instance(request: StrategyCreateOrUpdateRequest):
     print(f"Received strategy request: {request}")
+
+
