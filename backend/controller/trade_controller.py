@@ -28,7 +28,7 @@ class TradeResponse(BaseModel):
 
 
 # 路由处理
-@router.post("/history")  # 注意这里使用 router 而不是 app
+@router.post("/list_history")  # 注意这里使用 router 而不是 app
 async def get_fills_history(request: PageRequest):
     try:
         print(f"Received trade request: {request}")
