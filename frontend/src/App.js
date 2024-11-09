@@ -11,6 +11,8 @@ import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import './styles/global.css';
 import Layout from './components/Layout';
 import {Container, Typography} from "@material-ui/core";
+import UpdateStrategy from "./strategy/UpdateStrategy";
+import ListStrategy from "./strategy/ListStrategy";
 
 
 class ErrorBoundary extends React.Component {
@@ -54,6 +56,8 @@ function App() {
                             <Route path="/account/positions" element={<Positions />} />
                             <Route path="/trade/order" element={<Positions />} />
                             <Route path="/trade/history" element={<TradeHistoryTable />} />
+                            <Route path="/strategy/UpdateStrategy" element={<UpdateStrategy />} />
+                            <Route path="/strategy/ListStrategy" element={<ListStrategy />} />
                         </Routes>
                     </Layout>
                 </Router>
