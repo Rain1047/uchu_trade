@@ -20,7 +20,7 @@ import {
   Add as AddIcon,
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import UpdateStrategy from './UpdateStrategy';
+import UpdateStrategy from './UpdateStrategy';  // 确保这是你的抽屉表单组件
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,11 +52,11 @@ const useStyles = makeStyles((theme) => ({
 
 const StrategyList = () => {
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [viewMode, setViewMode] = useState(false);
 
-  // Mock data - 替换为实际API数据
+  // Mock data
   const mockStrategies = [
     {
       id: 1,
@@ -76,27 +76,31 @@ const StrategyList = () => {
   ];
 
   const handleStatusChange = (id) => {
-    // 处理策略启用/禁用
-    // 这里需要调用后端API
     console.log('Toggle status for strategy:', id);
   };
 
   const handleEdit = (strategy) => {
     setSelectedStrategy(strategy);
     setViewMode(false);
-    setOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleView = (strategy) => {
     setSelectedStrategy(strategy);
     setViewMode(true);
-    setOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleAdd = () => {
     setSelectedStrategy(null);
     setViewMode(false);
-    setOpen(true);
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    setSelectedStrategy(null);
+    setViewMode(false);
   };
 
   return (
@@ -162,8 +166,8 @@ const StrategyList = () => {
       </Paper>
 
       <UpdateStrategy
-        open={open}
-        onClose={() => setOpen(false)}
+        open={drawerOpen}
+        onClose={handleDrawerClose}
         strategy={selectedStrategy}
         viewMode={viewMode}
       />

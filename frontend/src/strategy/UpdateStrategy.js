@@ -73,7 +73,8 @@ const UpdateStrategy = () => {
   const [stopLossConditions, setStopLossConditions] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
   const [tradeAmount, setTradeAmount] = useState('');
-  const [tradeLossAmount, setTradeLossAmount] = useState('');  // 新增状态
+  const [tradeLossAmount, setTradeLossAmount] = useState('');
+  const [strategyName, setStrategyName] = useState('');
 
   // Mock data - 替换为实际API数据
   const mockData = {
@@ -83,6 +84,7 @@ const UpdateStrategy = () => {
     exitStrategies: ['Exit1', 'Exit2', 'Exit3'],
     stopLossTypes: ['定价止损', '跟踪止损', '百分比止损'],
     filterStrategies: ['Filter1', 'Filter2', 'Filter3'],
+    tradingSides: ['long', 'short']
   };
 
   const handleToggleDrawer = (open) => {
@@ -128,6 +130,10 @@ const UpdateStrategy = () => {
     setTradeAmount(event.target.value);
   };
 
+  const handleStrategyNameChange = (event) => {
+    setStrategyName(event.target.value);
+  };
+
   const handleTradeLossAmountChange = (event) => {  // 新增处理函数
     setTradeLossAmount(event.target.value);
   };
@@ -143,6 +149,19 @@ const UpdateStrategy = () => {
 
       <Grid container spacing={3} className={classes.formControl}>
         <Grid item xs={6}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="策略实例名称"
+            value={strategyName}
+            onChange={handleStrategyNameChange}
+            placeholder="请输入策略实例名称"
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} className={classes.formControl}>
+        <Grid item xs={4}>
           <FormControl fullWidth variant="outlined">
             <InputLabel>交易对</InputLabel>
             <Select label="交易对">
@@ -152,11 +171,21 @@ const UpdateStrategy = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <FormControl fullWidth variant="outlined">
             <InputLabel>时间窗</InputLabel>
             <Select label="时间窗">
               {mockData.timeWindows.map((window) => (
+                <MenuItem key={window} value={window}>{window}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={4}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel>交易方向</InputLabel>
+            <Select label="时间窗">
+              {mockData.tradingSides.map((window) => (
                 <MenuItem key={window} value={window}>{window}</MenuItem>
               ))}
             </Select>
@@ -182,8 +211,8 @@ const UpdateStrategy = () => {
             variant="outlined"
             label="每笔损失交易金额"
             type="number"
-            value={tradeLossAmount}  // 需要添加新的 state
-            onChange={handleTradeLossAmountChange}  // 需要添加新的处理函数
+            value={tradeLossAmount}
+            onChange={handleTradeLossAmountChange}
             placeholder="请输入交易金额"
           />
         </Grid>

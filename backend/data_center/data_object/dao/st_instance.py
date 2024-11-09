@@ -18,15 +18,20 @@ class StInstance(Base):
     name = Column(String(255), nullable=False, comment='策略实例名称')
     trade_pair = Column(String(255), nullable=False, comment='交易对')
     side = Column(String(255), nullable=True, comment="交易方向")
-    loss_per_trans = Column(Float, nullable=False, comment='每笔交易损失')
+    entry_per_trans = Column(Float, nullable=False, comment='每笔入场金额')
+    loss_per_trans = Column(Float, nullable=False, comment='每笔损失金额')
     time_frame = Column(String(255), nullable=False, comment='时间窗口大小')
     entry_st_code = Column(String(255), nullable=False, comment='入场策略code')
     exit_st_code = Column(String(255), nullable=False, comment='退出策略code')
-    exit_by_time = Column(Integer, comment='根据时间退出')
+    filter_st_code = Column(String(255), nullable=False, comment='过滤策略code')
+    # exit_by_time = Column(Integer, comment='根据时间退出')  # delete
+    stop_loss_config = Column(String, comment='止损配置')
+    schedule_config = Column(String, comment='调度配置')
     switch = Column(Integer, comment='开关')
     is_del = Column(Integer, nullable=False, default=0, comment='0: 生效 1:已删除')
-    gmt_create = Column(DateTime, nullable=False, comment='生成时间')
-    gmt_modified = Column(DateTime, nullable=False, comment='更新时间')
+    env = Column(String, comment='运行环境')
+    gmt_create = Column(String, nullable=False, comment='生成时间')
+    gmt_modified = Column(String, nullable=False, comment='更新时间')
 
 
 def query_all_st_instance() -> List[StInstance]:
@@ -34,11 +39,9 @@ def query_all_st_instance() -> List[StInstance]:
 
 
 if __name__ == '__main__':
-
     session = DatabaseUtils.get_db_session()
 
     # 查询所有策略实例
-
 
     # # 创建一条记录
     # new_instance = StInstance(

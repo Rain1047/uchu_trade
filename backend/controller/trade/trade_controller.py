@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 import logging
+
+from backend.controller.trade.trade_request import *
 from backend.service.okx_service import get_fill_history  # 假设这是你的服务函数
 
 # 创建路由器实例
@@ -12,24 +14,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# 定义模型
-class PageRequest(BaseModel):
-    pageSize: int = 10
-    pageNum: int = 1
-    inst_id: str | None = None
-    fill_start_time: str | None = None
-    fill_end_time: str | None = None
-
-
-class TradeResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    message: Optional[str] = None
-
-
 # 路由处理
 @router.post("/list_history")  # 注意这里使用 router 而不是 app
-async def get_fills_history(request: PageRequest):
+async def get_fills_history(request: TradePageRequest):
     try:
         print(f"Received trade request: {request}")
 

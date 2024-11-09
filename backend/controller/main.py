@@ -1,25 +1,21 @@
 import os
 import sys
-from http.client import HTTPException
-from typing import Optional
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.okx_service import get_fill_history
-from backend.service.sche_api import main_processor
-from backend.controller.trade_controller import router as trade_router
-from config.middleware import setup_middleware
-from config.settings import settings
+from backend.controller.trade.trade_controller import router as trade_router
+from backend.controller.strategy.strategy_controller import router as strategy_router
+from backend.config.settings import settings
 import uvicorn
 
 okx = OKXAPIWrapper()
 
 app = FastAPI()
 
-app.include_router(trade_router, prefix="/api/trades")
+app.include_router(trade_router, prefix="/api/trade")
+app.include_router(strategy_router, prefix="/api/strategy")
 
 # 配置 CORS
 app.add_middleware(
