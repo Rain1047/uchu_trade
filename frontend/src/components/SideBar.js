@@ -16,7 +16,8 @@ import {
     History as HistoryIcon,
     SwapHoriz as SwapHorizIcon,
     ChevronLeft as ChevronLeftIcon,
-    Menu as MenuIcon
+    Menu as MenuIcon,
+    Settings as SettingsIcon
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -79,6 +80,11 @@ const SideBar = ({ open, setOpen }) => {
             text: 'History',
             icon: <HistoryIcon />,
             path: '/trade/history'
+        },
+        {
+            text: 'Strategy',
+            icon: <SettingsIcon />,
+            path: '/strategy'
         }
     ];
 

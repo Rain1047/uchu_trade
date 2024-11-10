@@ -49,9 +49,39 @@ export const useStrategyApi = () => {
     return response.json();
   };
 
+  const deleteStrategy = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/delete_strategy/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || '删除策略失败');
+    }
+
+    return response.json();
+  };
+
+  const toggleStrategyStatus = async (id, active) => {
+    const response = await fetch(`${API_BASE_URL}/toggle_strategy/${id}?active=${active}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || '更新策略状态失败');
+    }
+
+    return response.json();
+  };
+
   return {
     createStrategy,
     updateStrategy,
     listStrategies,
+    deleteStrategy,
+    toggleStrategyStatus,
   };
 };
