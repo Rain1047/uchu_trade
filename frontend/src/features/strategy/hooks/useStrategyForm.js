@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import { validationRules } from '../constants/formValidation';
 import { useStrategyApi } from './useStrategyApi';
 
 export const useStrategyForm = (strategy = null) => {
-  // 基础表单数据
-  const [formData, setFormData] = useState({
+  // 定义初始状态
+  const initialFormData = {
     name: '',
     trade_pair: '',
     time_frame: '',
@@ -18,13 +18,22 @@ export const useStrategyForm = (strategy = null) => {
       date: '',
       time: ''
     }
-  });
+  };
 
   // 额外的表单状态
+  const [formData, setFormData] = useState(initialFormData);
   const [stopLossConditions, setStopLossConditions] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // 添加重置表单的函数
+  const resetForm = useCallback(() => {
+    setFormData(initialFormData);
+    setStopLossConditions([]);
+    setSelectedDays([]);
+    setErrors({});
+  }, []);
 
   const { createStrategy, updateStrategy } = useStrategyApi();
 
@@ -112,6 +121,7 @@ export const useStrategyForm = (strategy = null) => {
       } else {
         await createStrategy(submitData);
       }
+      resetForm();
       return true;
     } catch (error) {
       setErrors(prev => ({
@@ -186,6 +196,7 @@ export const useStrategyForm = (strategy = null) => {
     handleDayToggle,
     handleSubmit,
     setFormData,
-    validateForm
+    validateForm,
+    resetForm
   };
 };

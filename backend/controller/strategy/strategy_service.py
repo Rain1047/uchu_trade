@@ -111,3 +111,133 @@ class StrategyService:
         finally:
             session.close()
 
+    @staticmethod
+    def update_strategy(strategy_id: int, request: StrategyCreateOrUpdateRequest) -> dict:
+        session = DatabaseUtils.get_db_session()
+        try:
+            # 查找策略
+            strategy = session.query(StInstance).filter(
+                StInstance.id == strategy_id,
+                StInstance.is_del == 0
+            ).first()
+
+            if not strategy:
+                return {
+                    "success": False,
+                    "message": f"策略不存在或已删除: {strategy_id}",
+                    "data": None
+                }
+
+            # 更新字段
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            strategy.name = request.name
+            strategy.trade_pair = request.trade_pair
+            strategy.time_frame = request.time_frame
+            strategy.side = request.side
+            strategy.entry_per_trans = float(request.entry_per_trans)
+            strategy.loss_per_trans = float(request.loss_per_trans)
+            strategy.entry_st_code = request.entry_st_code
+            strategy.exit_st_code = request.exit_st_code
+            strategy.filter_st_code = request.filter_st_code
+            strategy.schedule_config = json.dumps(request.schedule_config)
+            strategy.stop_loss_config = json.dumps(request.stop_loss_config)
+            strategy.gmt_modified = current_time
+
+            session.commit()
+
+            return {
+                "success": True,
+                "data": strategy.id,
+                "message": "策略更新成功"
+            }
+
+        except Exception as e:
+            session.rollback()
+            return {
+                "success": False,
+                "message": f"更新策略失败: {str(e)}",
+                "data": None
+            }
+        finally:
+            session.close()
+
+    @staticmethod
+    def delete_strategy(strategy_id: int) -> dict:
+        session = DatabaseUtils.get_db_session()
+        try:
+            # 查找策略
+            strategy = session.query(StInstance).filter(
+                StInstance.id == strategy_id,
+                StInstance.is_del == 0
+            ).first()
+
+            if not strategy:
+                return {
+                    "success": False,
+                    "message": f"策略不存在或已删除: {strategy_id}",
+                    "data": None
+                }
+
+            # 软删除：更新 is_del 字段
+            strategy.is_del = 1
+            strategy.gmt_modified = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            session.commit()
+
+            return {
+                "success": True,
+                "message": "策略删除成功",
+                "data": strategy_id
+            }
+
+        except Exception as e:
+            session.rollback()
+            return {
+                "success": False,
+                "message": f"删除策略失败: {str(e)}",
+                "data": None
+            }
+        finally:
+            session.close()
+
+    @staticmethod
+    def toggle_strategy_status(strategy_id: int, active: bool) -> dict:
+        session = DatabaseUtils.get_db_session()
+        try:
+            strategy = session.query(StInstance).filter(
+                StInstance.id == strategy_id,
+                StInstance.is_del == 0
+            ).first()
+
+            if not strategy:
+                return {
+                    "success": False,
+                    "message": f"策略不存在或已删除: {strategy_id}",
+                    "data": None
+                }
+
+            # 更新开关状态
+            strategy.switch = 1 if active else 0
+            strategy.gmt_modified = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            session.commit()
+
+            return {
+                "success": True,
+                "message": f"策略状态已{'启用' if active else '禁用'}",
+                "data": {
+                    "id": strategy_id,
+                    "switch": strategy.switch
+                }
+            }
+
+        except Exception as e:
+            session.rollback()
+            return {
+                "success": False,
+                "message": f"更新策略状态失败: {str(e)}",
+                "data": None
+            }
+        finally:
+            session.close()
+
