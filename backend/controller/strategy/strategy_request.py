@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from pydantic import BaseModel
 from typing import Optional
 
@@ -8,6 +10,7 @@ class StrategyPageRequest(BaseModel):
     inst_id: str | None = None
 
 
+@dataclass
 class StrategyCreateOrUpdateRequest(BaseModel):
     id: int | None = None
     name: str
