@@ -24,7 +24,6 @@ class StInstance(Base):
     entry_st_code = Column(String(255), nullable=False, comment='入场策略code')
     exit_st_code = Column(String(255), nullable=False, comment='退出策略code')
     filter_st_code = Column(String(255), nullable=False, comment='过滤策略code')
-    # exit_by_time = Column(Integer, comment='根据时间退出')  # delete
     stop_loss_config = Column(String, comment='止损配置')
     schedule_config = Column(String, comment='调度配置')
     switch = Column(Integer, comment='开关')
