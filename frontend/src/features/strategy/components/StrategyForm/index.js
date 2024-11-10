@@ -42,6 +42,7 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
     handleStopLossChange,
     handleDayToggle,
     handleSubmit,
+    resetForm,
   } = useStrategyForm(strategy);
 
   // 策略配置选项
@@ -55,15 +56,22 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
   const handleSave = async () => {
     const success = await handleSubmit();
     if (success) {
+      resetForm();
       onClose();
     }
+  };
+
+  // 添加关闭处理函数
+  const handleClose = () => {
+    resetForm();  // 关闭时重置表单
+    onClose();    // 调用传入的关闭函数
   };
 
   return (
     <Drawer
       anchor="right"
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       classes={{ paper: classes.drawerPaper }}
       className={classes.drawer}
     >
@@ -72,7 +80,7 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
           <Typography variant="h6">
             {viewMode ? '查看策略' : (strategy ? '编辑策略' : '新建策略')}
           </Typography>
-          <IconButton onClick={onClose}>
+          <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
         </Box>
