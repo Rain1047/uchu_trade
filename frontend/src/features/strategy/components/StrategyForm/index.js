@@ -26,6 +26,7 @@ import {
   TIME_WINDOWS,
   TRADING_SIDES,
 } from '../../constants/strategyConfig';
+import StrategyConfigSection from "./StrategyConfigSection";
 
 const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
   const classes = useStyles();
@@ -42,6 +43,14 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
     handleDayToggle,
     handleSubmit,
   } = useStrategyForm(strategy);
+
+  // 策略配置选项
+  const strategyOptions = {
+    entryStrategies: ['Strategy1', 'Strategy2', 'Strategy3'],
+    exitStrategies: ['Exit1', 'Exit2', 'Exit3'],
+    filterStrategies: ['Filter1', 'Filter2', 'Filter3'],
+  };
+
 
   const handleSave = async () => {
     const success = await handleSubmit();
@@ -135,8 +144,6 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
           </Grid>
         </Grid>
 
-        <Divider className={classes.divider} />
-
         <Grid container spacing={3} className={classes.formControl}>
         <Grid item xs={6}>
           <TextField
@@ -161,6 +168,17 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
           />
         </Grid>
         </Grid>
+
+        <Divider className={classes.divider} />
+
+        {/* 使用新的策略配置组件 */}
+        <StrategyConfigSection
+          formData={formData}
+          onFieldChange={handleChange}
+          viewMode={viewMode}
+          errors={errors}
+          strategies={strategyOptions}
+        />
 
         {/* 止损配置 */}
         <StopLossSection
