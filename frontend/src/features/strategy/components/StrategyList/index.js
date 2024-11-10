@@ -13,21 +13,38 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
 } from '@material-ui/core';
 import {
   Edit as EditIcon,
   Visibility as ViewIcon,
   Add as AddIcon,
+  Delete as DeleteIcon,
 } from '@material-ui/icons';
 import { useStyles } from './styles';
 import {useStrategyApi} from "../../hooks/useStrategyApi";
+import { Alert } from '@material-ui/lab';
+
 
 const StrategyList = ({ onAdd, onEdit, onView }) => {
   const classes = useStyles();
-  const { listStrategies } = useStrategyApi();
+  const { listStrategies, deleteStrategy, toggleStrategyStatus } = useStrategyApi();
+
   const [strategies, setStrategies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   // 获取策略列表
   const fetchStrategies = async () => {
@@ -51,6 +68,21 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
     fetchStrategies();
   }, []);
 
+  // 显示提示信息
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  // 处理删除
+  const handleDeleteClick = (strategy) => {
+    setSelectedStrategy(strategy);
+    setDeleteDialogOpen(true);
+  };
+
   // Mock data - 替换为实际API数据
   const mockStrategies = [
     {
@@ -65,8 +97,37 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
     },
   ];
 
-  const handleStatusChange = (id) => {
-    console.log('Toggle status for strategy:', id);
+  const handleDeleteConfirm = async () => {
+    try {
+      const result = await deleteStrategy(selectedStrategy.id);
+      if (result.success) {
+        showSnackbar('策略删除成功');
+        fetchStrategies(); // 重新加载列表
+      } else {
+        throw new Error(result.message || '删除失败');
+      }
+    } catch (err) {
+      showSnackbar(err.message, 'error');
+    } finally {
+      setDeleteDialogOpen(false);
+      setSelectedStrategy(null);
+    }
+  };
+
+  // 处理状态切换
+  const handleStatusChange = async (id, currentStatus) => {
+    try {
+      const newStatus = !currentStatus;
+      const result = await toggleStrategyStatus(id, newStatus);
+      if (result.success) {
+        showSnackbar(`策略${newStatus ? '启用' : '禁用'}成功`);
+        fetchStrategies(); // 重新加载列表
+      } else {
+        throw new Error(result.message || '状态更新失败');
+      }
+    } catch (err) {
+      showSnackbar(err.message, 'error');
+    }
   };
 
   return (
@@ -92,8 +153,8 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
                 <TableCell>策略名称</TableCell>
                 <TableCell>交易对</TableCell>
                 <TableCell>时间窗口</TableCell>
-                <TableCell className={classes.statusCell}>状态</TableCell>
-                <TableCell className={classes.actionCell}>操作</TableCell>
+                <TableCell align="center">状态</TableCell>
+                <TableCell align="center">操作</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -103,18 +164,19 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
                   <TableCell>{strategy.name}</TableCell>
                   <TableCell>{strategy.trade_pair}</TableCell>
                   <TableCell>{strategy.time_frame}</TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <Switch
                       checked={strategy.switch === 1}
-                      onChange={() => handleStatusChange(strategy.id)}
+                      onChange={() => handleStatusChange(strategy.id, strategy.switch === 1)}
                       color="primary"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <IconButton
                       size="small"
                       onClick={() => onView(strategy)}
                       className={classes.actionButton}
+                      title="查看"
                     >
                       <ViewIcon />
                     </IconButton>
@@ -122,8 +184,17 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
                       size="small"
                       onClick={() => onEdit(strategy)}
                       className={classes.actionButton}
+                      title="编辑"
                     >
                       <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteClick(strategy)}
+                      className={classes.actionButton}
+                      title="删除"
+                    >
+                      <DeleteIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -132,6 +203,41 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
           </Table>
         </TableContainer>
       </Paper>
+
+      {/* 删除确认对话框 */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>确认删除</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            确定要删除策略 "{selectedStrategy?.name}" 吗？此操作不可撤销。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            取消
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="secondary" autoFocus>
+            删除
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 提示消息 */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
