@@ -28,7 +28,7 @@ import {
 } from '../../constants/strategyConfig';
 import StrategyConfigSection from "./StrategyConfigSection";
 
-const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
+const StrategyForm = ({ open, onClose, strategy = null, viewMode = false, onSubmitSuccess }) => {
   const classes = useStyles();
   const {
     formData,
@@ -56,7 +56,8 @@ const StrategyForm = ({ open, onClose, strategy = null, viewMode = false }) => {
   const handleSave = async () => {
     const success = await handleSubmit();
     if (success) {
-      resetForm();
+      // resetForm();
+      onSubmitSuccess?.();  // 调用刷新回调
       onClose();
     }
   };

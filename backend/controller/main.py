@@ -2,12 +2,12 @@ import os
 import sys
 
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 from backend.controller.trade.trade_controller import router as trade_router
 from backend.controller.strategy.strategy_controller import router as strategy_router
-from backend.config.settings import settings
+from backend.controller.settings import settings
 import uvicorn
 
 okx = OKXAPIWrapper()
@@ -20,7 +20,11 @@ app.include_router(strategy_router, prefix="/api/strategy")
 # 配置 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 或者指定允许的来源，如 ["http://localhost:3000"]
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

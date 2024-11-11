@@ -46,6 +46,24 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
     severity: 'success'
   });
 
+  // 添加刷新函数
+  const refreshList = async () => {
+    setLoading(true);
+    try {
+      const result = await listStrategies();
+      if (result.success && result.data) {
+        setStrategies(result.data.items);
+      } else {
+        throw new Error(result.message || '获取策略列表失败');
+      }
+    } catch (err) {
+      setError(err.message);
+      showSnackbar(err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 获取策略列表
   const fetchStrategies = async () => {
     setLoading(true);
@@ -102,7 +120,7 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
       const result = await deleteStrategy(selectedStrategy.id);
       if (result.success) {
         showSnackbar('策略删除成功');
-        fetchStrategies(); // 重新加载列表
+        await refreshList(); // 重新加载列表
       } else {
         throw new Error(result.message || '删除失败');
       }
@@ -121,7 +139,7 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
       const result = await toggleStrategyStatus(id, newStatus);
       if (result.success) {
         showSnackbar(`策略${newStatus ? '启用' : '禁用'}成功`);
-        fetchStrategies(); // 重新加载列表
+        await refreshList();
       } else {
         throw new Error(result.message || '状态更新失败');
       }

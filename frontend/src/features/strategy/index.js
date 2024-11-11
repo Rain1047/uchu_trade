@@ -6,6 +6,12 @@ const StrategyPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [viewMode, setViewMode] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);  // 添加刷新标志
+
+  // 处理刷新
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const handleAdd = () => {
     setSelectedStrategy(null);
@@ -33,7 +39,8 @@ const StrategyPage = () => {
 
   return (
     <>
-      <StrategyList 
+      <StrategyList
+        key={refreshKey}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onView={handleView}
@@ -43,6 +50,7 @@ const StrategyPage = () => {
         onClose={handleDrawerClose}
         strategy={selectedStrategy}
         viewMode={viewMode}
+        onSubmitSuccess={handleRefresh}  // 添加刷新回调
       />
     </>
   );
