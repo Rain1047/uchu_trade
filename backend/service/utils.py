@@ -29,7 +29,7 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        from backend.service.okx_service import OKXAPIWrapper
+        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
@@ -39,13 +39,14 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.service.okx_service import OKXAPIWrapper
+        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,
             bar=bar
         )
         return FormatUtils.dict2df(result)
+
 
 class DateUtils:
     @staticmethod
@@ -257,20 +258,24 @@ class FormatUtils:
         return instance
 
     @staticmethod
-    def dao2dict(obj, *fields: str) -> dict:
+    def dao2dict(obj, *fields: Optional[str]) -> dict:
         """
-        将对象的指定字段转换为字典。
+        将对象的指定字段转换为字典，去除所有的 _sa_instance_state 属性。
 
         :param obj: 需要转换为字典的对象
         :param fields: 需要包含在字典中的字段名
         :return: 字典格式的数据
         """
         if not fields:
-            # 如果没有指定字段，返回所有字段
-            return vars(obj).copy()
+            # 如果没有指定字段，尝试调用对象的 to_dict 方法
+            if hasattr(obj, 'to_dict'):
+                return obj.to_dict()  # Call the to_dict method if it exists
+            else:
+                # Fallback to vars and filter out _sa_instance_state
+                return {k: v for k, v in vars(obj).items() if k != '_sa_instance_state'}
 
-        # 返回指定字段的字典
-        return {field: getattr(obj, field, None) for field in fields}
+        # 返回指定字段的字典，去除 _sa_instance_state
+        return {field: getattr(obj, field, None) for field in fields if field != '_sa_instance_state'}
 
     @staticmethod
     def to_snake_case(camel_case_str):

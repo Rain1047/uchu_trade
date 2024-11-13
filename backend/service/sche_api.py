@@ -8,7 +8,8 @@ def my_scheduled_job1():
 
 
 def schedule_main_task():
-    main_task()
+    se = StrategyExecutor(env=EnumTradeEnv.DEMO.value)
+    se.main_task()
 
 
 # 主调度器

@@ -36,7 +36,7 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     # 查询历史蜡烛图数据
     print("Double Bollinger Bands Strategy Start...")
-    df = price_collector.query_candles_with_time_frame(stIns.tradePair, stIns.timeFrame)
+    df = price_collector.query_candles_with_time_frame(stIns.trade_pair, stIns.time_frame)
 
     # 初始化策略执行结果对象
     res = StrategyExecuteResult()
@@ -69,13 +69,13 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
         if df.iloc[-1]['signal'] == EnumSide.BUY.value and stIns.side in [EnumSide.BUY.value, EnumSide.ALL.value]:
             # 获取仓位
             position = str(
-                stIns.lossPerTrans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['middle_band']),
-                                           2) * 10)
-            print(f"{stIns.tradePair} position is: {position}")
+                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['middle_band']),
+                                             2) * 10)
+            print(f"{stIns.trade_pair} position is: {position}")
 
             # 获取单个产品行情信息
-            res.sz = price_collector.get_sz(instId=stIns.tradePair, position=position)
-            print(f"{stIns.tradePair} sz is: {res.sz}")
+            res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
+            print(f"{stIns.trade_pair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
             res = get_exit_price(df, res)
@@ -84,9 +84,9 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
         elif df.iloc[-1]['signal'] == EnumSide.SELL.value:
             # 获取仓位
             position = str(
-                stIns.lossPerTrans * round(df.iloc[-1]['close'] / (df.iloc[-1]['middle_band'] - df.iloc[-1]['close']),
-                                           2) * 10 * (-1))
-            res.sz = price_collector.get_sz(instId=stIns.tradePair, position=position)
+                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['middle_band'] - df.iloc[-1]['close']),
+                                             2) * 10 * (-1))
+            res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
             res.signal = True
             res.side = EnumSide.BUY.value
             res.exitPrice = str(df.iloc[-1]['middle_band'] * 1.3)

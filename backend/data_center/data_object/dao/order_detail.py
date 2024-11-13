@@ -5,7 +5,7 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 
-class OrderDetailDB(Base):
+class OrderDetail(Base):
     __tablename__ = 'order_detail'
 
     id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')

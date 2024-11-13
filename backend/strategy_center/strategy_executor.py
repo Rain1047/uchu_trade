@@ -1,4 +1,7 @@
 import sys
+from abc import abstractmethod, ABC
+from typing import Dict
+
 from sqlalchemy import or_
 from concurrent.futures import ProcessPoolExecutor
 
@@ -11,7 +14,7 @@ from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from backend.strategy_center.strategy_instance.entry_strategy.dbb_entry_strategy import dbb_strategy
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_strategy
 from backend.data_center.data_object.dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
@@ -40,30 +43,57 @@ dayTime = 24 * 3600 * 1000
 session = DatabaseUtils.get_db_session()
 
 
+# 基础策略接口
+class TradingStrategy(ABC):
+    @abstractmethod
+    def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
+        """执行策略并返回结果"""
+        pass
+
+
+# 具体策略实现
+class DBBStrategy(TradingStrategy):
+    def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
+        return dbb_strategy(instance)
+
+
+# 简单的策略工厂
+class StrategyFactory:
+    _strategies: Dict[str, TradingStrategy] = {
+        "dbb_strategy": DBBStrategy()
+    }
+
+    @classmethod
+    def get_strategy(cls, strategy_name: str) -> TradingStrategy:
+        strategy = cls._strategies.get(strategy_name)
+        if not strategy:
+            raise ValueError(f"Strategy {strategy_name} not found")
+        return strategy
+
+    @classmethod
+    def register_strategy(cls, name: str, strategy: TradingStrategy):
+        cls._strategies[name] = strategy
+
+
 class StrategyExecutor:
-    def __init__(self, env: Optional[str] = EnumTradeEnv.DEMO.value):
+    def __init__(self, env: Optional[str] = EnumTradeEnv.DEMO.value, time_frame: Optional[str] = None):
         self.env = env
-        self.instance_list = self.get_st_instance_list(StInstance, None)
+        self.tf = time_frame
+        self.instance_list = self.get_st_instance_list(StInstance, self.tf)
 
     def main_task(self):
         logging.info("strategy_executor#main_task begin...")
         # 获取需要执行的规则实例，查询所有符合条件的记录
-        # if tf is null how to change the query make it flexible
-        # if instance_list:
-        #     with ThreadPoolExecutor() as executor:
-        #         # 使用 lambda 传递额外的参数
-        #         futures = [executor.submit(sub_task, instance, okx) for instance in instance_list]
-        #         # 等待所有 futures 完成
-        #         for future in futures:
-        #             future.result()
         if self.instance_list:
-            with ProcessPoolExecutor() as executor:
-                # 使用 lambda 传递额外的参数
-                futures = [executor.submit(self.sub_task, instance, self.env)
-                           for instance in self.instance_list]
-                # 等待所有 futures 完成
-                for future in futures:
-                    future.result()
+            print(f"Instance List: {self.instance_list}")
+
+            # with ProcessPoolExecutor() as executor:
+            #     # 使用 lambda 传递额外的参数
+            #     futures = [executor.submit(self.sub_task, instance, self.env)
+            #                for instance in self.instance_list]
+            #     # 等待所有 futures 完成
+            #     for future in futures:
+            #         future.result()
 
     def sub_task(self, st_instance, env: str):
         okx = OKXAPIWrapper(env)
@@ -125,7 +155,7 @@ class StrategyExecutor:
 def get_post_order_request(result: StrategyExecuteResult, strategy: StrategyInstance) -> PostOrderReq:
     return PostOrderReq(
         tradeEnv=strategy.env,
-        instId=strategy.tradePair,
+        instId=strategy.trade_pair,
         tdMode=EnumTdMode.CASH if result.side == EnumSide.BUY else EnumTdMode.ISOLATED,
         sz=result.sz,
         side=result.side,
