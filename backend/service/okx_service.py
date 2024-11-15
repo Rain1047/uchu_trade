@@ -7,6 +7,7 @@ from backend.data_center.data_object.req.place_order.place_order_req import Post
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import *
 from backend.constant.okx_code import *
+from backend.service.req.page_req import PageRequest
 from backend.utils.decorator import add_docstring
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
 

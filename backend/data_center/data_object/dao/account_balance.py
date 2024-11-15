@@ -38,9 +38,7 @@ class AccountBalance(Base):
     total_pnl = Column(String, comment='现货累计收益')
     total_pnl_ratio = Column(String, comment='现货累计收益率')
     stop_loss_switch = Column(String, comment='自动止损开关')
-    stop_loss_func_id = Column(Integer, comment='止损配置ID')
     limit_order_switch = Column(String, comment='自动限价开关')
-    limit_order_func_id = Column(String, comment='限价委托配置ID')
 
     @staticmethod
     def process_balance_response(response_data):
@@ -132,9 +130,7 @@ class AccountBalance(Base):
                     'total_pnl': balance.total_pnl,
                     'total_pnl_ratio': balance.total_pnl_ratio,
                     'limit_order_switch': balance.limit_order_switch,
-                    'limit_order_func_id': balance.limit_order_func_id,
                     'stop_loss_switch': balance.stop_loss_switch,
-                    'stop_loss_func_id': balance.stop_loss_func_id
 
                 }
                 for balance in results
