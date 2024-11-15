@@ -18,6 +18,7 @@ dbApi = DataAPIWrapper()
 okx = OKXAPIWrapper()
 
 
+@add_docstring("获取成交明细（近三个月）")
 def get_fill_history(req: Optional[PageRequest] = None) -> dict:
     """
     获取成交历史记录，支持分页查询
@@ -100,7 +101,6 @@ def stop_loss(self, request: StopLossReq) -> Dict:
         for post_order in post_order_list:
             print(f"当前存在的订单单号：{str(post_order.algo_id)}")
             # Step1.3 是否人工撤销
-
             if (self.okx.trade.get_algo_order(algoId=post_order.algo_id,
                                               algoClOrdId=post_order.algo_cl_ord_id).get('code')
                     == ORDER_NOT_EXIST):
@@ -130,7 +130,7 @@ def stop_loss(self, request: StopLossReq) -> Dict:
         instId=request.instId,
         tdMode=EnumTdMode.CASH.value,
         side=EnumSide.SELL.value,
-        ordType=EnumOrdType.CONDITIONAL.value,
+        ordType=EnumAlgoOrdType.CONDITIONAL.value,
         algoClOrdId=UuidUtils.generate_32_digit_numeric_id(),
         sz=sz,
         slTriggerPx=slTriggerPx,
@@ -171,22 +171,22 @@ if __name__ == "__main__":
     # dbApi.insert2db(okx.trade.get_orders_history_archive(), OrderDetail)
 
     # 三个月的交易明细
-    res = okx.trade.get_trade_fills_history(instType="SPOT")
-    code = res['code']
-    msg = res['msg']
-    if code == SUCCESS_CODE:
-        dbApi.insert2db(res, FillsHistory)
-        # FillsHistory.insert_response_to_db(result, FillsHistory)
-    else:
-        print(code, msg)
-
-    req = PageRequest()
-    req.pageSize = 10
-    req.pageNum = 2
-    result = dbApi.page(req, FillsHistory)
+    # res = okx.trade.get_trade_fills_history(instType="SPOT")
+    # code = res['code']
+    # msg = res['msg']
+    # if code == SUCCESS_CODE:
+    #     dbApi.insert2db(res, FillsHistory)
+    #     # FillsHistory.insert_response_to_db(result, FillsHistory)
+    # else:
+    #     print(code, msg)
+    #
+    # req = PageRequest()
+    # req.pageSize = 10
+    # req.pageNum = 2
+    # result = dbApi.page(req, FillsHistory)
     # 如果result是空，说明数据库中没有数据
 
-    print(result)
+    # print(result)
 
     # # 现货模式限价单
     # result = okx_demo.trade.place_order(

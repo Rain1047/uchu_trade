@@ -1,7 +1,6 @@
 from functools import wraps
 from typing import Optional, Dict, Type
 import logging
-from datetime import datetime
 from abc import ABC, abstractmethod
 
 from backend.data_center.data_object.dao.order_instance import OrderInstance
@@ -11,7 +10,6 @@ from backend.data_center.data_object.enum_obj import EnumTradeEnv, EnumSide, Enu
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.okx_api.trade_api import TradeAPIWrapper
 from backend.service.utils import FormatUtils, DatabaseUtils, CheckUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_strategy
 
@@ -125,8 +123,7 @@ class StrategyExecutor:
         try:
             logging.info(f"Processing strategy for {st_instance.trade_pair}")
             strategy_dto = self._convert_to_dto(st_instance)
-            # 使用注册中心获取并执行策略
-            # 执行入场策略
+            # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
             if st_instance.entry_st_code:
                 entry_strategy = StrategyRegistry.get_strategy(st_instance.entry_st_code)
@@ -157,13 +154,11 @@ class StrategyExecutor:
         """执行交易操作"""
         try:
             order_request = self._create_order_request(result, strategy)
-
             if result.side == EnumSide.BUY:
                 trade_result = self.trade_api.post_order(order_request)
                 _handle_trade_result(trade_result)
             elif result.side == EnumSide.SELL:
                 trade_result = self.trade_api.post_order(order_request)
-
         except Exception as e:
             logging.error(f"Trade execution error: {e}", exc_info=True)
 
