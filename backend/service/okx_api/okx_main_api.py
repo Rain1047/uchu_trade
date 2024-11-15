@@ -2,9 +2,8 @@
 
 from typing import Optional
 
-from backend.data_center.data_object.dao.saving_balance import SavingBalance
-from backend.service.decorator import singleton
-from backend.service.utils import ConfigUtils, FormatUtils
+from backend.utils.decorator import singleton
+from backend.utils.utils import ConfigUtils
 from backend.service.okx_api.account_api import AccountAPIWrapper
 from backend.service.okx_api.trade_api import TradeAPIWrapper
 from backend.service.okx_api.market_api import MarketAPIWrapper

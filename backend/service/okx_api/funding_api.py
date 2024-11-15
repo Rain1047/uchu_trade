@@ -3,7 +3,6 @@ import base64
 import hashlib
 import hmac
 import json
-import time
 from datetime import datetime, timezone
 
 import okx.Funding as Funding
@@ -11,9 +10,9 @@ from typing import Dict, Optional
 
 import requests
 
-from backend.service.decorator import add_docstring
+from backend.utils.decorator import add_docstring
 from backend.data_center.data_object.enum_obj import *
-from backend.service.utils import ConfigUtils
+from backend.utils.utils import ConfigUtils
 
 
 class FundingAPIWrapper:
