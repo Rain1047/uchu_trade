@@ -36,8 +36,8 @@ async def read_root():
     return {"message": "Hello, FastAPI!", "environment": settings.ENV}
 
 
-@app.get("/get_balance")
-def get_balance():
+@app.get("/get_account_balance")
+def get_account_balance():
     try:
         return okx.account.get_account_balance()
     except Exception as e:

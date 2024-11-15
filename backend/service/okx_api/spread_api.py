@@ -2,7 +2,7 @@
 
 import okx.SpreadTrading as SpreadTrading
 from typing import Optional, Dict
-from backend.service.decorator import add_docstring
+from backend.utils.decorator import add_docstring
 
 
 class SpreadAPIWrapper:

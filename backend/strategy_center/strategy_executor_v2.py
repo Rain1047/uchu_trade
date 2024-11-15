@@ -10,7 +10,7 @@ from backend.data_center.data_object.enum_obj import EnumTradeEnv, EnumSide, Enu
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.utils import FormatUtils, DatabaseUtils, CheckUtils
+from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_strategy
 
 

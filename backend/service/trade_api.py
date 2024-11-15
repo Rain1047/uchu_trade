@@ -5,9 +5,9 @@ from backend.data_center.data_object.dao.algo_order_instance import AlgoOrderIns
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
-from backend.service.decorator import *
+from backend.utils.decorator import *
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.utils import *
+from backend.utils.utils import *
 from backend.constant.okx_code import *
 
 

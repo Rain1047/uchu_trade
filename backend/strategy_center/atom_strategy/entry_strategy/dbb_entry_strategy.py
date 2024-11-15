@@ -9,11 +9,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import talib
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-from backend.data_center.data_object.enum_obj import *
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.utils import *
+from backend.utils.utils import *
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 

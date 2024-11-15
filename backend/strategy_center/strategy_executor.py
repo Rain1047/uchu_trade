@@ -3,7 +3,7 @@ from abc import abstractmethod, ABC
 from typing import Dict
 from sqlalchemy import or_
 from backend.service.trade_api import TradeAPIWrapper
-from backend.service.utils import *
+from backend.utils.utils import *
 from backend.data_center.data_object.dao.order_instance import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.service.okx_api.okx_main_api import OKXAPIWrapper
@@ -14,7 +14,7 @@ from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy imp
 from backend.data_center.data_object.dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
-from backend.service.utils import *
+from backend.utils.utils import *
 import logging
 import datetime
 

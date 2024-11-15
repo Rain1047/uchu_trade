@@ -3,9 +3,9 @@ from typing import List
 
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import declarative_base
-from tvDatafeed import TvDatafeed, Interval
+from tvDatafeed import Interval
 
-from backend.service.utils import DatabaseUtils
+from backend.utils.utils import DatabaseUtils
 
 Base = declarative_base()
 
