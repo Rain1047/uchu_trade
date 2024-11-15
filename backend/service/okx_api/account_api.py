@@ -24,3 +24,7 @@ class AccountAPIWrapper:
     @add_docstring("账户账单流水")
     def get_account_bills_archive(self) -> Dict:
         return self.accountAPI.get_account_bills_archive()
+
+
+if __name__ == '__main__':
+    okx = OKX

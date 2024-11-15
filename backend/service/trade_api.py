@@ -95,7 +95,7 @@ class TradeAPIWrapper:
             instId=request.instId,
             tdMode=EnumTdMode.CASH.value,
             side=EnumSide.SELL.value,
-            ordType=EnumOrdType.CONDITIONAL.value,
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
             algoClOrdId=UuidUtils.generate_32_digit_numeric_id(),
             sz=sz,
             slTriggerPx=slTriggerPx,
@@ -122,12 +122,10 @@ if __name__ == '__main__':
 
     # 下单
 
-
-
     # 止损
-    # req = StopLossReq()
-    # req.instId = "ETH-USDT"
-    # tradeApi_demo.stop_loss(req)
+    req = StopLossReq()
+    req.instId = "ETH-USDT"
+    tradeApi_demo.stop_loss(req)
 
     # 查询当前未结束的止损订单
     # instId = "ETH-USDT"
