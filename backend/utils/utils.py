@@ -1,13 +1,10 @@
 # import this
 import logging
-from datetime import datetime, timedelta, timezone
-import os
+from datetime import timedelta, timezone
 import json
 import os
 from pathlib import Path
-import re
 from typing import Optional
-from backend.data_center.data_object.enum_obj import *
 import yfinance as yf
 
 from sqlalchemy import create_engine
@@ -29,7 +26,7 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
@@ -39,7 +36,7 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
         okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,

@@ -1,4 +1,4 @@
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api import OKXAPIWrapper
 from backend.utils.utils import *
 
 okx = OKXAPIWrapper()
