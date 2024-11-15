@@ -1,5 +1,5 @@
 from backend.data_center.data_object.dao.account_balance import AccountBalance
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 if __name__ == '__main__':
     okx = OKXAPIWrapper()

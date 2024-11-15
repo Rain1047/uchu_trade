@@ -4,7 +4,7 @@ from typing import Optional
 import logging
 
 from backend.controller.trade.trade_request import *
-from backend.service.okx_service import get_fill_history  # 假设这是你的服务函数
+from backend.controller.trade.trade_service import *
 
 # 创建路由器实例
 router = APIRouter()

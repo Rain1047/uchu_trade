@@ -4,7 +4,7 @@ import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.controller.trade.trade_controller import router as trade_router
 from backend.controller.strategy.strategy_controller import router as strategy_router
 from backend.controller.settings import settings

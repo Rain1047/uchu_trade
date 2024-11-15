@@ -4,12 +4,12 @@ from typing import Optional
 
 from backend.utils.decorator import singleton
 from backend.utils.utils import ConfigUtils
-from backend.service.okx_api.account_api import AccountAPIWrapper
-from backend.service.okx_api.trade_api import TradeAPIWrapper
-from backend.service.okx_api.market_api import MarketAPIWrapper
-from backend.service.okx_api.public_data_api import PublicDataAPIWrapper
-from backend.service.okx_api.funding_api import FundingAPIWrapper
-from backend.service.okx_api.spread_api import SpreadAPIWrapper
+from backend.api_center.okx_api.account_api import AccountAPIWrapper
+from backend.api_center.okx_api.trade_api import TradeAPIWrapper
+from backend.api_center.okx_api.market_api import MarketAPIWrapper
+from backend.api_center.okx_api.public_data_api import PublicDataAPIWrapper
+from backend.api_center.okx_api.funding_api import FundingAPIWrapper
+from backend.api_center.okx_api.spread_api import SpreadAPIWrapper
 from backend.data_center.data_object.enum_obj import *
 
 

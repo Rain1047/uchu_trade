@@ -11,8 +11,7 @@ import talib
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.utils.utils import *
+from backend.api_center.okx_api import OKXAPIWrapper
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 

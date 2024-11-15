@@ -6,7 +6,7 @@ from backend.service.trade_api import TradeAPIWrapper
 from backend.utils.utils import *
 from backend.data_center.data_object.dao.order_instance import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
