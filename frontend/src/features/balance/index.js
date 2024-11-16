@@ -12,7 +12,7 @@ import {
     Box,
     Typography,
     Snackbar,
-    CircularProgress
+    CircularProgress, Tooltip, IconButton
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { makeStyles, alpha } from '@material-ui/core/styles';
@@ -22,35 +22,44 @@ import TradeConfigForm from './components/TradeConfigForm';
 import { BalanceHeader } from './components/BalanceHeader';
 import { TABLE_COLUMNS } from './constants/balanceConstants';
 import { calculatePrice, formatNumber, formatBalance } from './utils/balanceUtils';
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
         marginTop: theme.spacing(3),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center', // 居中对齐
     },
     paper: {
         backgroundColor: alpha(theme.palette.background.paper, 0.1),
         backdropFilter: 'blur(8px)',
         boxShadow: theme.shadows[4],
+        width: '95%', // 使用百分比而不是固定宽度
+        maxWidth: '2000px', // 设置最大宽度避免在超大屏幕上过宽
+        margin: '0 auto', // 居中
     },
     table: {
+        tableLayout: 'fixed', // 使用固定表格布局提高性能
         '& .MuiTableCell-root': {
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             color: theme.palette.text.primary,
+            padding: theme.spacing(1.5),
         },
-        '& .MuiTableHead-root .MuiTableCell-root': {
-            backgroundColor: alpha(theme.palette.background.paper, 0.05),
-            color: theme.palette.text.secondary,
+        '& .MuiTableCell-head': {
             fontWeight: 500,
+            whiteSpace: 'nowrap',
         },
-        '& .MuiTableBody-root .MuiTableRow-root': {
-            '&:hover': {
-                backgroundColor: alpha(theme.palette.action.hover, 0.1),
-            },
-            '&:nth-of-type(odd)': {
-                backgroundColor: alpha(theme.palette.background.paper, 0.03),
-            },
+    },
+    tableContainer: {
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': {
+            display: 'none',
         },
+        scrollbarWidth: 'none',
+        '-ms-overflow-style': 'none',
     },
     configsContainer: {
         display: 'flex',
@@ -58,15 +67,33 @@ const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(2),
         padding: theme.spacing(2),
         backgroundColor: alpha(theme.palette.background.paper, 0.03),
+        width: '100%',
     },
     configSection: {
-        flex: 1,
+        flex: '1 1 0', // 使用flex grow和shrink确保平均分配空间
+        minWidth: '300px', // 设置最小宽度避免内容过于拥挤
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing(1),
         padding: theme.spacing(2),
         borderRadius: theme.shape.borderRadius,
         backgroundColor: alpha(theme.palette.background.paper, 0.05),
+        marginRight: theme.spacing(2),
+        '&:last-child': {
+            marginRight: 0,
+        },
+    },
+    expandIconCell: {
+        width: '48px',
+        padding: '0.8px',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    },
+    expandIcon: {
+        padding: 4,
+        color: theme.palette.text.secondary,
+        '&:hover': {
+            color: theme.palette.primary.main,
+        }
     },
     configTitle: {
         fontSize: '0.875rem',
@@ -97,7 +124,24 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(4),
         textAlign: 'center',
         color: theme.palette.error.main,
-    }
+    },
+    // 为不同类型的单元格设置合适的宽度比例
+    cellExpand: {
+        width: '48px',
+        padding: '0 8px',
+    },
+    cellCurrency: {
+        width: '10%',
+    },
+    cellNumber: {
+        width: '15%',
+    },
+    cellAction: {
+        width: '12%',
+    },
+    expandedRow: {
+        backgroundColor: 'transparent !important',
+    },
 }));
 
 const BalanceList = () => {
@@ -238,17 +282,44 @@ const BalanceList = () => {
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
-                            {TABLE_COLUMNS.map(column => (
-                                <TableCell key={column.id} align={column.align}>
-                                    {column.label}
-                                </TableCell>
-                            ))}
+                            <TableCell className={classes.cellExpand} />
+                            <TableCell className={classes.cellCurrency}>币种</TableCell>
+                            <TableCell className={classes.cellNumber} align="right">可用余额</TableCell>
+                            <TableCell className={classes.cellNumber} align="right">账户权益</TableCell>
+                            <TableCell className={classes.cellNumber} align="right">当前价格</TableCell>
+                            <TableCell className={classes.cellNumber} align="right">持仓均价</TableCell>
+                            <TableCell className={classes.cellAction} align="center">自动止损</TableCell>
+                            <TableCell className={classes.cellAction} align="center">自动限价</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {localAssets.map((asset) => (
                             <React.Fragment key={asset.ccy}>
                                 <TableRow hover>
+                                    <TableCell className={classes.expandIconCell}>
+                                        <Tooltip title={expandedRows.has(asset.ccy) ? "收起" : "展开"}>
+                                            <IconButton
+                                                size="small"
+                                                className={classes.expandIcon}
+                                                onClick={() => {
+                                                    setExpandedRows(prev => {
+                                                        const newSet = new Set(prev);
+                                                        if (newSet.has(asset.ccy)) {
+                                                            newSet.delete(asset.ccy);
+                                                        } else {
+                                                            newSet.add(asset.ccy);
+                                                        }
+                                                        return newSet;
+                                                    });
+                                                }}
+                                            >
+                                                {expandedRows.has(asset.ccy) ?
+                                                    <KeyboardArrowUpIcon fontSize="small" /> :
+                                                    <KeyboardArrowDownIcon fontSize="small" />
+                                                }
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
                                     <TableCell>{asset.ccy}</TableCell>
                                     <TableCell align="right">
                                         {formatBalance(asset.avail_bal)}
@@ -317,6 +388,7 @@ const BalanceList = () => {
                                                 )}
                                             </Box>
                                         </TableCell>
+
                                     </TableRow>
                                 )}
                             </React.Fragment>

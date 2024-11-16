@@ -4,8 +4,8 @@ export const TABLE_COLUMNS = [
     { id: 'eq_usd', label: '美金价值($)', align: 'right' },
     { id: 'current_price', label: '当前价格($)', align: 'right' },
     { id: 'acc_avg_px', label: '持仓均价($)', align: 'right' },
-    { id: 'stop_loss_switch', label: '自动止损', align: 'center' },
-    { id: 'limit_order_switch', label: '自动限价', align: 'center' }
+    // { id: 'stop_loss_switch', label: '自动止损', align: 'center' },
+    // { id: 'limit_order_switch', label: '自动限价', align: 'center' }
 ];
 
 export const TRADE_INDICATORS = [

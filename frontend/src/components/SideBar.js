@@ -62,21 +62,7 @@ const SideBar = ({ open, setOpen }) => {
     const classes = useStyles();
 
     const menuItems = [
-        {
-            text: 'Dashboard',
-            icon: <DashboardIcon />,
-            path: '/account/dashboard'
-        },
-        {
-            text: 'Positions',
-            icon: <ShowChartIcon />,
-            path: '/account/positions'
-        },
-        {
-            text: 'Orders',
-            icon: <SwapHorizIcon />,
-            path: '/trade/order'
-        },
+
         {
             text: 'History',
             icon: <HistoryIcon />,

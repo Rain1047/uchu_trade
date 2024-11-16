@@ -18,9 +18,9 @@ const useStyles = makeStyles((theme) => ({
     configRow: {
         display: 'flex',
         alignItems: 'center',
-        gap: theme.spacing(2),
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
+        gap: theme.spacing(1),
+        padding: theme.spacing(0.5),
+        marginBottom: theme.spacing(0.5),
         borderRadius: theme.shape.borderRadius,
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
         '&:hover': {
@@ -30,6 +30,10 @@ const useStyles = makeStyles((theme) => ({
     textField: {
         '& .MuiInputBase-root': {
             color: theme.palette.text.primary,
+            fontSize: '0.813rem', // 13px
+        },
+        '& .MuiInputLabel-root': {
+            fontSize: '0.75rem', // 12px
         },
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
@@ -39,21 +43,30 @@ const useStyles = makeStyles((theme) => ({
                 borderColor: 'rgba(66, 165, 245, 0.3)',
             },
         },
+        // 减小输入框的高度
+        '& .MuiOutlinedInput-input': {
+            padding: '7px 14px',
+        }
     },
     addButton: {
         color: theme.palette.text.secondary,
+        padding: 4,
         '&:hover': {
             color: theme.palette.primary.main,
         },
     },
     confirmButton: {
         color: theme.palette.success.main,
+        padding: 4,
         '&:hover': {
             color: theme.palette.success.light,
         },
         '&.Mui-disabled': {
             color: theme.palette.text.disabled,
         },
+    },
+    menuItem: {
+        fontSize: '0.813rem', // 下拉菜单项的字体大小
     },
 }));
 
@@ -85,7 +98,7 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
                 value={localConfig.signal || ''}
                 onChange={handleChange('signal')}
                 className={classes.textField}
-                style={{ width: 120 }}
+                style={{ width: 110 }}
             >
                 {TRADE_INDICATORS.map(option => (
                     <MenuItem key={option.value} value={option.value}>
@@ -101,7 +114,7 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
                 value={localConfig.interval || ''}
                 onChange={handleChange('interval')}
                 className={classes.textField}
-                style={{ width: 80 }}
+                style={{ width: 70 }}
             />
 
             <TextField
@@ -112,7 +125,7 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
                 onChange={handleChange('percentage')}
                 disabled={!!localConfig.amount}
                 className={classes.textField}
-                style={{ width: 90 }}
+                style={{ width: 80 }}
             />
 
             <TextField
@@ -123,7 +136,7 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
                 onChange={handleChange('amount')}
                 disabled={!!localConfig.percentage}
                 className={classes.textField}
-                style={{ width: 90 }}
+                style={{ width: 80 }}
             />
 
             <Tooltip title={isConfirmed ? "已确认" : "确认"}>
