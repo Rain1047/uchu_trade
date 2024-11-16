@@ -15,7 +15,7 @@ def list_account_balance():
     # 2. 获取列表结果并转换为可修改的字典列表
     balance_list = [dict(balance) for balance in AccountBalance.list_all()]
 
-    # 3. 为每个余额添加自动交易配置
+    # 3. 通过币种获取自动交易配置
     for balance in balance_list:
         ccy = balance.get('ccy')
         auto_config_list = AutoTradeConfig.list_by_ccy(ccy)
