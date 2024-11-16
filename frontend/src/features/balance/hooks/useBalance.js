@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+const API_BASE = 'http://127.0.0.1:8000/api/balance';
 
 export const useBalance = () => {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchBalance = async () => {
+    const fetchBalance = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/balance');
+            const response = await fetch(`${API_BASE}/list_balance`);
             const data = await response.json();
             if (data.success && data.data) {
                 setAssets(data.data);
+            } else {
+                throw new Error(data.message || '获取数据失败');
             }
         } catch (err) {
             setError(err.message);
@@ -19,11 +23,11 @@ export const useBalance = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const saveAutoConfig = async (ccy, type, configs) => {
+    const saveAutoConfig = useCallback(async (ccy, type, configs) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/balance/auto_config', {
+            const response = await fetch(`${API_BASE}/auto_config`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -40,13 +44,12 @@ export const useBalance = () => {
             console.error('Error saving config:', err);
             return false;
         }
-    };
+    }, [fetchBalance]);
 
+    // 只在组件挂载时获取一次数据
     useEffect(() => {
         fetchBalance();
-        const intervalId = setInterval(fetchBalance, 10000);
-        return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchBalance]);
 
     return {
         assets,

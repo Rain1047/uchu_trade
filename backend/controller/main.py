@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.controller.trade.trade_controller import router as trade_router
 from backend.controller.strategy.strategy_controller import router as strategy_router
+from backend.controller.balance.balance_controller import router as balance_router
 from backend.controller.settings import settings
 import uvicorn
 
@@ -16,6 +17,7 @@ app = FastAPI()
 
 app.include_router(trade_router, prefix="/api/trade")
 app.include_router(strategy_router, prefix="/api/strategy")
+app.include_router(balance_router, prefix="/api/balance")
 
 # 配置 CORS
 app.add_middleware(

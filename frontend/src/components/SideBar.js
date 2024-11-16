@@ -17,7 +17,8 @@ import {
     SwapHoriz as SwapHorizIcon,
     ChevronLeft as ChevronLeftIcon,
     Menu as MenuIcon,
-    Settings as SettingsIcon
+    Settings as SettingsIcon,
+    AccountBalance as AccountBalanceIcon
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -85,7 +86,12 @@ const SideBar = ({ open, setOpen }) => {
             text: 'Strategy',
             icon: <SettingsIcon />,
             path: '/strategy'
-        }
+        },
+        {
+            text: 'Balance',  // 新增 Balance 菜单项
+            icon: <AccountBalanceIcon />,
+            path: '/balance'
+        },
     ];
 
     return (
