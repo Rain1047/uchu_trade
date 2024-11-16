@@ -1,8 +1,6 @@
 import React from 'react';
 import '@fontsource/inter';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './account/dashboard'; // 导入Dashboard组件
-import Positions from "./account/positions"; // 导入App样式
 import './App.css';
 import TradeHistoryTable from "./trade/history";
 import { darkTheme} from "./theme";
@@ -51,9 +49,6 @@ function App() {
                 <Router>
                     <Layout>
                         <Routes>
-                            <Route path="/account/dashboard" element={<Dashboard />} />
-                            <Route path="/account/positions" element={<Positions />} />
-                            <Route path="/trade/order" element={<Positions />} />
                             <Route path="/trade/history" element={<TradeHistoryTable />} />
                             <Route path="/strategy" element={<StrategyPage />} />
                             <Route path="/balance" element={<BalanceList />} />
