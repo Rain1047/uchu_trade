@@ -2,7 +2,7 @@ import React from 'react';
 import '@fontsource/inter';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
-import TradeHistoryTable from "./trade/history";
+import TradeHistoryTable from "./features/trade/components/history";
 import { darkTheme} from "./theme";
 import './index.css';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
