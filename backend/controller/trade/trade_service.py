@@ -4,7 +4,7 @@ from backend.service.data_api import *
 from backend.constant.okx_code import *
 from backend.service.req.page_req import PageRequest
 from backend.utils.decorator import add_docstring
-from backend.api_center.okx_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)

@@ -13,15 +13,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.post("/list_balance")
+@router.get("/list_balance")
 def get_balance():
     try:
         balance_list = list_account_balance()
-        respones = {
+        return {
             "success": True,
             "data": balance_list
         }
-        print(respones)
     except Exception as e:
         return {
             "success": False,

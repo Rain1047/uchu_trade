@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container,
     Paper,
@@ -11,14 +11,19 @@ import {
     Switch,
     Collapse,
     Box,
+    CircularProgress,
     Typography,
+    Snackbar
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
+import { Refresh as RefreshIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, blue } from '@material-ui/core/colors';
 import AutoTradeConfig from './components/AutoTradeConfig';
 import { useBalance } from './hooks/useBalance';
 import { TABLE_COLUMNS } from './constants/balanceConstants';
 import { calculatePrice, formatNumber, formatBalance } from './utils/balanceUtils';
+import { BalanceHeader } from './components/BalanceHeader';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -39,27 +44,28 @@ const useStyles = makeStyles((theme) => ({
         '&:hover': {
             backgroundColor: blue[100],
         }
-    },
-    emptyState: {
-        padding: theme.spacing(3),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    },
-    loading: {
-        padding: theme.spacing(3),
-        textAlign: 'center',
-    },
-    error: {
-        padding: theme.spacing(3),
-        textAlign: 'center',
-        color: theme.palette.error.main,
     }
 }));
 
 const BalanceList = () => {
     const classes = useStyles();
     const [expandedRows, setExpandedRows] = useState({});
-    const { assets, loading, error, saveAutoConfig } = useBalance();
+    const [refreshing, setRefreshing] = useState(false);
+    const { assets, loading, error, fetchBalance, saveAutoConfig } = useBalance();
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await fetchBalance();
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     const handleToggle = (ccy, type) => {
         setExpandedRows(prev => ({
@@ -71,12 +77,15 @@ const BalanceList = () => {
         }));
     };
 
-    if (loading) {
+    // 首次加载时获取数据
+    useEffect(() => {
+        fetchBalance();
+    }, [fetchBalance]);
+
+    if (loading && !refreshing) {
         return (
             <Container className={classes.root}>
-                <Typography variant="h5" gutterBottom>
-                    资产管理
-                </Typography>
+                <BalanceHeader onRefresh={handleRefresh} refreshing={refreshing} />
                 <Paper className={classes.loading}>
                     <Typography>Loading...</Typography>
                 </Paper>
@@ -87,9 +96,7 @@ const BalanceList = () => {
     if (error) {
         return (
             <Container className={classes.root}>
-                <Typography variant="h5" gutterBottom>
-                    资产管理
-                </Typography>
+                <BalanceHeader onRefresh={handleRefresh} refreshing={refreshing} />
                 <Paper className={classes.error}>
                     <Typography>Error: {error}</Typography>
                 </Paper>
@@ -97,24 +104,9 @@ const BalanceList = () => {
         );
     }
 
-    if (!assets || assets.length === 0) {
-        return (
-            <Container className={classes.root}>
-                <Typography variant="h5" gutterBottom>
-                    资产管理
-                </Typography>
-                <Paper className={classes.emptyState}>
-                    <Typography>暂无资产数据</Typography>
-                </Paper>
-            </Container>
-        );
-    }
-
     return (
         <Container className={classes.root}>
-            <Typography variant="h5" gutterBottom>
-                资产管理
-            </Typography>
+            <BalanceHeader onRefresh={handleRefresh} refreshing={refreshing} />
 
             <TableContainer component={Paper}>
                 <Table className={classes.table}>
@@ -198,6 +190,19 @@ const BalanceList = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            >
+                <Alert
+                    onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                    severity={snackbar.severity}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };
