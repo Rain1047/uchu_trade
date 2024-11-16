@@ -24,6 +24,7 @@ class KlineDataProcessor:
         SMA_PERIODS = [10, 20, 50, 100, 200]
         for period in SMA_PERIODS:
             df[f'sma{period}'] = ta.SMA(df['close'].values, timeperiod=period).round(2)
+            df[f'ema{period}'] = ta.EMA(df['close'].values, timeperiod=period).round(2)
 
         return df
 
