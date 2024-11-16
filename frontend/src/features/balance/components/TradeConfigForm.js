@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     IconButton,
@@ -8,9 +8,10 @@ import {
 } from '@material-ui/core';
 import {
     Add as AddIcon,
-    Delete as DeleteIcon
+    Delete as DeleteIcon,
+    Check as CheckIcon
 } from '@material-ui/icons';
-import { makeStyles, alpha } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import { TRADE_INDICATORS } from '../constants/balanceConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -21,9 +22,9 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(1),
         marginBottom: theme.spacing(1),
         borderRadius: theme.shape.borderRadius,
-        backgroundColor: alpha(theme.palette.background.paper, 0.05),
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
         '&:hover': {
-            backgroundColor: alpha(theme.palette.background.paper, 0.08),
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
         },
     },
     textField: {
@@ -32,10 +33,10 @@ const useStyles = makeStyles((theme) => ({
         },
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
-                borderColor: alpha(theme.palette.divider, 0.2),
+                borderColor: 'rgba(255, 255, 255, 0.2)',
             },
             '&:hover fieldset': {
-                borderColor: alpha(theme.palette.primary.main, 0.3),
+                borderColor: 'rgba(66, 165, 245, 0.3)',
             },
         },
     },
@@ -45,16 +46,32 @@ const useStyles = makeStyles((theme) => ({
             color: theme.palette.primary.main,
         },
     },
+    confirmButton: {
+        color: theme.palette.success.main,
+        '&:hover': {
+            color: theme.palette.success.light,
+        },
+        '&.Mui-disabled': {
+            color: theme.palette.text.disabled,
+        },
+    },
 }));
 
-const ConfigRow = ({ config, onChange, onRemove }) => {
+const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
     const classes = useStyles();
+    const [localConfig, setLocalConfig] = useState(config);
+    const [isValid, setIsValid] = useState(false);
 
     const handleChange = (field) => (event) => {
         const value = event.target.value;
-        const updates = { ...config, [field]: value };
+        const updates = { ...localConfig, [field]: value };
         if (field === 'percentage' && value) updates.amount = '';
         if (field === 'amount' && value) updates.percentage = '';
+
+        setLocalConfig(updates);
+        // Validate if all required fields are filled
+        const valid = updates.signal && updates.interval && (updates.percentage || updates.amount);
+        setIsValid(valid);
         onChange(updates);
     };
 
@@ -65,7 +82,7 @@ const ConfigRow = ({ config, onChange, onRemove }) => {
                 size="small"
                 variant="outlined"
                 label="指标"
-                value={config.signal || 'SMA'}
+                value={localConfig.signal || ''}
                 onChange={handleChange('signal')}
                 className={classes.textField}
                 style={{ width: 120 }}
@@ -81,7 +98,7 @@ const ConfigRow = ({ config, onChange, onRemove }) => {
                 size="small"
                 variant="outlined"
                 label="间隔"
-                value={config.interval || ''}
+                value={localConfig.interval || ''}
                 onChange={handleChange('interval')}
                 className={classes.textField}
                 style={{ width: 80 }}
@@ -91,9 +108,9 @@ const ConfigRow = ({ config, onChange, onRemove }) => {
                 size="small"
                 variant="outlined"
                 label="百分比"
-                value={config.percentage || ''}
+                value={localConfig.percentage || ''}
                 onChange={handleChange('percentage')}
-                disabled={!!config.amount}
+                disabled={!!localConfig.amount}
                 className={classes.textField}
                 style={{ width: 90 }}
             />
@@ -102,12 +119,25 @@ const ConfigRow = ({ config, onChange, onRemove }) => {
                 size="small"
                 variant="outlined"
                 label="金额"
-                value={config.amount || ''}
+                value={localConfig.amount || ''}
                 onChange={handleChange('amount')}
-                disabled={!!config.percentage}
+                disabled={!!localConfig.percentage}
                 className={classes.textField}
                 style={{ width: 90 }}
             />
+
+            <Tooltip title={isConfirmed ? "已确认" : "确认"}>
+                <span>
+                    <IconButton
+                        size="small"
+                        onClick={() => onConfirm(localConfig)}
+                        disabled={!isValid || isConfirmed}
+                        className={classes.confirmButton}
+                    >
+                        <CheckIcon fontSize="small" />
+                    </IconButton>
+                </span>
+            </Tooltip>
 
             <Tooltip title="删除">
                 <IconButton size="small" onClick={onRemove}>
@@ -118,13 +148,45 @@ const ConfigRow = ({ config, onChange, onRemove }) => {
     );
 };
 
-const TradeConfigForm = ({ configs = [], onAdd, onRemove, onChange }) => {
+const TradeConfigForm = ({ configs = [], onChange }) => {
     const classes = useStyles();
+    const [localConfigs, setLocalConfigs] = useState(configs);
+    const [confirmedConfigs, setConfirmedConfigs] = useState(new Set());
 
-    if (configs.length === 0) {
+    const handleAdd = () => {
+        setLocalConfigs([...localConfigs, {
+            signal: '',
+            interval: '',
+            percentage: '',
+            amount: ''
+        }]);
+    };
+
+    const handleRemove = (index) => {
+        const newConfigs = localConfigs.filter((_, i) => i !== index);
+        setLocalConfigs(newConfigs);
+        const newConfirmed = new Set(confirmedConfigs);
+        newConfirmed.delete(index);
+        setConfirmedConfigs(newConfirmed);
+    };
+
+    const handleChange = (index, updates) => {
+        const newConfigs = [...localConfigs];
+        newConfigs[index] = updates;
+        setLocalConfigs(newConfigs);
+    };
+
+    const handleConfirm = (index, config) => {
+        // Call the API to save the config
+        onChange(config);
+        // Mark this config as confirmed
+        setConfirmedConfigs(new Set([...confirmedConfigs, index]));
+    };
+
+    if (localConfigs.length === 0) {
         return (
             <Tooltip title="添加配置">
-                <IconButton className={classes.addButton} onClick={onAdd}>
+                <IconButton className={classes.addButton} onClick={handleAdd}>
                     <AddIcon />
                 </IconButton>
             </Tooltip>
@@ -133,17 +195,19 @@ const TradeConfigForm = ({ configs = [], onAdd, onRemove, onChange }) => {
 
     return (
         <Box>
-            {configs.map((config, index) => (
+            {localConfigs.map((config, index) => (
                 <ConfigRow
                     key={index}
                     config={config}
-                    onChange={(updates) => onChange(index, updates)}
-                    onRemove={() => onRemove(index)}
+                    onChange={(updates) => handleChange(index, updates)}
+                    onRemove={() => handleRemove(index)}
+                    onConfirm={(config) => handleConfirm(index, config)}
+                    isConfirmed={confirmedConfigs.has(index)}
                 />
             ))}
             <Box display="flex" justifyContent="flex-start" mt={1}>
                 <Tooltip title="添加配置">
-                    <IconButton className={classes.addButton} onClick={onAdd}>
+                    <IconButton className={classes.addButton} onClick={handleAdd}>
                         <AddIcon />
                     </IconButton>
                 </Tooltip>

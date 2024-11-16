@@ -103,11 +103,15 @@ const useStyles = makeStyles((theme) => ({
 const BalanceList = () => {
     const classes = useStyles();
     const [refreshing, setRefreshing] = useState(false);
+    const [localAssets, setLocalAssets] = useState([]);
+    const [expandedRows, setExpandedRows] = useState(new Set());
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
+
+    const [pendingToggles, setPendingToggles] = useState(new Set());
 
     const {
         assets,
@@ -117,6 +121,13 @@ const BalanceList = () => {
         saveAutoConfig,
         toggleAutoSwitch
     } = useBalance();
+
+    // 同步 assets 到 localAssets
+    useEffect(() => {
+        if (assets && assets.length > 0) {
+            setLocalAssets(assets);
+        }
+    }, [assets]);
 
     const showMessage = useCallback((message, severity = 'success') => {
         setSnackbar({
@@ -132,14 +143,54 @@ const BalanceList = () => {
         setRefreshing(false);
     };
 
-    const handleSwitchChange = useCallback(async (ccy, type, currentValue) => {
-        const success = await toggleAutoSwitch(ccy, type, !currentValue);
-        if (success) {
-            showMessage(`${type === 'stop_loss' ? '自动止损' : '自动限价'}已${!currentValue ? '开启' : '关闭'}`);
-        } else {
-            showMessage('操作失败', 'error');
+    const handleSwitchChange = useCallback((ccy, type) => {
+        setLocalAssets(prev => prev.map(asset => {
+            if (asset.ccy === ccy) {
+                const newValue = type === 'stop_loss'
+                    ? asset.stop_loss_switch !== 'true'
+                    : asset.limit_order_switch !== 'true';
+
+                // Expand the row to show config form
+                setExpandedRows(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(ccy);
+                    return newSet;
+                });
+
+                // Add to pending toggles
+                setPendingToggles(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(`${ccy}-${type}`);
+                    return newSet;
+                });
+
+                return {
+                    ...asset,
+                    [type === 'stop_loss' ? 'stop_loss_switch' : 'limit_order_switch']:
+                        newValue ? 'true' : 'false'
+                };
+            }
+            return asset;
+        }));
+    }, []);
+
+    const handleConfigSave = async (ccy, type, configs) => {
+        try {
+            // Here you can call your API to save configs
+            // await saveAutoConfig(ccy, type, configs);
+
+            // Remove from pending toggles
+            setPendingToggles(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(`${ccy}-${type}`);
+                return newSet;
+            });
+
+            showMessage('配置已保存');
+        } catch (error) {
+            showMessage('保存失败', 'error');
         }
-    }, [toggleAutoSwitch, showMessage]);
+    };
 
     const debouncedSave = useCallback(
         debounce(async (ccy, type, configs) => {
@@ -195,7 +246,7 @@ const BalanceList = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {assets.map((asset) => (
+                        {localAssets.map((asset) => (
                             <React.Fragment key={asset.ccy}>
                                 <TableRow hover>
                                     <TableCell>{asset.ccy}</TableCell>
@@ -214,37 +265,19 @@ const BalanceList = () => {
                                     <TableCell align="center">
                                         <Switch
                                             checked={asset.stop_loss_switch === 'true'}
-                                            onChange={() => handleSwitchChange(
-                                                asset.ccy,
-                                                'stop_loss',
-                                                asset.stop_loss_switch === 'true'
-                                            )}
+                                            onChange={() => handleSwitchChange(asset.ccy, 'stop_loss')}
                                             color="primary"
-                                            classes={{
-                                                switchBase: classes.switchBase,
-                                                checked: classes.checked,
-                                                track: classes.track
-                                            }}
                                         />
                                     </TableCell>
                                     <TableCell align="center">
                                         <Switch
                                             checked={asset.limit_order_switch === 'true'}
-                                            onChange={() => handleSwitchChange(
-                                                asset.ccy,
-                                                'limit',
-                                                asset.limit_order_switch === 'true'
-                                            )}
+                                            onChange={() => handleSwitchChange(asset.ccy, 'limit')}
                                             color="primary"
-                                            classes={{
-                                                switchBase: classes.switchBase,
-                                                checked: classes.checked,
-                                                track: classes.track
-                                            }}
                                         />
                                     </TableCell>
                                 </TableRow>
-                                {(asset.stop_loss_switch === 'true' || asset.limit_order_switch === 'true') && (
+                                {expandedRows.has(asset.ccy) && (
                                     <TableRow>
                                         <TableCell colSpan={7} style={{ padding: 0 }}>
                                             <Box className={classes.configsContainer}>
@@ -254,10 +287,10 @@ const BalanceList = () => {
                                                             自动止损配置
                                                         </Typography>
                                                         <TradeConfigForm
-                                                            configs={asset.auto_config_list.filter(
+                                                            configs={asset.auto_config_list?.filter(
                                                                 config => config.type === 'stop_loss'
-                                                            )}
-                                                            onChange={configs => handleConfigChange(
+                                                            ) || []}
+                                                            onChange={(configs) => handleConfigSave(
                                                                 asset.ccy,
                                                                 'stop_loss',
                                                                 configs
@@ -271,10 +304,10 @@ const BalanceList = () => {
                                                             自动限价配置
                                                         </Typography>
                                                         <TradeConfigForm
-                                                            configs={asset.auto_config_list.filter(
+                                                            configs={asset.auto_config_list?.filter(
                                                                 config => config.type === 'limit'
-                                                            )}
-                                                            onChange={configs => handleConfigChange(
+                                                            ) || []}
+                                                            onChange={(configs) => handleConfigSave(
                                                                 asset.ccy,
                                                                 'limit',
                                                                 configs
