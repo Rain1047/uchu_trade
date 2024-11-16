@@ -350,45 +350,40 @@ const BalanceList = () => {
                                 </TableRow>
                                 {expandedRows.has(asset.ccy) && (
                                     <TableRow>
-                                        <TableCell colSpan={7} style={{ padding: 0 }}>
+                                        <TableCell colSpan={8} style={{ padding: 0 }}>
                                             <Box className={classes.configsContainer}>
                                                 {asset.stop_loss_switch === 'true' && (
                                                     <Box className={classes.configSection}>
-                                                        <Typography className={classes.configTitle}>
-                                                            自动止损配置
-                                                        </Typography>
                                                         <TradeConfigForm
                                                             configs={asset.auto_config_list?.filter(
                                                                 config => config.type === 'stop_loss'
                                                             ) || []}
-                                                            onChange={(configs) => handleConfigSave(
+                                                            onChange={configs => handleConfigSave(
                                                                 asset.ccy,
                                                                 'stop_loss',
                                                                 configs
                                                             )}
+                                                            type="stop_loss"
                                                         />
                                                     </Box>
                                                 )}
                                                 {asset.limit_order_switch === 'true' && (
                                                     <Box className={classes.configSection}>
-                                                        <Typography className={classes.configTitle}>
-                                                            自动限价配置
-                                                        </Typography>
                                                         <TradeConfigForm
                                                             configs={asset.auto_config_list?.filter(
                                                                 config => config.type === 'limit'
                                                             ) || []}
-                                                            onChange={(configs) => handleConfigSave(
+                                                            onChange={configs => handleConfigSave(
                                                                 asset.ccy,
                                                                 'limit',
                                                                 configs
                                                             )}
+                                                            type="limit"
                                                         />
                                                     </Box>
                                                 )}
                                             </Box>
                                         </TableCell>
-
                                     </TableRow>
                                 )}
                             </React.Fragment>
