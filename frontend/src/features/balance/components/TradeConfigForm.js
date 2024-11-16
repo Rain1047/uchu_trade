@@ -65,14 +65,34 @@ const useStyles = makeStyles((theme) => ({
             color: theme.palette.text.disabled,
         },
     },
+    typeIndicator: {
+        width: 24,
+        height: 24,
+        borderRadius: 4,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.75rem',
+        color: theme.palette.common.white,
+        fontWeight: 500,
+        userSelect: 'none', // 防止文字被选中
+    },
     menuItem: {
         fontSize: '0.813rem', // 下拉菜单项的字体大小
     },
+
+    stopLossIndicator: {
+        backgroundColor: 'rgba(239,40,180,0.42)', // 使用粉色
+    },
+    limitOrderIndicator: {
+        backgroundColor: 'rgba(4,115,72,0.44)', // 使用绿色
+    }
 }));
 
-const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
+const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed, type }) => {
     const classes = useStyles();
     const [localConfig, setLocalConfig] = useState(config);
+    const [confirmedConfigs, setConfirmedConfigs] = useState(new Set());
     const [isValid, setIsValid] = useState(false);
 
     const handleChange = (field) => (event) => {
@@ -90,6 +110,13 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
 
     return (
         <Box className={classes.configRow}>
+            <Box
+                className={`${classes.typeIndicator} ${
+                    type === 'stop_loss' ? classes.stopLossIndicator : classes.limitOrderIndicator
+                }`}
+            >
+                {type === 'stop_loss' ? 'SL' : 'LO'}
+            </Box>
             <TextField
                 select
                 size="small"
@@ -161,7 +188,7 @@ const ConfigRow = ({ config, onChange, onRemove, onConfirm, isConfirmed }) => {
     );
 };
 
-const TradeConfigForm = ({ configs = [], onChange }) => {
+const TradeConfigForm = ({ configs = [], onChange, type }) => {
     const classes = useStyles();
     const [localConfigs, setLocalConfigs] = useState(configs);
     const [confirmedConfigs, setConfirmedConfigs] = useState(new Set());
@@ -216,6 +243,7 @@ const TradeConfigForm = ({ configs = [], onChange }) => {
                     onRemove={() => handleRemove(index)}
                     onConfirm={(config) => handleConfirm(index, config)}
                     isConfirmed={confirmedConfigs.has(index)}
+                    type={type}
                 />
             ))}
             <Box display="flex" justifyContent="flex-start" mt={1}>
