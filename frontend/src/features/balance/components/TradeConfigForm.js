@@ -1,56 +1,60 @@
 import React from 'react';
 import {
     Box,
-    Button,
     IconButton,
     MenuItem,
     TextField,
-    Typography,
+    Tooltip,
 } from '@material-ui/core';
 import {
     Add as AddIcon,
     Delete as DeleteIcon
 } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, alpha } from '@material-ui/core/styles';
 import { TRADE_INDICATORS } from '../constants/balanceConstants';
 
 const useStyles = makeStyles((theme) => ({
-    configForm: {
-        padding: theme.spacing(2),
-    },
     configRow: {
         display: 'flex',
         alignItems: 'center',
-        marginBottom: theme.spacing(2),
-        '& > *:not(:last-child)': {
-            marginRight: theme.spacing(2),
-        }
+        gap: theme.spacing(2),
+        padding: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+        borderRadius: theme.shape.borderRadius,
+        backgroundColor: alpha(theme.palette.background.paper, 0.05),
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.background.paper, 0.08),
+        },
     },
-    disabledInput: {
-        backgroundColor: theme.palette.action.disabledBackground,
+    textField: {
         '& .MuiInputBase-root': {
-            color: theme.palette.text.disabled,
-        }
+            color: theme.palette.text.primary,
+        },
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: alpha(theme.palette.divider, 0.2),
+            },
+            '&:hover fieldset': {
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+            },
+        },
+    },
+    addButton: {
+        color: theme.palette.text.secondary,
+        '&:hover': {
+            color: theme.palette.primary.main,
+        },
     },
 }));
 
-const TradeConfigForm = ({ config, onChange, onRemove }) => {
+const ConfigRow = ({ config, onChange, onRemove }) => {
     const classes = useStyles();
 
     const handleChange = (field) => (event) => {
         const value = event.target.value;
-        const updates = {
-            ...config,
-            [field]: value,
-        };
-
-        // Handle mutual exclusivity between percentage and amount
-        if (field === 'percentage' && value) {
-            updates.amount = '';
-        } else if (field === 'amount' && value) {
-            updates.percentage = '';
-        }
-
+        const updates = { ...config, [field]: value };
+        if (field === 'percentage' && value) updates.amount = '';
+        if (field === 'amount' && value) updates.percentage = '';
         onChange(updates);
     };
 
@@ -58,9 +62,12 @@ const TradeConfigForm = ({ config, onChange, onRemove }) => {
         <Box className={classes.configRow}>
             <TextField
                 select
+                size="small"
+                variant="outlined"
                 label="指标"
                 value={config.signal || 'SMA'}
                 onChange={handleChange('signal')}
+                className={classes.textField}
                 style={{ width: 120 }}
             >
                 {TRADE_INDICATORS.map(option => (
@@ -71,33 +78,76 @@ const TradeConfigForm = ({ config, onChange, onRemove }) => {
             </TextField>
 
             <TextField
-                label="时间间隔"
+                size="small"
+                variant="outlined"
+                label="间隔"
                 value={config.interval || ''}
                 onChange={handleChange('interval')}
-                style={{ width: 100 }}
+                className={classes.textField}
+                style={{ width: 80 }}
             />
 
             <TextField
+                size="small"
+                variant="outlined"
                 label="百分比"
                 value={config.percentage || ''}
                 onChange={handleChange('percentage')}
                 disabled={!!config.amount}
-                className={config.amount ? classes.disabledInput : ''}
-                style={{ width: 100 }}
+                className={classes.textField}
+                style={{ width: 90 }}
             />
 
             <TextField
+                size="small"
+                variant="outlined"
                 label="金额"
                 value={config.amount || ''}
                 onChange={handleChange('amount')}
                 disabled={!!config.percentage}
-                className={config.percentage ? classes.disabledInput : ''}
-                style={{ width: 100 }}
+                className={classes.textField}
+                style={{ width: 90 }}
             />
 
-            <IconButton onClick={onRemove} color="secondary">
-                <DeleteIcon />
-            </IconButton>
+            <Tooltip title="删除">
+                <IconButton size="small" onClick={onRemove}>
+                    <DeleteIcon fontSize="small" />
+                </IconButton>
+            </Tooltip>
+        </Box>
+    );
+};
+
+const TradeConfigForm = ({ configs = [], onAdd, onRemove, onChange }) => {
+    const classes = useStyles();
+
+    if (configs.length === 0) {
+        return (
+            <Tooltip title="添加配置">
+                <IconButton className={classes.addButton} onClick={onAdd}>
+                    <AddIcon />
+                </IconButton>
+            </Tooltip>
+        );
+    }
+
+    return (
+        <Box>
+            {configs.map((config, index) => (
+                <ConfigRow
+                    key={index}
+                    config={config}
+                    onChange={(updates) => onChange(index, updates)}
+                    onRemove={() => onRemove(index)}
+                />
+            ))}
+            <Box display="flex" justifyContent="flex-start" mt={1}>
+                <Tooltip title="添加配置">
+                    <IconButton className={classes.addButton} onClick={onAdd}>
+                        <AddIcon />
+                    </IconButton>
+                </Tooltip>
+            </Box>
         </Box>
     );
 };
