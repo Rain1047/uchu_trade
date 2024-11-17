@@ -40,6 +40,7 @@ class EnumAlgoOrdType(Enum):
     OCO = 'oco'  # 双向止盈止损
     TRIGGER = 'trigger'  # 计划委托
     MOVE_ORDER_STOP = 'move_order_stop'  # 移动止盈止损
+    CONDITIONAL_OCO = 'conditional,oco'
 
 
 class EnumTriggerPxType(Enum):

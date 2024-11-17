@@ -44,12 +44,12 @@ class TradeAPIWrapper:
         return self.tradeAPI.get_algo_order_details(algoId=algoId, algoClOrdId=algoClOrdId)
 
     @add_docstring("获取未完成策略委托单列表")
-    def get_order_algos_list(self, ordType: Optional[str] = EnumOrdType.MARKET.value,
+    def get_order_algos_list(self, ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
                              algoId='', instType='',
                              instId='', after='',
                              before='', limit='',
                              algoClOrdId='', ):
-        return self.tradeAPI.order_algos_list(ordType=ordType,algoId=algoId, instType=instType, instId=instId,
+        return self.tradeAPI.order_algos_list(ordType=ordType, algoId=algoId, instType=instType, instId=instId,
                                               after=after, before=before, limit=limit, algoClOrdId=algoClOrdId)
 
     @add_docstring("策略下单")
