@@ -18,7 +18,7 @@ class KlineDataProcessor:
             raise ValueError("DataFrame must contain 'high', 'low', and 'close' columns.")
 
         # ADX Indicator
-        df['adx'] = ta.ADX(df['high'].values, df['low'].values, df['close'].values, timeperiod=14).round(2)
+        df['adx'] = ta.ADX(df['high'].values, df['low'].values, df['close'].values, timeperiod=14).round(6)
 
         # SMA Indicator
         SMA_PERIODS = [10, 20, 50, 100, 200]
