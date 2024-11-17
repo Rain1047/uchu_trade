@@ -100,12 +100,49 @@ class AccountBalance(Base):
             raise e
 
     @staticmethod
+    def list_by_ccy(ccy: str):
+        session = DatabaseUtils.get_db_session()
+        try:
+            # 添加过滤条件
+            balances = session.query(AccountBalance).filter(
+                AccountBalance.eq_usd > '10',  # 由于存储为字符串，需要字符串比较
+                AccountBalance.ccy == ccy
+            ).all()
+            balance = balances[0]
+            return {
+                    'id': balance.id,
+                    'ccy': balance.ccy,
+                    'avail_bal': balance.avail_bal,
+                    'avail_eq': balance.avail_eq,
+                    'eq': balance.eq,
+                    'cash_bal': balance.cash_bal,
+                    'u_time': balance.u_time,
+                    'dis_eq': balance.dis_eq,
+                    'eq_usd': balance.eq_usd,
+                    'notional_lever': balance.notional_lever,
+                    'ord_frozen': balance.ord_frozen,
+                    'spot_iso_bal': balance.spot_iso_bal,
+                    'upl': balance.upl,
+                    'spot_bal': balance.spot_bal,
+                    'open_avg_px': balance.open_avg_px,
+                    'acc_avg_px': balance.acc_avg_px,
+                    'spot_upl': balance.spot_upl,
+                    'spot_upl_ratio': balance.spot_upl_ratio,
+                    'total_pnl': balance.total_pnl,
+                    'total_pnl_ratio': balance.total_pnl_ratio,
+                    'limit_order_switch': balance.limit_order_switch,
+                    'stop_loss_switch': balance.stop_loss_switch,
+                }
+        finally:
+            session.close()
+
+    @staticmethod
     def list_all():
         session = DatabaseUtils.get_db_session()
         try:
             # 添加过滤条件
             results = session.query(AccountBalance).filter(
-                AccountBalance.eq_usd > '10'  # 由于存储为字符串，需要字符串比较
+                AccountBalance.eq_usd > '10',  # 由于存储为字符串，需要字符串比较
             ).all()
             return [
                 {

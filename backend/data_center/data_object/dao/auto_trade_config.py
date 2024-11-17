@@ -16,6 +16,9 @@ class AutoTradeConfig(Base):
     type = Column(String, comment='类型')
     signal = Column(String, comment='指标')
     interval = Column(String, comment='时间间隔')
+    percentage = Column(String, comment='百分比')
+    amount = Column(String, comment='金额')
+
 
     @staticmethod
     def list_all() -> List[Dict]:
@@ -28,7 +31,9 @@ class AutoTradeConfig(Base):
                     'ccy': config.ccy,
                     'type': config.type,
                     'signal': config.signal,
-                    'interval': config.interval
+                    'interval': config.interval,
+                    'percentage': config.percentage,
+                    'amount': config.amount
                 }
                 for config in results
             ]
@@ -50,7 +55,9 @@ class AutoTradeConfig(Base):
                     'ccy': config.ccy,
                     'type': config.type,
                     'signal': config.signal,
-                    'interval': config.interval
+                    'interval': config.interval,
+                    'percentage': config.percentage,
+                    'amount': config.amount
                 }
                 for config in results
             ]
@@ -74,7 +81,9 @@ class AutoTradeConfig(Base):
                         ccy=config.get('ccy'),
                         type=config.get('type'),
                         signal=config.get('signal'),
-                        interval=config.get('interval')
+                        interval=config.get('interval'),
+                        percentage=config.get('percentage'),
+                        amount=config.get('amount'),
                     )
                     session.add(new_config)
 

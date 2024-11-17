@@ -1,11 +1,15 @@
 import logging
 from typing import Dict, Any, List
 
+import pandas as pd
+
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.data_center.data_object.dao.account_balance import AccountBalance
 from backend.data_center.data_object.dao.auto_trade_config import AutoTradeConfig
 from backend.data_center.data_object.enum_obj import EnumAlgoOrdType, EnumTdMode
+from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 
+kline_reader = KlineDataReader()
 okx = OKXAPIWrapper()
 trade = okx.trade_api
 
@@ -53,13 +57,46 @@ def place_spot_algo_order():
         #     'instId': f"{config.get('ccy')}-USDT"
         # }
         if config.get('type') == 'stop_loss':
+            ccy = config.get('ccy')
+            print(ccy)
+            balance = AccountBalance().list_by_ccy(config.get('ccy'))
+            eq = balance.get('eq')
+            interval = config.get('interval')
+            pct = config.get('percentage')
+            amount = config.get('amount')
+            # 通过sig和interval获取价格
+            # kline_data = kline_reader.query_kline_data(config.get('ccy'), '1D')
+            file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
+            kline_data = pd.read_csv(f"{file_abspath}")
+            target_index = config.get('signal').lower() + interval
+            target_price = kline_data.iloc[-1][target_index]
+
+            print(f"{eq},{pct}")
+            if pct is not None and str(pct).strip():
+                eq = str(round(float(eq) * int(pct) / 100, 6))
+                print(eq)
+            else:
+                eq = '0'
+
+            print(
+                {
+                    'instId': f"{config.get('ccy')}-USDT",
+                    'tdMode': EnumTdMode.CASH.value,
+                    'side': "sell",
+                    'ordType': EnumAlgoOrdType.CONDITIONAL.value,
+                    'sz': eq,
+                    'slTriggerPx': str(target_price),  # 止损触发价格
+                    'slOrdPx': '-1'
+                }
+            )
+
             result = trade.place_algo_order(
                 instId=f"{config.get('ccy')}-USDT",
                 tdMode=EnumTdMode.CASH.value,
                 side="sell",
                 ordType=EnumAlgoOrdType.CONDITIONAL.value,
-                sz='100',
-                slTriggerPx='0.15',  # 止损触发价格
+                sz=eq,
+                slTriggerPx=str(target_price),  # 止损触发价格
                 slOrdPx='-1'
             )
             print(result)
