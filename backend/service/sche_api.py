@@ -1,5 +1,7 @@
 
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from backend.data_center.data_object.enum_obj import EnumTradeEnv
 from backend.strategy_center.strategy_executor import *
 
 
@@ -16,6 +18,9 @@ def schedule_main_task():
 def main_processor():
     # 创建调度器实例
     scheduler = BackgroundScheduler()
+
+    # 添加作业 - 每天早上8点执行
+    scheduler.add_job(schedule_main_task, 'cron', hour='8', minute='0', second='5')
 
     # 添加作业 - 从午夜开始，每隔4小时执行一次
     # scheduler.add_job(schedule_main_task, 'cron', hour='0-23/4', minute=1, second=0)
