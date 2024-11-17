@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -36,7 +36,7 @@ class AutoTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def list_by_ccy_and_type(ccy, type: Optional[str]):
+    def list_by_ccy_and_type(ccy, type: Optional[str] = "") -> List[Dict[str, Any]]:
         session = DatabaseUtils.get_db_session()
         try:
             filters = [AutoTradeConfig.ccy == ccy]

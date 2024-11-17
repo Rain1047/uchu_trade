@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from backend.data_center.data_object.dao.account_balance import AccountBalance
 from backend.data_center.data_object.dao.auto_trade_config import AutoTradeConfig
+from backend.data_center.data_object.enum_obj import EnumAutoTradeConfigType
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
 
@@ -36,28 +37,25 @@ class StopLossUpdateTask(BaseTask):
             balance_list = AccountBalance.list_all()
             for balance in balance_list:
                 if balance.get('stop_loss_switch') == 'true':
-                    stop_loss_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'))
+                    stop_loss_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
+                                                                             EnumAutoTradeConfigType.STOP_LOSS.value)
+                    # 执行止损更新
+                    total_eq = balance.get('eq_usd')
+                    update_results = self._update_stop_losses(total_eq, stop_loss_configs)
+                    self.logger.info(f"成功更新{balance.get('ccy')} 的止损设置")
+
                 if balance.get('limit_order_switch') == 'true':
-                    trade_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'))
+                    limit_order_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
+                                                                               EnumAutoTradeConfigType.LIMIT_ORDER.value)
                 else:
                     continue
-
-
-
-
 
             trade_configs = AutoTradeConfig.list_all()
             if len(trade_configs) == 0:
                 self.logger.info(f"当前没有交易配置")
 
-
             # 识别需要更新止损的交易对
             stop_loss_updates = self._identify_stop_loss_updates()
-
-            # 执行止损更新
-            update_results = self._update_stop_losses(stop_loss_updates)
-
-            self.logger.info(f"成功更新止损设置: {len(update_results)} 个交易对")
 
             return TaskResult(
                 success=True,
@@ -74,7 +72,6 @@ class StopLossUpdateTask(BaseTask):
 
     def _identify_stop_loss_updates(self) -> List[Dict[str, Any]]:
 
-
         updates = []
         for symbol, data in trade_data.items():
             # TODO: 实现你的止损识别逻辑
@@ -90,9 +87,9 @@ class StopLossUpdateTask(BaseTask):
         # TODO: 实现你的判断逻辑
         return True
 
-    def _update_stop_losses(self, updates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _update_stop_losses(self, total_eq: str, configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         results = []
-        for update in updates:
+        for update in configs:
             try:
                 # TODO: 实现实际的止损更新逻辑
                 results.append({
