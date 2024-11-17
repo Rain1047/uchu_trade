@@ -1,0 +1,30 @@
+# config.yaml
+task_chains:
+  - name: morning_chain
+    schedule:
+      hour: '8'
+      minute: '0'
+      second: '5'
+    config:
+      timeout: 300  # 5分钟总超时
+      max_retries: 3
+      retry_delay: 5
+
+  - name: afternoon_chain
+    schedule:
+      hour: '15-17'
+      minute: '0-59'
+      second: '0'
+    config:
+      timeout: 180  # 3分钟总超时
+      max_retries: 2
+      retry_delay: 3
+
+logging:
+  level: INFO
+  handlers:
+    - type: console
+    - type: file
+      filename: scheduler.log
+      max_bytes: 10485760  # 10MB
+      backup_count: 5
