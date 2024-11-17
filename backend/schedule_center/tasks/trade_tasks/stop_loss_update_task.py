@@ -2,6 +2,9 @@
 from typing import Dict, Any, List, Optional
 import pandas as pd
 from datetime import datetime, timedelta
+
+from backend.data_center.data_object.dao.account_balance import AccountBalance
+from backend.data_center.data_object.dao.auto_trade_config import AutoTradeConfig
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
 
@@ -27,10 +30,29 @@ class StopLossUpdateTask(BaseTask):
                     message="没有获取到交易数据"
                 )
 
-            trade_data = self.previous_result.data.get("trade_data", {})
+            # trade_data = self.previous_result.data.get("trade_data", {})
+
+            # 获取所有交易配置内容
+            balance_list = AccountBalance.list_all()
+            for balance in balance_list:
+                if balance.get('stop_loss_switch') == 'true':
+                    stop_loss_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'))
+                if balance.get('limit_order_switch') == 'true':
+                    trade_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'))
+                else:
+                    continue
+
+
+
+
+
+            trade_configs = AutoTradeConfig.list_all()
+            if len(trade_configs) == 0:
+                self.logger.info(f"当前没有交易配置")
+
 
             # 识别需要更新止损的交易对
-            stop_loss_updates = self._identify_stop_loss_updates(trade_data)
+            stop_loss_updates = self._identify_stop_loss_updates()
 
             # 执行止损更新
             update_results = self._update_stop_losses(stop_loss_updates)
@@ -50,7 +72,9 @@ class StopLossUpdateTask(BaseTask):
                 message=f"更新止损设置失败: {str(e)}"
             )
 
-    def _identify_stop_loss_updates(self, trade_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _identify_stop_loss_updates(self) -> List[Dict[str, Any]]:
+
+
         updates = []
         for symbol, data in trade_data.items():
             # TODO: 实现你的止损识别逻辑
