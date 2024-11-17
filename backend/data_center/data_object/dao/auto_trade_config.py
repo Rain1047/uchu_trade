@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional
+
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -16,12 +18,32 @@ class AutoTradeConfig(Base):
     interval = Column(String, comment='时间间隔')
 
     @staticmethod
-    def list_by_ccy(ccy):
+    def list_all() -> List[Dict]:
         session = DatabaseUtils.get_db_session()
         try:
-            results = session.query(AutoTradeConfig).filter(
-                AutoTradeConfig.ccy == ccy
-            ).all()
+            results = session.query(AutoTradeConfig).all()
+            return [
+                {
+                    'id': config.id,
+                    'ccy': config.ccy,
+                    'type': config.type,
+                    'signal': config.signal,
+                    'interval': config.interval
+                }
+                for config in results
+            ]
+        finally:
+            session.close()
+
+    @staticmethod
+    def list_by_ccy_and_type(ccy, type: Optional[str]):
+        session = DatabaseUtils.get_db_session()
+        try:
+            filters = [AutoTradeConfig.ccy == ccy]
+            if type and type.strip():
+                filters.append(AutoTradeConfig.type == type)
+
+            results = session.query(AutoTradeConfig).filter(*filters).all()
             return [
                 {
                     'id': config.id,

@@ -144,6 +144,12 @@ class EnumSubType(Enum):
                 return item.description
         return None
 
+
+class EnumAutoTradeConfigType(Enum):
+    STOP_LOSS = "stop_loss"
+    LIMIT_ORDER = "limit_order"
+
+
 if __name__ == '__main__':
     # 使用示例
     print(EnumSubType.get_description('275'))  # 输出: 价差交易平空

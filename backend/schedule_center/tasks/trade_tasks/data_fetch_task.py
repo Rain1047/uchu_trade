@@ -1,6 +1,8 @@
 from typing import Dict, Any, List, Optional
 import pandas as pd
 from datetime import datetime, timedelta
+
+from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
 
@@ -18,30 +20,27 @@ class TradeDataFetchTask(BaseTask):
 
     def execute(self) -> TaskResult:
         try:
+            data_len = 0
             self.logger.info("开始获取交易数据...")
 
             # TODO: 实现获取交易数据的具体逻辑
             # trade_data = self.fetch_trade_data()
+            data_collector = KlineDataCollector()
+            res = data_collector.batch_collect_data()
+            if not res.get("success"):
+                return TaskResult(
+                    success=False,
+                    message=f"获取交易数据失败"
+                )
+            else:
+                data_len = res.get("data")
 
-            # 示例数据结构
-            trade_data = {
-                "BTC-USDT": {
-                    "price": 50000,
-                    "volume": 100,
-                    "indicators": {
-                        "ma7": 49500,
-                        "ma21": 48000,
-                        "rsi": 65
-                    }
-                }
-            }
-
-            self.logger.info(f"成功获取交易数据: {len(trade_data)} 个交易对")
+            self.logger.info(f"成功获取交易数据: {data_len} 个交易对")
 
             return TaskResult(
                 success=True,
                 message="交易数据获取成功",
-                data={"trade_data": trade_data}
+                data={"trade_data": data_len}
             )
 
         except Exception as e:

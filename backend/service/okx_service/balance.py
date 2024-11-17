@@ -18,7 +18,7 @@ def list_account_balance():
     # 3. 通过币种获取自动交易配置
     for balance in balance_list:
         ccy = balance.get('ccy')
-        auto_config_list = AutoTradeConfig.list_by_ccy(ccy)
+        auto_config_list = AutoTradeConfig.list_by_ccy_and_type(ccy)
         balance['auto_config_list'] = list(auto_config_list) if auto_config_list else []
 
     print("Final balance list:", balance_list)
@@ -26,7 +26,7 @@ def list_account_balance():
 
 
 def list_balance_config(ccy):
-    print(AutoTradeConfig.list_by_ccy(ccy))
+    print(AutoTradeConfig.list_by_ccy_and_type(ccy))
 
 
 if __name__ == '__main__':

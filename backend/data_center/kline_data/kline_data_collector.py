@@ -1,5 +1,6 @@
+import logging
 import os
-from typing import Optional
+from typing import Optional, Dict
 
 import pandas as pd
 from pandas import DataFrame
@@ -16,6 +17,7 @@ class KlineDataCollector:
         self._load_config()
         self.tv = TvDatafeed(self.config['tradingview_account'],
                              self.config['tradingview_password'])
+        self.logger = logging.getLogger(__name__)
 
     def _load_config(self):
         self.config = ConfigUtils.get_config()
@@ -45,13 +47,24 @@ class KlineDataCollector:
             # 如果文件不存在，直接保存数据（包括表头）
             df.to_csv(filename, mode='a', index=True)
 
-    def batch_collect_data(self):
-        item_list: List[SymbolInstance] = query_all_symbol_instance()
-        for item in item_list:
-            print(f"{item.symbol}, {item.interval} Start Collecting.")
-            self.collect_data(item.symbol, Interval(item.interval))
-            print(f"{item.symbol}, {item.interval} Collecting Finished.")
-        print("Batch Collecting Finished.")
+    def batch_collect_data(self) -> Dict:
+        try:
+            item_list: List[SymbolInstance] = query_all_symbol_instance()
+            for item in item_list:
+                print(f"{item.symbol}, {item.interval} Start Collecting.")
+                self.collect_data(item.symbol, Interval(item.interval))
+                print(f"{item.symbol}, {item.interval} Collecting Finished.")
+            print("Batch Collecting Finished.")
+            return {
+                "success": True,
+                "date": len(item_list)
+            }
+        except Exception as e:
+            self.logger.error(f"batch collect data error:{e}")
+            return {
+                "success": False,
+                "data": 0
+            }
 
     @staticmethod
     def query_kline_data(symbol: str, interval: Interval) -> DataFrame:
