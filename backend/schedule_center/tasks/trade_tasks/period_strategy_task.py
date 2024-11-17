@@ -46,6 +46,7 @@ class PeriodicStrategyTask(BaseTask):
 
     def _run_strategy(self, current_time: datetime) -> Dict[str, Any]:
         # TODO: 实现具体的策略逻辑
+        self.logger.info(f"策略执行时间: {current_time.isoformat()}")
         return {
             "timestamp": current_time.isoformat(),
             "interval": self.interval,
