@@ -1,7 +1,7 @@
 # account_api_wrapper.py
 
 import okx.Account as Account
-from typing import Dict
+from typing import Dict, Optional
 from backend.utils.decorator import add_docstring
 
 
@@ -14,8 +14,8 @@ class AccountAPIWrapper:
         return self.accountAPI.get_account_balance()
 
     @add_docstring("账户持仓信息 - 期货交易")
-    def get_positions(self) -> Dict:
-        return self.accountAPI.get_positions()
+    def get_positions(self, instType='', instId: Optional[str] = '') -> Dict:
+        return self.accountAPI.get_positions(instId=instId, instType=instType)
 
     @add_docstring("账户历史持仓信息")
     def get_positions_history(self) -> Dict:
@@ -27,4 +27,4 @@ class AccountAPIWrapper:
 
 
 if __name__ == '__main__':
-    okx = OKX
+    pass

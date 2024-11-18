@@ -20,9 +20,14 @@ class TradeAPIWrapper:
     '''
     普通交易
     '''
+
     @add_docstring("获取订单信息")
     def get_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
+
+    @add_docstring("获取订单信息")
+    def get_order_list(self, instType: str, instId='', ordType: Optional[str] = "", state: Optional[str] = "") -> Dict:
+        return self.tradeAPI.get_order_list(instType=instType, instId=instId, ordType=ordType, state=state)
 
     @add_docstring("下单")
     def place_order(self, instId: str, sz: str, side: Optional[str] = 'buy', posSide: Optional[str] = '',
@@ -39,16 +44,17 @@ class TradeAPIWrapper:
     '''
     策略交易
     '''
+
     @add_docstring("获取策略订单信息")
     def get_algo_order(self, algoId: Optional[str], algoClOrdId: Optional[str]) -> Dict:
         return self.tradeAPI.get_algo_order_details(algoId=algoId, algoClOrdId=algoClOrdId)
 
     @add_docstring("获取未完成策略委托单列表")
-    def get_order_algos_list(self, ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
-                             algoId='', instType='',
-                             instId='', after='',
-                             before='', limit='',
-                             algoClOrdId='', ):
+    def order_algos_list(self, ordType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value,
+                         algoId='', instType='',
+                         instId='', after='',
+                         before='', limit='',
+                         algoClOrdId='', ):
         return self.tradeAPI.order_algos_list(ordType=ordType, algoId=algoId, instType=instType, instId=instId,
                                               after=after, before=before, limit=limit, algoClOrdId=algoClOrdId)
 
