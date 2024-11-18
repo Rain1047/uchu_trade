@@ -37,7 +37,7 @@ def list_spot_unfinished_algo_order() -> List[Dict[str, Any]]:
         List[Dict[str, Any]]: 订单列表，如果没有订单或发生错误则返回空列表
     """
     try:
-        result = trade.get_order_algos_list(
+        result = trade.order_algos_list(
             instType='SPOT',
             ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
         )

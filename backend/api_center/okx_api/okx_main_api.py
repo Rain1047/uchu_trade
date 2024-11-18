@@ -83,7 +83,6 @@ if __name__ == '__main__':
     # print(sb.amt)
     # okx_api.funding_api.purchase_redempt(ccy='USDT', amt='2', side='redempt', rate='0.03')
 
-    # result = okx_api.trade_api.get_order_algos_list(instId="ETH-USDT")
-    # print(f"{result}")
+
 
 
