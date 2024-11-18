@@ -14,6 +14,20 @@ okx = OKXAPIWrapper()
 trade = okx.trade_api
 
 
+# [调度主任务] 取消所有的限价、止盈止损订单
+def cancel_all_algo_orders_main_task():
+    spot_unfinished_algo_list = list_spot_unfinished_algo_order()
+    cancel_algo_list = []
+    for algo_order in spot_unfinished_algo_list:
+        cancel_algo_list.append(
+            {
+                'instId': algo_order.get('instId'),
+                'algoId': algo_order.get('algoId')
+            }
+        )
+    cancel_spot_unfinished_algo_order(cancel_algo_list)
+
+
 # 获取现货所有未完成的止盈止损委托
 def list_spot_unfinished_algo_order() -> List[Dict[str, Any]]:
     """
@@ -41,21 +55,37 @@ def list_spot_unfinished_algo_order() -> List[Dict[str, Any]]:
         return []
 
 
-# 取消现货所有未完成的止盈止损委托
+# 取消现货所有未完成的止盈止损和限价委托
 def cancel_spot_unfinished_algo_order(algo_orders):
     cancel_result = trade.cancel_algo_order(algo_orders)
     print(cancel_result)
 
 
-def place_spot_algo_order():
+# [调度主任务] 根据配置进行止盈止损、限价委托
+def place_algo_order_main_task():
     # 1. 获取configs
-    auto_trade_configs = AutoTradeConfig().list_all()
-    print(auto_trade_configs)
-    # 2. 根据configs组装参数
-    for config in auto_trade_configs:
-        # post_request = {
-        #     'instId': f"{config.get('ccy')}-USDT"
-        # }
+    algo_order_configs = AutoTradeConfig().list_all()
+    limit_order_configs = []
+    stop_loss_configs = []
+    for config in algo_order_configs:
+        if config.get('type') == 'stop_loss':
+            stop_loss_configs.append(config)
+        elif config.get('type') == 'limit_order':
+            limit_order_configs.append(config)
+    # 2. 处理stop loss的任务
+    if len(stop_loss_configs) > 0:
+        place_spot_stop_loss_by_config(stop_loss_configs)
+    # 3. 处理limit order的任务
+    if len(limit_order_configs) > 0:
+        place_spot_limit_order_by_config(limit_order_configs)
+
+
+def place_spot_limit_order_by_config(limit_order_configs: List):
+    pass
+
+
+def place_spot_stop_loss_by_config(stop_loss_configs: List):
+    for config in stop_loss_configs:
         if config.get('type') == 'stop_loss':
             ccy = config.get('ccy')
             print(ccy)
@@ -65,7 +95,6 @@ def place_spot_algo_order():
             pct = config.get('percentage')
             amount = config.get('amount')
             # 通过sig和interval获取价格
-            # kline_data = kline_reader.query_kline_data(config.get('ccy'), '1D')
             file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
             kline_data = pd.read_csv(f"{file_abspath}")
             target_index = config.get('signal').lower() + interval
@@ -77,7 +106,6 @@ def place_spot_algo_order():
                 print(eq)
             else:
                 eq = '0'
-
             print(
                 {
                     'instId': f"{config.get('ccy')}-USDT",
@@ -89,7 +117,6 @@ def place_spot_algo_order():
                     'slOrdPx': '-1'
                 }
             )
-
             result = trade.place_algo_order(
                 instId=f"{config.get('ccy')}-USDT",
                 tdMode=EnumTdMode.CASH.value,
@@ -103,19 +130,5 @@ def place_spot_algo_order():
 
 
 if __name__ == '__main__':
-    # spot_unfinished_algo_list = list_spot_unfinished_algo_order()
-    # cancel_algo_list = []
-    # for algo_order in spot_unfinished_algo_list:
-    #     cancel_algo_list.append(
-    #         {
-    #             'instId': algo_order.get('instId'),
-    #             'algoId': algo_order.get('algoId')
-    #         }
-    #     )
-    # cancel_spot_unfinished_algo_order(cancel_algo_list)
-
-    place_spot_algo_order()
-
-
-
+    pass
 
