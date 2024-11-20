@@ -25,15 +25,21 @@ def cancel_swap_unfinished_algo_order(swap_unfinished_algo_list):
 
 
 # 获取合约未完成的限价止盈委托
-def get_swap_limit_order_list():
-    print(trade.get_order_list(
-        instType='SWAP', ordType='limit'))
+def get_swap_limit_order_list() -> List[Dict[str, Any]]:
+    swap_limit_orders = trade.get_order_list(
+        instType='SWAP', ordType='limit')
+    if swap_limit_orders.get('code') == '0':
+        return swap_limit_orders.get('data')
+    return []
 
 
 # 查看永续合约持仓信息
-def list_swap_positions():
-    result = account.get_positions(instType='SWAP')
-    print(result)
+def list_swap_positions() -> List[Dict[str, Any]]:
+    swap_positions = account.get_positions(instType='SWAP')
+    print(swap_positions)
+    if swap_positions.get('code') == '0':
+        return swap_positions.get('data')
+    return []
 
 
 # 获取合约未完成的止盈止损委托
@@ -45,14 +51,14 @@ def list_swap_unfinished_algo_order() -> List[Dict[str, Any]]:
         List[Dict[str, Any]]: 订单列表，如果没有订单或发生错误则返回空列表
     """
     try:
-        result = trade.order_algos_list(
+        swap_algo_orders = trade.order_algos_list(
             instType='SWAP',
             ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
         )
 
         # 检查result和data是否存在且有效
-        data = result.get('data')
-        if result.get('code') == '0' and data and isinstance(data, list):
+        data = swap_algo_orders.get('data')
+        if swap_algo_orders.get('code') == '0' and data and isinstance(data, list):
             return data
 
         return []
@@ -66,8 +72,8 @@ def list_swap_unfinished_algo_order() -> List[Dict[str, Any]]:
 if __name__ == '__main__':
     # 永续合约持仓信息
     list_swap_positions()
-    # 未完成的永续合约止盈止损委托
-    result = list_swap_unfinished_algo_order()
-    print(result)
-    # 永续合约的限价委托
-    get_swap_limit_order_list()
+    # # 未完成的永续合约止盈止损委托
+    # result = list_swap_unfinished_algo_order()
+    # print(result)
+    # # 永续合约的限价委托
+    # get_swap_limit_order_list()
