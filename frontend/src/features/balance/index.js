@@ -12,18 +12,20 @@ import {
     Box,
     Typography,
     Snackbar,
-    CircularProgress, Tooltip, IconButton
+    CircularProgress,
+    Dialog,
+    Tabs,
+    Tab
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { makeStyles, alpha } from '@material-ui/core/styles';
 import { debounce } from 'lodash';
 import { useBalance } from './hooks/useBalance';
-import TradeConfigForm from './components/TradeConfigForm';
+import { AutoTradeConfig } from './components/AutoTradeConfig';
+import { PositionTable } from './components/PositionTable';
+import { OrderTable } from './components/OrderTable';
 import { BalanceHeader } from './components/BalanceHeader';
-import { TABLE_COLUMNS } from './constants/balanceConstants';
-import { calculatePrice, formatNumber, formatBalance } from './utils/balanceUtils';
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { formatNumber, formatBalance, calculatePrice } from './utils/balanceUtils';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -31,18 +33,18 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(3),
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center', // 居中对齐
+        alignItems: 'center',
     },
     paper: {
         backgroundColor: alpha(theme.palette.background.paper, 0.1),
         backdropFilter: 'blur(8px)',
         boxShadow: theme.shadows[4],
-        width: '95%', // 使用百分比而不是固定宽度
-        maxWidth: '2000px', // 设置最大宽度避免在超大屏幕上过宽
-        margin: '0 auto', // 居中
+        width: '95%',
+        maxWidth: '2000px',
+        margin: '0 auto',
     },
     table: {
-        tableLayout: 'fixed', // 使用固定表格布局提高性能
+        tableLayout: 'fixed',
         '& .MuiTableCell-root': {
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             color: theme.palette.text.primary,
@@ -53,82 +55,15 @@ const useStyles = makeStyles((theme) => ({
             whiteSpace: 'nowrap',
         },
     },
-    tableContainer: {
-        overflowX: 'auto',
-        '&::-webkit-scrollbar': {
-            display: 'none',
-        },
-        scrollbarWidth: 'none',
-        '-ms-overflow-style': 'none',
-    },
-    configsContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        gap: theme.spacing(2),
-        padding: theme.spacing(2),
-        backgroundColor: alpha(theme.palette.background.paper, 0.03),
-        width: '100%',
-    },
-    configSection: {
-        flex: '1 1 0', // 使用flex grow和shrink确保平均分配空间
-        minWidth: '300px', // 设置最小宽度避免内容过于拥挤
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing(1),
-        padding: theme.spacing(2),
-        borderRadius: theme.shape.borderRadius,
-        backgroundColor: alpha(theme.palette.background.paper, 0.05),
-        marginRight: theme.spacing(2),
-        '&:last-child': {
-            marginRight: 0,
-        },
-    },
-    expandIconCell: {
-        width: '48px',
-        padding: '0.8px',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    },
-    expandIcon: {
-        padding: 4,
-        color: theme.palette.text.secondary,
+    clickableRow: {
+        cursor: 'pointer',
         '&:hover': {
-            color: theme.palette.primary.main,
-        }
-    },
-    configTitle: {
-        fontSize: '0.875rem',
-        color: theme.palette.text.secondary,
-        marginBottom: theme.spacing(1),
-    },
-    switchBase: {
-        color: theme.palette.grey[500],
-        '&$checked': {
-            color: theme.palette.primary.main,
+            backgroundColor: `${alpha(theme.palette.action.hover, 0.1)} !important`,
         },
-        '&$checked + $track': {
-            backgroundColor: theme.palette.primary.main,
-        },
-        transition: theme.transitions.create(['transform', 'color'], {
-            duration: theme.transitions.duration.shortest,
-        }),
     },
-    checked: {},
-    track: {
-        opacity: 0.3,
-    },
-    loadingContainer: {
-        padding: theme.spacing(4),
-        textAlign: 'center',
-    },
-    errorContainer: {
-        padding: theme.spacing(4),
-        textAlign: 'center',
-        color: theme.palette.error.main,
-    },
-    // 为不同类型的单元格设置合适的宽度比例
-    cellExpand: {
-        width: '48px',
-        padding: '0 8px',
+    expandedContent: {
+        padding: theme.spacing(3),
+        backgroundColor: alpha(theme.palette.background.paper, 0.05),
     },
     cellCurrency: {
         width: '10%',
@@ -139,8 +74,18 @@ const useStyles = makeStyles((theme) => ({
     cellAction: {
         width: '12%',
     },
-    expandedRow: {
-        backgroundColor: 'transparent !important',
+    tabsContainer: {
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        marginBottom: theme.spacing(2),
+    },
+    loadingContainer: {
+        padding: theme.spacing(4),
+        textAlign: 'center',
+    },
+    errorContainer: {
+        padding: theme.spacing(4),
+        textAlign: 'center',
+        color: theme.palette.error.main,
     },
 }));
 
@@ -148,25 +93,23 @@ const BalanceList = () => {
     const classes = useStyles();
     const [refreshing, setRefreshing] = useState(false);
     const [localAssets, setLocalAssets] = useState([]);
-    const [expandedRows, setExpandedRows] = useState(new Set());
+    const [expandedRow, setExpandedRow] = useState(null);
+    const [activeTab, setActiveTab] = useState(0);
+    const [configDialog, setConfigDialog] = useState({ open: false, type: null, ccy: null });
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
 
-    const [pendingToggles, setPendingToggles] = useState(new Set());
-
     const {
         assets,
         loading,
         error,
         fetchBalance,
-        saveAutoConfig,
-        toggleAutoSwitch
+        saveAutoConfig
     } = useBalance();
 
-    // 同步 assets 到 localAssets
     useEffect(() => {
         if (assets && assets.length > 0) {
             setLocalAssets(assets);
@@ -187,66 +130,38 @@ const BalanceList = () => {
         setRefreshing(false);
     };
 
-    const handleSwitchChange = useCallback((ccy, type) => {
-        setLocalAssets(prev => prev.map(asset => {
-            if (asset.ccy === ccy) {
-                const newValue = type === 'stop_loss'
-                    ? asset.stop_loss_switch !== 'true'
-                    : asset.limit_order_switch !== 'true';
+    const handleRowClick = (ccy) => {
+        setExpandedRow(expandedRow === ccy ? null : ccy);
+        setActiveTab(0);
+    };
 
-                // Expand the row to show config form
-                setExpandedRows(prev => {
-                    const newSet = new Set(prev);
-                    newSet.add(ccy);
-                    return newSet;
-                });
+    const handleSwitchClick = (e, ccy, type) => {
+        e.stopPropagation();
+        setConfigDialog({ open: true, type, ccy });
+    };
 
-                // Add to pending toggles
-                setPendingToggles(prev => {
-                    const newSet = new Set(prev);
-                    newSet.add(`${ccy}-${type}`);
-                    return newSet;
-                });
+    const handleConfigClose = () => {
+        setConfigDialog({ open: false, type: null, ccy: null });
+    };
 
-                return {
-                    ...asset,
-                    [type === 'stop_loss' ? 'stop_loss_switch' : 'limit_order_switch']:
-                        newValue ? 'true' : 'false'
-                };
-            }
-            return asset;
-        }));
-    }, []);
-
-    const handleConfigSave = async (ccy, type, configs) => {
+    const handleConfigSave = async (configs) => {
         try {
-            // Here you can call your API to save configs
-            // await saveAutoConfig(ccy, type, configs);
-
-            // Remove from pending toggles
-            setPendingToggles(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(`${ccy}-${type}`);
-                return newSet;
-            });
-
-            showMessage('配置已保存');
+            const success = await saveAutoConfig(
+                configDialog.ccy,
+                configDialog.type,
+                configs
+            );
+            if (success) {
+                showMessage('配置已保存');
+                handleConfigClose();
+                fetchBalance();
+            } else {
+                showMessage('保存失败', 'error');
+            }
         } catch (error) {
             showMessage('保存失败', 'error');
         }
     };
-
-    const debouncedSave = useCallback(
-        debounce(async (ccy, type, configs) => {
-            const success = await saveAutoConfig(ccy, type, configs);
-            showMessage(success ? '配置已保存' : '保存失败', success ? 'success' : 'error');
-        }, 500),
-        [saveAutoConfig, showMessage]
-    );
-
-    const handleConfigChange = useCallback((ccy, type, configs) => {
-        debouncedSave(ccy, type, configs);
-    }, [debouncedSave]);
 
     useEffect(() => {
         fetchBalance();
@@ -282,7 +197,6 @@ const BalanceList = () => {
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
-                            <TableCell className={classes.cellExpand} />
                             <TableCell className={classes.cellCurrency}>币种</TableCell>
                             <TableCell className={classes.cellNumber} align="right">可用余额</TableCell>
                             <TableCell className={classes.cellNumber} align="right">账户权益</TableCell>
@@ -295,31 +209,11 @@ const BalanceList = () => {
                     <TableBody>
                         {localAssets.map((asset) => (
                             <React.Fragment key={asset.ccy}>
-                                <TableRow hover>
-                                    <TableCell className={classes.expandIconCell}>
-                                        <Tooltip title={expandedRows.has(asset.ccy) ? "收起" : "展开"}>
-                                            <IconButton
-                                                size="small"
-                                                className={classes.expandIcon}
-                                                onClick={() => {
-                                                    setExpandedRows(prev => {
-                                                        const newSet = new Set(prev);
-                                                        if (newSet.has(asset.ccy)) {
-                                                            newSet.delete(asset.ccy);
-                                                        } else {
-                                                            newSet.add(asset.ccy);
-                                                        }
-                                                        return newSet;
-                                                    });
-                                                }}
-                                            >
-                                                {expandedRows.has(asset.ccy) ?
-                                                    <KeyboardArrowUpIcon fontSize="small" /> :
-                                                    <KeyboardArrowDownIcon fontSize="small" />
-                                                }
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
+                                <TableRow
+                                    hover
+                                    onClick={() => handleRowClick(asset.ccy)}
+                                    className={classes.clickableRow}
+                                >
                                     <TableCell>{asset.ccy}</TableCell>
                                     <TableCell align="right">
                                         {formatBalance(asset.avail_bal)}
@@ -336,53 +230,39 @@ const BalanceList = () => {
                                     <TableCell align="center">
                                         <Switch
                                             checked={asset.stop_loss_switch === 'true'}
-                                            onChange={() => handleSwitchChange(asset.ccy, 'stop_loss')}
+                                            onChange={(e) => handleSwitchClick(e, asset.ccy, 'stop_loss')}
+                                            onClick={(e) => e.stopPropagation()}
                                             color="primary"
                                         />
                                     </TableCell>
                                     <TableCell align="center">
                                         <Switch
                                             checked={asset.limit_order_switch === 'true'}
-                                            onChange={() => handleSwitchChange(asset.ccy, 'limit')}
+                                            onChange={(e) => handleSwitchClick(e, asset.ccy, 'limit_order')}
+                                            onClick={(e) => e.stopPropagation()}
                                             color="primary"
                                         />
                                     </TableCell>
                                 </TableRow>
-                                {expandedRows.has(asset.ccy) && (
+                                {expandedRow === asset.ccy && (
                                     <TableRow>
-                                        <TableCell colSpan={8} style={{ padding: 0 }}>
-                                            <Box className={classes.configsContainer}>
-                                                {asset.stop_loss_switch === 'true' && (
-                                                    <Box className={classes.configSection}>
-                                                        <TradeConfigForm
-                                                            configs={asset.auto_config_list?.filter(
-                                                                config => config.type === 'stop_loss'
-                                                            ) || []}
-                                                            onChange={configs => handleConfigSave(
-                                                                asset.ccy,
-                                                                'stop_loss',
-                                                                configs
-                                                            )}
-                                                            type="stop_loss"
-                                                        />
-                                                    </Box>
-                                                )}
-                                                {asset.limit_order_switch === 'true' && (
-                                                    <Box className={classes.configSection}>
-                                                        <TradeConfigForm
-                                                            configs={asset.auto_config_list?.filter(
-                                                                config => config.type === 'limit'
-                                                            ) || []}
-                                                            onChange={configs => handleConfigSave(
-                                                                asset.ccy,
-                                                                'limit',
-                                                                configs
-                                                            )}
-                                                            type="limit"
-                                                        />
-                                                    </Box>
-                                                )}
+                                        <TableCell colSpan={7} className={classes.expandedContent}>
+                                            <Box className={classes.tabsContainer}>
+                                                <Tabs
+                                                    value={activeTab}
+                                                    onChange={(e, newValue) => setActiveTab(newValue)}
+                                                    indicatorColor="primary"
+                                                    textColor="primary"
+                                                >
+                                                    <Tab label="当前持仓" />
+                                                    <Tab label="活动委托" />
+                                                </Tabs>
                                             </Box>
+                                            {activeTab === 0 ? (
+                                                <PositionTable ccy={asset.ccy} />
+                                            ) : (
+                                                <OrderTable ccy={asset.ccy} />
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -391,6 +271,23 @@ const BalanceList = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Dialog
+                open={configDialog.open}
+                onClose={handleConfigClose}
+                maxWidth="md"
+                fullWidth
+            >
+                <AutoTradeConfig
+                    type={configDialog.type}
+                    ccy={configDialog.ccy}
+                    existingConfigs={
+                        localAssets.find(a => a.ccy === configDialog.ccy)?.auto_config_list || []
+                    }
+                    onSave={handleConfigSave}
+                    onClose={handleConfigClose}
+                />
+            </Dialog>
 
             <Snackbar
                 open={snackbar.open}
