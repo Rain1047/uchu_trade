@@ -155,6 +155,31 @@ class EnhancedSignalStrategy(bt.Strategy):
                  f'胜率: {winning_rate:.2f}%')
 
 
+def _print_results(results: BacktestResults) -> None:
+    """打印回测结果"""
+    print('\n=== 回测结果 ===')
+    print(f'初始投资组合价值: ${results.initial_value:.2f}')
+    print(f'最终投资组合价值: ${results.final_value:.2f}')
+    print(f'总收益率: {results.total_return:.2%}')
+    print(f'年化收益率: {results.annual_return:.2%}')
+    if results.sharpe_ratio is None:
+        print('夏普比率: 无法计算')
+    else:
+        print(f'夏普比率: {results.sharpe_ratio:.3f}')
+    print(f'最大回撤: {results.max_drawdown:.2%}')
+    print(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
+
+    print('\n=== 交易统计 ===')
+    print(f'总交易次数: {results.total_trades}')
+    print(f'盈利交易次数: {results.winning_trades}')
+    print(f'亏损交易次数: {results.losing_trades}')
+    print(f'胜率: {results.win_rate:.2f}%')
+    if results.winning_trades:
+        print(f'平均盈利: ${results.avg_win:.2f}')
+    if results.losing_trades:
+        print(f'平均亏损: ${results.avg_loss:.2f}')
+
+
 class BacktestSystem:
     """回测系统主类"""
 
@@ -253,36 +278,12 @@ class BacktestSystem:
         results = self.cerebro.run()
         backtest_results = self._process_results(results)
 
-        self._print_results(backtest_results)
+        _print_results(backtest_results)
 
         if plot:
             self.cerebro.plot(style='candlestick')
 
         return backtest_results
-
-    def _print_results(self, results: BacktestResults) -> None:
-        """打印回测结果"""
-        print('\n=== 回测结果 ===')
-        print(f'初始投资组合价值: ${results.initial_value:.2f}')
-        print(f'最终投资组合价值: ${results.final_value:.2f}')
-        print(f'总收益率: {results.total_return:.2%}')
-        print(f'年化收益率: {results.annual_return:.2%}')
-        if results.sharpe_ratio is None:
-            print('夏普比率: 无法计算')
-        else:
-            print(f'夏普比率: {results.sharpe_ratio:.3f}')
-        print(f'最大回撤: {results.max_drawdown:.2%}')
-        print(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
-
-        print('\n=== 交易统计 ===')
-        print(f'总交易次数: {results.total_trades}')
-        print(f'盈利交易次数: {results.winning_trades}')
-        print(f'亏损交易次数: {results.losing_trades}')
-        print(f'胜率: {results.win_rate:.2f}%')
-        if results.winning_trades:
-            print(f'平均盈利: ${results.avg_win:.2f}')
-        if results.losing_trades:
-            print(f'平均亏损: ${results.avg_loss:.2f}')
 
 
 def main():

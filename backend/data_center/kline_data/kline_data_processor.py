@@ -26,6 +26,10 @@ class KlineDataProcessor:
             df[f'sma{period}'] = ta.SMA(df['close'].values, timeperiod=period).round(2)
             df[f'ema{period}'] = ta.EMA(df['close'].values, timeperiod=period).round(2)
 
+        # 布林带 Double Boolean Bands
+        df['upper_band1'], _, df['lower_band1'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=1, nbdevdn=1)
+        df['upper_band2'], _, df['lower_band2'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2)
+
         return df
 
     @staticmethod
