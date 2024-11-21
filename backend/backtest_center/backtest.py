@@ -5,6 +5,10 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass
 import unittest
 import pandas as pd
+from tvDatafeed import Interval
+
+from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_strategy_for_backtest
 
 
 @dataclass
@@ -298,6 +302,15 @@ def main():
     results = backtest.run(df, plot=True)
 
     return results
+
+
+def real_test():
+    backtest = BacktestSystem(initial_cash=100000.0, risk_percent=2.0, commission=0.001)
+    tv = KlineDataCollector()
+    file_abspath = tv.get_abspath(symbol='BTC', interval=Interval.in_daily)
+    df = pd.read_csv(f"{file_abspath}")
+    df = dbb_entry_strategy_for_backtest(df)
+
 
 
 if __name__ == '__main__':

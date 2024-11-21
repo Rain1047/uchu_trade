@@ -1,6 +1,9 @@
 import os
 import sys
 
+import pandas as pd
+from pandas import DataFrame
+
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
@@ -21,6 +24,17 @@ publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
 okx = OKXAPIWrapper()
 
 price_collector = TickerPriceCollector()
+
+
+def dbb_entry_strategy_for_backtest(df: DataFrame) -> DataFrame:
+    if not df.empty:
+        df['buy_sig'] = 0
+        df['prev_close'] = df['close'].shift(1)
+        buy_mask = (df['prev_close'] < df['upper_band1']) & \
+                   (df['close'] > df['upper_band1']) & \
+                   (df['close'] < df['upper_band2'])
+        df.loc[buy_mask, 'buy_sig'] = 1
+    return df
 
 
 def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
@@ -53,8 +67,8 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
         print(f"{df.iloc[-2]['timestamp']},{df.iloc[-2]['close']},{df.iloc[-2]['upper_band1']},{df.iloc[-3]['close']}")
 
         if ((df.iloc[-2]['close'] > df.iloc[-2]['upper_band1']) and
-            (df.iloc[-3]['close'] < df.iloc[-3]['upper_band1']) and
-            (df.iloc[-4]['close'] < df.iloc[-4]['upper_band1'])):
+                (df.iloc[-3]['close'] < df.iloc[-3]['upper_band1']) and
+                (df.iloc[-4]['close'] < df.iloc[-4]['upper_band1'])):
             df.loc[df.index[-1], 'signal'] = EnumSide.BUY.value
 
         if ((df.iloc[-1]['close'] < df.iloc[-1]['upper_band1']) and
