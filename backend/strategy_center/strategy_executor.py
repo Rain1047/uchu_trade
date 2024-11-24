@@ -2,15 +2,17 @@ import sys
 from abc import abstractmethod, ABC
 from typing import Dict
 from sqlalchemy import or_
+
+from backend.data_center.data_object.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
 from backend.service.trade_api import TradeAPIWrapper
 from backend.utils.utils import *
 from backend.data_center.data_object.dao.order_instance import OrderInstance
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
-from backend.api_center.okx_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_strategy
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_live
 from backend.data_center.data_object.dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
@@ -20,7 +22,7 @@ import datetime
 
 # 创建一个字典来存储不同的策略方法
 strategy_methods = {
-    "dbb_strategy": dbb_strategy
+    "dbb_strategy": dbb_entry_long_strategy_live
 }
 
 # 获取当前时间的毫秒级别时间戳
@@ -50,7 +52,8 @@ class TradingStrategy(ABC):
 # 具体策略实现
 class DBBStrategy(TradingStrategy):
     def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
-        return dbb_strategy(instance)
+
+        return dbb_entry_long_strategy_live(instance)
 
 
 # 简单的策略工厂

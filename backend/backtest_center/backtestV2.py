@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from tvDatafeed import Interval
 
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_strategy_for_backtest
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest
 from backend.strategy_center.atom_strategy.filter_strategy.sma_filter_strategy import sam_filter_strategy_for_backtest
 
@@ -321,7 +321,7 @@ def main():
     df = pd.read_csv(f"{file_abspath}")
 
     # 执行策略生成信号
-    df = dbb_entry_strategy_for_backtest(df)
+    df = dbb_entry_long_strategy_backtest(df)
     df = dbb_exist_strategy_for_backtest(df)
     df = sam_filter_strategy_for_backtest(df)
     df['datetime'] = pd.to_datetime(df['datetime'])

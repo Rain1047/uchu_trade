@@ -1,12 +1,13 @@
 import os
 import sys
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
 from tvDatafeed import Interval
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide
+from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumTimeFrame
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 
@@ -20,31 +21,41 @@ import okx.MarketData as MarketData
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
-
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
-
 okx = OKXAPIWrapper()
-
 price_collector = TickerPriceCollector()
+tv = KlineDataCollector()
 
 
-def dbb_entry_strategy_for_backtest(df: DataFrame) -> DataFrame:
-    # if not df.empty:
-    #     df['entry_sig'] = 0
-    #     df['prev_close'] = df['close'].shift(1)
-    #     df['prev_open'] = df['open'].shift(1)
-    #     buy_mask1 = (df['open'] < df['upper_band1']) & \
-    #                 (df['close'] > df['upper_band1']) & \
-    #                 (df['close'] < df['upper_band2'])
-    #     buy_mask2 = (df['prev_open'] < df['upper_band1']) & \
-    #                 (df['prev_close'] < df['upper_band1'])
-    #     final_buy_mask = buy_mask1 & buy_mask2
-    #
-    #     df.loc[final_buy_mask, 'entry_sig'] = 1
-    #     # 使用实际收盘价作为入场价格
-    #     df.loc[final_buy_mask, 'entry_price'] = df.loc[buy_mask1, 'open']
-    # return df
+def convert_timeframe_to_interval(time_frame: str) -> Interval:
+    # 创建映射字典
+    mapping = {
+        "1m": Interval.in_1_minute,
+        "3m": Interval.in_3_minute,
+        "5m": Interval.in_5_minute,
+        "15m": Interval.in_15_minute,
+        "30m": Interval.in_30_minute,
+        "45m": Interval.in_45_minute,
+        "1h": Interval.in_1_hour,
+        "2h": Interval.in_2_hour,
+        "3h": Interval.in_3_hour,
+        "4h": Interval.in_4_hour,
+        "1d": Interval.in_daily,
+        "1w": Interval.in_weekly,
+        "1M": Interval.in_monthly
+    }
 
+    return mapping.get(time_frame, None)
+
+
+def dbb_entry_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
+    if stIns is None:
+        return dbb_entry_long_strategy_backtest(df)
+    else:
+        return dbb_entry_long_strategy_live(df, stIns)
+
+
+def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
 
@@ -90,46 +101,32 @@ def dbb_entry_strategy_for_backtest(df: DataFrame) -> DataFrame:
     return df
 
 
-def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
+def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     双布林带突破策略：在股价突破双布林带上轨时执行买入操作。
 
     Args:
+        df (DataFrame)
         stIns (StrategyInstance): 策略实例对象，包含交易对、时间窗口大小等信息。
 
     Returns:
         StrategyExecuteResult: 策略执行结果对象，包含交易信号和交易方向。
     """
-    # 查询历史蜡烛图数据
-    print("Double Bollinger Bands Strategy Start...")
-    df = price_collector.query_candles_with_time_frame(stIns.trade_pair, stIns.time_frame)
-
     # 初始化策略执行结果对象
     res = StrategyExecuteResult()
-    res.side = EnumSide.BUY.value
-
     # 检查 DataFrame 是否为空
     if not df.empty:
-        # 计算布林带
-        df['upper_band1'], df['middle_band'], df['lower_band1'] = talib.BBANDS(df['close'], timeperiod=20, nbdevup=1,
-                                                                               nbdevdn=1)
-        df['upper_band2'], _, df['lower_band2'] = talib.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2)
-
         df['signal'] = 'no_sig'
         # 实施交易策略
-        print(f"{df.iloc[-2]['timestamp']},{df.iloc[-2]['close']},{df.iloc[-2]['upper_band1']},{df.iloc[-3]['close']}")
-
         if ((df.iloc[-2]['close'] > df.iloc[-2]['upper_band1']) and
                 (df.iloc[-3]['close'] < df.iloc[-3]['upper_band1']) and
                 (df.iloc[-4]['close'] < df.iloc[-4]['upper_band1'])):
             df.loc[df.index[-1], 'signal'] = EnumSide.BUY.value
 
-        if ((df.iloc[-1]['close'] < df.iloc[-1]['upper_band1']) and
-                (df.iloc[-2]['close'] > df.iloc[-1]['upper_band1']) and
-                (df.iloc[-3]['close'] > df.iloc[-3]['upper_band1'])):
-            df.iloc[-1]['signal'] = EnumSide.SELL.value
-
-        print(df.iloc[-1]['signal'])
+        # if ((df.iloc[-1]['close'] < df.iloc[-1]['upper_band1']) and
+        #         (df.iloc[-2]['close'] > df.iloc[-1]['upper_band1']) and
+        #         (df.iloc[-3]['close'] > df.iloc[-3]['upper_band1'])):
+        #     df.iloc[-1]['signal'] = EnumSide.SELL.value
 
         # 如果满足买入信号，则设置交易信号为True
         if df.iloc[-1]['signal'] == EnumSide.BUY.value and stIns.side in [EnumSide.BUY.value, EnumSide.ALL.value]:
@@ -145,17 +142,6 @@ def dbb_strategy(stIns: StrategyInstance) -> StrategyExecuteResult:
             res.signal = True
             res.side = EnumSide.BUY.value
             res = get_exit_price(df, res)
-            return res
-
-        elif df.iloc[-1]['signal'] == EnumSide.SELL.value:
-            # 获取仓位
-            position = str(
-                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['middle_band'] - df.iloc[-1]['close']),
-                                             2) * 10 * (-1))
-            res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
-            res.signal = True
-            res.side = EnumSide.BUY.value
-            res.exitPrice = str(df.iloc[-1]['middle_band'] * 1.3)
             return res
         else:
             res.signal = False
@@ -175,8 +161,4 @@ def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
 
 
 if __name__ == '__main__':
-    tv = KlineDataCollector()
-    file_abspath = tv.get_abspath(symbol='BTC', interval=Interval.in_daily)
-    df = pd.read_csv(f"{file_abspath}")
-
-    df = dbb_entry_strategy_for_backtest(df)
+    pass

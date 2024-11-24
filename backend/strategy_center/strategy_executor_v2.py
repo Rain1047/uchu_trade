@@ -3,6 +3,9 @@ from typing import Optional, Dict, Type
 import logging
 from abc import ABC, abstractmethod
 
+import pandas as pd
+from tvDatafeed import Interval
+
 from backend.data_center.data_object.dao.order_instance import OrderInstance
 from backend.data_center.data_object.dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
@@ -11,7 +14,7 @@ from backend.data_center.data_object.req.place_order.place_order_req import Post
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
-from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_strategy
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_live
 
 
 class StrategyRegistry:
@@ -56,7 +59,7 @@ class TradingStrategy(ABC):
 @StrategyRegistry.register('dbb_strategy')
 class DBBStrategy(TradingStrategy):
     def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
-        return dbb_strategy(instance)
+        return dbb_entry_long_strategy_live(instance)
 
 
 def _handle_trade_result(trade_result: dict):
