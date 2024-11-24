@@ -58,29 +58,30 @@ def dbb_entry_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
 def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
+    df['entry_price'] = 0
 
     # Create shifted columns
     df['prev_open_1'] = df['open'].shift(1)
-    df['prev_open_2'] = df['open'].shift(2)
+    # df['prev_open_2'] = df['open'].shift(2)
     df['prev_upper_band1_1'] = df['upper_band1'].shift(1)
-    df['prev_upper_band1_2'] = df['upper_band1'].shift(2)
+    # df['prev_upper_band1_2'] = df['upper_band1'].shift(2)
 
     # Create conditions for current row
     current_condition = (
             (df['open'] < df['upper_band1'])  # 条件1
             & (df['close'] > df['upper_band1'])  # 条件2
             & (df['prev_open_1'] < df['prev_upper_band1_1'])  # 条件3
-            & (df['prev_open_2'] < df['prev_upper_band1_2'])  # 条件4
+            # & (df['prev_open_2'] < df['prev_upper_band1_2'])  # 条件4
     )
 
     # 添加调试信息
     df['debug_condition1'] = df['open'] < df['upper_band1']
     df['debug_condition2'] = df['close'] > df['upper_band1']
     df['debug_condition3'] = df['prev_open_1'] < df['prev_upper_band1_1']
-    df['debug_condition4'] = df['prev_open_2'] < df['prev_upper_band1_2']
 
     # Set buy signals
     df.loc[current_condition, 'entry_sig'] = 1
+    df.loc[current_condition, 'entry_price'] = df.loc[current_condition, 'close']
 
     # 验证信号
     problematic_signals = df[df['entry_sig'] == 1]
@@ -91,12 +92,11 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
             print(f"Condition 1 (current open < upper_band1): {problematic_signals.loc[idx, 'debug_condition1']}")
             print(f"Condition 2 (current close > upper_band1): {problematic_signals.loc[idx, 'debug_condition2']}")
             print(f"Condition 3 (prev open < prev upper_band1): {problematic_signals.loc[idx, 'debug_condition3']}")
-            print(f"Condition 4 (prev_2 open < prev_2 upper_band1): {problematic_signals.loc[idx, 'debug_condition4']}")
 
     # Clean up temporary columns
-    df.drop(['prev_open_1', 'prev_open_2', 'prev_upper_band1_1',
-             'prev_upper_band1_2', 'debug_condition1', 'debug_condition2',
-             'debug_condition3', 'debug_condition4'], axis=1, inplace=True)
+    df.drop(['prev_open_1', 'prev_upper_band1_1',
+             'debug_condition1', 'debug_condition2',
+             'debug_condition3'], axis=1, inplace=True)
 
     return df
 
