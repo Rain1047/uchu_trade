@@ -7,8 +7,11 @@ import unittest
 import pandas as pd
 from tvDatafeed import Interval
 
+from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
+from backend.data_center.data_object.enum_obj import EnumTimeFrame
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_strategy_for_backtest
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest, \
+    dbb_entry_strategy
 
 
 @dataclass
@@ -305,12 +308,10 @@ def main():
 
 
 def real_test():
-    backtest = BacktestSystem(initial_cash=100000.0, risk_percent=2.0, commission=0.001)
     tv = KlineDataCollector()
     file_abspath = tv.get_abspath(symbol='BTC', interval=Interval.in_daily)
     df = pd.read_csv(f"{file_abspath}")
-    df = dbb_entry_strategy_for_backtest(df)
-
+    df = dbb_entry_strategy(df, None)
 
 
 if __name__ == '__main__':
