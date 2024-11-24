@@ -126,6 +126,7 @@ class DBBStrategy(bt.Strategy):
                 self.buy_price = order.executed.price
             else:
                 self.log(f'卖出执行: 价格: {order.executed.price:.2f}, '
+                         f'目标价格: {order.price:.2f}, '  # 添加目标价格的日志
                          f'成本: {order.executed.value:.2f}, '
                          f'手续费: {order.executed.comm:.2f}')
                 if self.buy_price:
@@ -143,6 +144,7 @@ class DBBStrategy(bt.Strategy):
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             self.log('订单取消/保证金不足/拒绝')
+            self.log(f'订单详情: {order.info}')  # 添加更多错误信息
 
         self.order = None
 
@@ -181,8 +183,11 @@ class DBBStrategy(bt.Strategy):
                     self.order = self.buy(size=size)
         else:
             if self.sell_sig[0] == 1:
+                sell_price = self.sell_price[0]
                 self.log(f'卖出信号触发, 价格: {self.dataclose[0]:.2f}')
-                self.order = self.sell(size=self.position.size)
+                self.order = self.sell(size=self.position.size,
+                                       exectype=bt.Order.Limit,
+                                       price=sell_price)
 
     def stop(self):
         """策略结束时的统计"""
@@ -322,8 +327,8 @@ def main():
 
     # 执行策略生成信号
     df = dbb_entry_long_strategy_backtest(df)
+    # df = sam_filter_strategy_for_backtest(df)
     df = dbb_exist_strategy_for_backtest(df)
-    df = sam_filter_strategy_for_backtest(df)
     df['datetime'] = pd.to_datetime(df['datetime'])
 
     # 运行回测

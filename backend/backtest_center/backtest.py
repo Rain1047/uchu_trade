@@ -6,9 +6,6 @@ from dataclasses import dataclass
 import unittest
 import pandas as pd
 from tvDatafeed import Interval
-
-from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-from backend.data_center.data_object.enum_obj import EnumTimeFrame
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest, \
     dbb_entry_strategy
