@@ -2,8 +2,8 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Any
 import logging
-from models.backtest_results import BacktestResults
-from models.trade_record import TradeRecord
+from backend.backtest_center.models.backtest_result import BacktestResults
+from backend.backtest_center.models.trade_record import TradeRecord
 
 logger = logging.getLogger(__name__)
 
