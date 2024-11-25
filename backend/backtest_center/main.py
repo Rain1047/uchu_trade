@@ -160,6 +160,9 @@ def interval_to_seconds(interval: Interval) -> int:
 def main():
     """主函数"""
     try:
+        # 设置日志级别为DEBUG以查看详细信息
+        logging.getLogger('backend.backtest_center.models.backtest_result').setLevel(logging.DEBUG)
+
         # 设置回测参数
         INITIAL_CASH = 100000.0
         RISK_PERCENT = 2.0
@@ -186,11 +189,17 @@ def main():
         logger.info("开始运行回测")
         results = backtest.run(df, plot=True)
 
-        logger.info("回测完成")
+        # 在运行回测之前打印回测结果对象的内容
+        logger.debug("回测结果对象内容:")
+        for k, v in results.__dict__.items():
+            logger.debug(f"{k}: {v} ({type(v)})")
+
+        results = backtest.run(df, plot=True)
+
         return results
 
     except Exception as e:
-        logger.error(f"回测过程中发生错误: {str(e)}")
+        logger.error(f"回测过程中发生错误: {str(e)}", exc_info=True)
         raise
 
 
