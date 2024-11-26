@@ -93,6 +93,9 @@ class BaseStrategy(bt.Strategy):
         Args:
             order: 订单对象
         """
+        if order.status in [order.Submitted, order.Accepted]:
+            return
+
         if order.status in [order.Completed]:
             self.log(
                 f'订单执行: {order.executed.price:.2f}, '
