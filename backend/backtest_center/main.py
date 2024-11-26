@@ -66,14 +66,6 @@ def load_and_process_data(symbol: str, interval: Interval) -> pd.DataFrame:
         if missing_columns:
             raise ValueError(f"数据缺少必要列: {missing_columns}")
 
-        # 数据清理
-        df = df.dropna(subset=required_columns)
-
-        # 确保数值类型正确
-        numeric_columns = ['open', 'high', 'low', 'close', 'volume']
-        for col in numeric_columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-
         # 生成信号
         logger.info("开始生成交易信号")
         df = dbb_entry_long_strategy_backtest(df)
