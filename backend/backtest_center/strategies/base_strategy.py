@@ -3,6 +3,8 @@ from typing import Optional, Any, Dict
 from datetime import datetime
 import logging
 
+from backend.backtest_center.utils.logger_config import setup_logger
+
 
 class BaseStrategy(bt.Strategy):
     """
@@ -22,10 +24,8 @@ class BaseStrategy(bt.Strategy):
         self.trade_count = 0  # 交易次数
         self.winning_trades = 0  # 盈利交易数
         self.losing_trades = 0  # 亏损交易数
-
         # 设置日志
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self._setup_logging()
+        self.logger = setup_logger(self.__class__.__name__)
 
     def _setup_logging(self):
         """设置日志配置"""
