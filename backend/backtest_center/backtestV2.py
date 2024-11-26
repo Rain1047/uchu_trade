@@ -1,45 +1,14 @@
 import backtrader as bt
 import pandas as pd
-import numpy as np
 from typing import Dict, Any, Optional
-from dataclasses import dataclass
 
 from tvDatafeed import Interval
 
+from backend.backtest_center.models.backtest_result import BacktestResults
+from backend.backtest_center.models.trade_record import TradeRecord
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest
-
-
-@dataclass
-class BacktestResults:
-    """回测结果数据类"""
-    initial_value: float
-    final_value: float
-    total_return: float
-    annual_return: float
-    sharpe_ratio: float
-    max_drawdown: float
-    max_drawdown_amount: float
-    total_trades: int
-    winning_trades: int
-    losing_trades: int
-    avg_win: float
-    avg_loss: float
-    win_rate: float
-
-
-# 首先添加Trade记录类
-@dataclass
-class TradeRecord:
-    """交易记录数据类"""
-    datetime: str
-    action: str  # 'BUY' or 'SELL'
-    price: float
-    size: float
-    value: float
-    commission: float
-    pnl: float = 0.0  # 仅在卖出时有效
 
 
 def _print_results(results: BacktestResults) -> None:
@@ -364,7 +333,6 @@ class BacktestSystem:
         with pd.ExcelWriter('backtest_results.xlsx') as writer:
             records_df.to_excel(writer, sheet_name='Trade Records', index=False)
             stats_df.to_excel(writer, sheet_name='Summary', index=False)
-
 
     def run(self, df: pd.DataFrame, plot: bool = True) -> BacktestResults:
         """运行回测"""

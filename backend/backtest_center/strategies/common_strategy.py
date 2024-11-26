@@ -5,14 +5,6 @@ from backend.backtest_center.strategies.base_strategy import BaseStrategy
 
 
 class CommonStrategy(BaseStrategy):
-    """
-    双布林带策略实现
-
-    参数:
-        risk_percent (float): 每次交易的风险百分比
-        max_position_size (float): 最大仓位比例
-    """
-
     params = (
         ('risk_percent', 2.0),
         ('max_position_size', 0.5),
