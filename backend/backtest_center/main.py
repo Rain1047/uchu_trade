@@ -3,17 +3,13 @@ import pandas as pd
 from pathlib import Path
 from tvDatafeed import Interval
 
+from backend.backtest_center.utils.logger_config import setup_logger
 from core.backtest_system import BacktestSystem
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = setup_logger('backtest_system')
 
 
 def setup_backtest(
@@ -119,7 +115,7 @@ def load_and_process_data(symbol: str, interval: Interval) -> pd.DataFrame:
         return df
 
     except pd.errors.EmptyDataError:
-        logger.error(f"数据文件为空: {file_abspath}")
+        logger.error(f"数据文件为空: {symbol}-{interval.value}")
         raise
     except pd.errors.ParserError as e:
         logger.error(f"数据文件解析错误: {str(e)}")
@@ -160,9 +156,6 @@ def interval_to_seconds(interval: Interval) -> int:
 def main():
     """主函数"""
     try:
-        # 设置日志级别为DEBUG以查看详细信息
-        logging.getLogger('backend.backtest_center.models.backtest_result').setLevel(logging.DEBUG)
-
         # 设置回测参数
         INITIAL_CASH = 100000.0
         RISK_PERCENT = 2.0

@@ -9,7 +9,6 @@ from tvDatafeed import Interval
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest
-from backend.strategy_center.atom_strategy.filter_strategy.sma_filter_strategy import sam_filter_strategy_for_backtest
 
 
 @dataclass
@@ -175,7 +174,6 @@ class DBBStrategy(bt.Strategy):
             self.log(f'交易利润: 毛利润 {trade.pnl:.2f}, 净利润 {trade.pnlcomm:.2f}')
 
     def calculate_position_size(self, price: float) -> float:
-        """计算仓位大小"""
         # 计算每笔交易的资金量
         cash = self.broker.getcash()
         trade_value = cash * (self.p.risk_percent / 100)
