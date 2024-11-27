@@ -8,6 +8,7 @@ from backend.backtest_center.ImprovedStrategy import ImprovedDBBStrategy
 from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.backtest_center.models.trade_record import TradeRecord
+from backend.backtest_center.originDbbStrategy import DBBStrategy
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest

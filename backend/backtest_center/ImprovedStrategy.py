@@ -104,48 +104,79 @@ class ImprovedDBBStrategy(bt.Strategy):
         if not self.position:
             return
 
-        # 获取最新的止损价格
+        if not self.position:
+            return
+
+            # 获取价格
         stop_price = self.sell_price[0]
         current_price = self.dataclose[0]
+        entry_price = self.buy_price if self.buy_price else current_price
 
-        # 检查止损价格是否有效
-        if stop_price <= 0:
-            self.log(f'无效的止损价格: {stop_price}，跳过止损单设置', level='WARNING')
-            return
-
-        # 如果止损价格高于当前价格，使用市价单
-        if stop_price <= current_price:
-            self.log(f'止损价格 ({stop_price:.2f}) 低于当前价格 ({current_price:.2f})，执行市价卖出')
-            if self.stop_order:
-                self.cancel(self.stop_order)
-            self.stop_order = self.sell(
-                size=self.position.size,
-                exectype=bt.Order.Market
-            )
-            return
-
-        # 检查是否需要更新止损单
-        if self.stop_order:
-            # 如果价格相同，无需更新
-            if abs(self.stop_order.price - stop_price) < 0.01:  # 添加一个小的容差
-                return
-            # 取消旧的止损单
-            self.cancel(self.stop_order)
+        # 配置参数
+        TRAIL_PERCENT = 0.02  # 2% 追踪止损
+        USE_TRAIL_STOP = False  # 是否使用追踪止损
+        USE_STOP_LIMIT = True  # 是否使用限价止损
+        LIMIT_OFFSET = 0.005  # 限价偏移量 (0.5%)
 
         try:
-            # 创建新的止损单
-            self.stop_order = self.sell(
-                size=self.position.size,
-                exectype=bt.Order.Stop,
-                price=stop_price
-            )
+            # 取消现有止损单
+            if self.stop_order:
+                self.cancel(self.stop_order)
+                self.stop_order = None
 
-            self.log(f'设置新止损单 - 价格: {stop_price:.2f}, '
-                     f'持仓: {self.position.size:.8f}, '
-                     f'当前价格: {current_price:.2f}')
+            # 1. 追踪止损
+            if USE_TRAIL_STOP:
+                self.stop_order = self.sell(
+                    size=self.position.size,
+                    exectype=bt.Order.StopTrail,
+                    trailpercent=TRAIL_PERCENT
+                )
+                self.log(f'设置追踪止损单 - 跟踪比例: {TRAIL_PERCENT * 100}%, '
+                         f'当前价格: {current_price:.2f}')
+
+            # 2. 限价止损
+            elif USE_STOP_LIMIT:
+                limit_price = stop_price * (1 - LIMIT_OFFSET)  # 设置略低的限价
+                self.stop_order = self.sell(
+                    size=self.position.size,
+                    exectype=bt.Order.StopLimit,
+                    price=stop_price,  # 触发价
+                    plimit=limit_price,  # 限价
+                )
+                self.log(f'设置限价止损单 - 触发价: {stop_price:.2f}, '
+                         f'限价: {limit_price:.2f}, '
+                         f'当前价格: {current_price:.2f}')
+
+            # 3. 普通止损单
+            else:
+                # 如果当前价格已经低于止损价，直接市价卖出
+                if current_price <= stop_price:
+                    self.stop_order = self.sell(
+                        size=self.position.size,
+                        exectype=bt.Order.Market
+                    )
+                    self.log(f'价格低于止损线，执行市价卖出 - '
+                             f'当前价格: {current_price:.2f}, '
+                             f'止损价: {stop_price:.2f}')
+                else:
+                    self.stop_order = self.sell(
+                        size=self.position.size,
+                        exectype=bt.Order.Stop,
+                        price=stop_price
+                    )
+                    self.log(f'设置止损单 - 止损价: {stop_price:.2f}, '
+                             f'当前价格: {current_price:.2f}, '
+                             f'入场价: {entry_price:.2f}')
 
         except Exception as e:
-            self.log(f'设置止损单失败: {str(e)}', level='ERROR')
+            self.log(f'设置止损单失败: {str(e)}')
+            self.stop_order = None
+
+            # 记录止损设置
+        if self.stop_order:
+            self.log(f'止损单详情 - 类型: {self.stop_order.exectype}, '
+                     f'价格: {getattr(self.stop_order, "price", "N/A")}, '
+                     f'限价: {getattr(self.stop_order, "plimit", "N/A")}')
 
     def next(self):
         """

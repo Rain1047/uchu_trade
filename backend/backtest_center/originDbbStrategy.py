@@ -19,12 +19,19 @@ class DBBStrategy(bt.Strategy):
         self.sell_sig = self.datas[0].sell_sig
         self.sell_price = self.datas[0].sell_price
 
-        self.order = None
+        # 订单管理
+        self.entry_order = None  # 入场订单
+        self.stop_order = None  # 止损订单
+        self.buy_price = None  # 买入价格
+
+        # 交易统计
         self.trade_count = 0
         self.winning_trades = 0
         self.losing_trades = 0
-        self.buy_price = None
-        self.trade_records = []  # 添加交易记录列表
+        self.trade_records = []
+
+        # 添加信号计数器
+        self.entry_signal_count = 0
 
     def log(self, txt: str, dt: Optional[Any] = None) -> None:
         """日志函数"""
