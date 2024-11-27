@@ -30,7 +30,6 @@ class KlineDataReader:
             return os.path.join(os.path.dirname(os.path.realpath(__file__)), file_name)
 
 
-
 if __name__ == '__main__':
     # tv.get_abspath()
     #
