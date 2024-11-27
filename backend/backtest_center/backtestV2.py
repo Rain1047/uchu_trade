@@ -4,6 +4,8 @@ from typing import Dict, Any, Optional
 
 from tvDatafeed import Interval
 
+from backend.backtest_center.ImprovedStrategy import ImprovedDBBStrategy
+from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.backtest_center.models.trade_record import TradeRecord
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
@@ -34,205 +36,6 @@ def _print_results(results: BacktestResults) -> None:
     if results.losing_trades:
         print(f'平均亏损: ${results.avg_loss:.2f}')
 
-
-class SignalData(bt.feeds.PandasData):
-    """自定义数据源类"""
-    lines = ('entry_sig', 'entry_price', 'sell_sig', 'sell_price',)
-    params = (
-        ('entry_sig', -1),
-        ('entry_price', -1),
-        ('sell_sig', -1),
-        ('sell_price', -1),
-    )
-
-
-class DBBStrategy(bt.Strategy):
-    """交易策略类"""
-    params = (
-        ('risk_percent', 2.0),
-        ('max_position_size', 0.5),
-    )
-
-    def __init__(self):
-        self.dataclose = self.datas[0].close
-        self.entry_sig = self.datas[0].entry_sig
-        self.entry_price = self.datas[0].entry_price
-        self.sell_sig = self.datas[0].sell_sig
-        self.sell_price = self.datas[0].sell_price
-
-        self.order = None
-        self.trade_count = 0
-        self.winning_trades = 0
-        self.losing_trades = 0
-        self.buy_price = None
-        self.trade_records = []  # 添加交易记录列表
-
-    def log(self, txt: str, dt: Optional[Any] = None) -> None:
-        """日志函数"""
-        dt = dt or self.datas[0].datetime.date(0)
-        print(f'{dt.isoformat()} {txt}')
-
-    def notify_order(self, order):
-        """订单状态通知"""
-        if order.status in [order.Submitted, order.Accepted]:
-            return
-
-        if order.status in [order.Completed]:
-            try:
-                trade_record = TradeRecord(
-                    datetime=self.data.datetime.date(0).isoformat(),
-                    action='BUY' if order.isbuy() else 'SELL',
-                    price=order.executed.price,
-                    size=order.executed.size,
-                    value=order.executed.value,
-                    commission=order.executed.comm
-                )
-
-                if order.isbuy():
-                    self.log(f'买入执行: 价格: {order.executed.price:.2f}, '
-                             f'成本: {order.executed.value:.2f}, '
-                             f'手续费: {order.executed.comm:.2f}, '
-                             f'当前总持仓: {self.position.size:.8f}')
-                    self.buy_price = order.executed.price
-                else:
-                    self.log(f'卖出执行: 价格: {order.executed.price:.2f}, '
-                             f'成本: {order.executed.value:.2f}, '
-                             f'手续费: {order.executed.comm:.2f}')
-
-                    if self.buy_price:
-                        profit = (order.executed.price - self.buy_price) * order.executed.size
-                        trade_record.pnl = profit
-                        self.log(f'交易收益: {profit:.2f}')
-                        if profit > 0:
-                            self.winning_trades += 1
-                        else:
-                            self.losing_trades += 1
-                        self.trade_count += 1
-                        self.buy_price = None
-
-                self.trade_records.append(trade_record)
-            except Exception as e:
-                self.log(f'处理订单时出现错误: {str(e)}')
-
-        elif order.status in [order.Canceled]:
-            self.log(f'订单已取消')
-        elif order.status in [order.Margin]:
-            self.log(f'保证金不足')
-        elif order.status in [order.Rejected]:
-            self.log(f'订单被拒绝')
-        elif order.status in [order.Expired]:
-            self.log(f'订单过期')
-        else:
-            self.log(f'订单状态: {order.status}')
-
-        if order.status != order.Completed:
-            order_info = {
-                'status': order.status,
-                'size': getattr(order, 'size', 'N/A'),
-                'price': getattr(order, 'price', 'N/A'),
-                'exectype': getattr(order, 'exectype', 'N/A'),
-                'info': getattr(order, 'info', 'N/A')
-            }
-            self.log(f'订单详情: {order_info}')
-
-        self.order = None
-
-    def notify_trade(self, trade):
-        """交易状态通知"""
-        if trade.isclosed:
-            self.log(f'交易利润: 毛利润 {trade.pnl:.2f}, 净利润 {trade.pnlcomm:.2f}')
-
-    def calculate_position_size(self, price: float) -> float:
-        # 计算每笔交易的资金量
-        cash = self.broker.getcash()
-        trade_value = cash * (self.p.risk_percent / 100)
-
-        # 计算可以购买的数量
-        size = trade_value / price
-
-        # 考虑当前总仓位
-        current_value = self.broker.getvalue()
-        max_total_position = current_value * self.p.max_position_size
-        current_position_value = self.position.size * price if self.position else 0
-        remaining_position_value = max_total_position - current_position_value
-
-        # 确保不超过最大总仓位
-        max_additional_size = remaining_position_value / price if remaining_position_value > 0 else 0
-        position_size = min(size, max_additional_size)
-
-        # 如果计算出的仓位太小，就不开仓
-        min_size = 0.001
-        if position_size < min_size:
-            return 0
-
-        return max(position_size, min_size)
-
-    def next(self):
-        """策略逻辑"""
-        if self.order:
-            return
-
-        # 处理买入信号
-        if self.entry_sig[0] == 1:
-            current_price = self.dataclose[0]
-            size = self.calculate_position_size(current_price)
-
-            if size > 0:
-                self.log(f'买入信号触发，当前持仓: {self.position.size if self.position else 0}, '
-                         f'价格: {current_price:.2f}, 买入数量: {size:.8f}, '
-                         f'可用资金: {self.broker.getcash():.2f}')
-                try:
-                    self.order = self.buy(size=size)
-                except Exception as e:
-                    self.log(f'创建买入订单失败: {str(e)}')
-            else:
-                self.log(f'买入信号触发但仓位计算为0，跳过交易')
-
-        # 处理卖出信号
-        if self.position and self.sell_sig[0] == 1:
-            try:
-                current_price = self.dataclose[0]
-                sell_price = self.sell_price[0]
-
-                self.log(f'卖出信号触发, 当前持仓: {self.position.size}, '
-                         f'当前价格: {current_price:.2f}, 止损价格: {sell_price:.2f}')
-
-                if current_price < sell_price:
-                    self.log(f'价格低于止损价，市价卖出')
-                    self.order = self.sell(size=self.position.size,
-                                           exectype=bt.Order.Market)
-                else:
-                    self.log(f'设置止损限价单')
-                    self.order = self.sell(size=self.position.size,
-                                           exectype=bt.Order.Stop,
-                                           price=sell_price)
-            except Exception as e:
-                self.log(f'创建卖出订单失败: {str(e)}')
-
-    def stop(self):
-        """策略结束时的统计"""
-        win_rate = (self.winning_trades / self.trade_count * 100) if self.trade_count > 0 else 0
-        self.log(f'策略统计: 总交易次数: {self.trade_count}, '
-                 f'盈利交易: {self.winning_trades}, '
-                 f'亏损交易: {self.losing_trades}, '
-                 f'胜率: {win_rate:.2f}%')
-
-        # 修改信号统计方式
-        entry_signals = 0
-        exit_signals = 0
-
-        # 使用 lines 接口获取信号数据
-        for i in range(len(self.data)):
-            if self.entry_sig.array[i] == 1:
-                entry_signals += 1
-            if self.sell_sig.array[i] == 1:
-                exit_signals += 1
-
-        self.log(f'信号统计: 总买入信号: {entry_signals}, '
-                 f'总卖出信号: {exit_signals}, '
-                 f'实际交易次数: {self.trade_count}')
-
-
 class BacktestSystem:
     """回测系统主类"""
 
@@ -248,7 +51,7 @@ class BacktestSystem:
         """设置cerebro基本参数"""
         self.cerebro.broker.setcash(self.initial_cash)
         self.cerebro.broker.setcommission(commission=self.commission)
-        self.cerebro.addstrategy(DBBStrategy, risk_percent=self.risk_percent)
+        self.cerebro.addstrategy(ImprovedDBBStrategy, risk_percent=self.risk_percent)
         self._add_analyzers()
 
     def _add_analyzers(self) -> None:

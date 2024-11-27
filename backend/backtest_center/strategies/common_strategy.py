@@ -127,13 +127,18 @@ class CommonStrategy(BaseStrategy):
         if self.order:
             return
 
-        # 处理买入信号
+        # 处理买入信号, 支持加仓
         if self.entry_sig[0] == 1:
             self._handle_entry_signal()
+
+        if self.entry_price[0] != 1 and self.sell_sig[0] != 1 and self.position:
+            self._handle_stop_loss_price()
 
         # 处理卖出信号
         if self.position and self.sell_sig[0] == 1:
             self._handle_exit_signal()
+
+
 
     def _handle_entry_signal(self):
         """处理入场信号"""
@@ -172,3 +177,13 @@ class CommonStrategy(BaseStrategy):
                                        price=sell_price)
         except Exception as e:
             self.log(f'卖出订单创建失败: {str(e)}', level='ERROR')
+
+    # def _handle_stop_loss_price(self):
+    #     try:
+    #         sell_price = self.sell_price[0]
+    #         self.log('设置止损限价单')
+    #         self.order = self.sell(size=self.position.size,
+    #                                exectype=bt.Order.Stop,
+    #                                price=sell_price)
+    #     except Exception as e:
+    #         self.log(f'止损订单创建失败: {str(e)}', level='ERROR')
