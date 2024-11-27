@@ -11,6 +11,7 @@ class ImprovedDBBStrategy(bt.Strategy):
     params = (
         ('risk_percent', 2.0),
         ('max_position_size', 0.5),
+        ('debug', True),  # 添加调试标志
     )
 
     def __init__(self):
@@ -32,9 +33,10 @@ class ImprovedDBBStrategy(bt.Strategy):
         self.winning_trades = 0
         self.losing_trades = 0
         self.trade_records = []
-
-        # 添加信号计数器
         self.entry_signal_count = 0
+
+        # 调试信息
+        self.missed_signals = []
 
     def log(self, txt: str, dt: Optional[Any] = None):
         dt = dt or self.datas[0].datetime.date(0)
@@ -104,10 +106,7 @@ class ImprovedDBBStrategy(bt.Strategy):
         if not self.position:
             return
 
-        if not self.position:
-            return
-
-            # 获取价格
+        # 获取价格
         stop_price = self.sell_price[0]
         current_price = self.dataclose[0]
         entry_price = self.buy_price if self.buy_price else current_price
@@ -184,46 +183,91 @@ class ImprovedDBBStrategy(bt.Strategy):
         - 添加更多的状态检查
         - 改进止损单管理
         """
-        # 检查是否需要更新止损单
-        if self.position and not self.entry_order:
-            # 确保当前没有待处理的订单再更新止损单
-            if not self.stop_order or not self.stop_order.alive():
-                self.place_stop_order()
+        # 统计信号
+        if self.entry_sig[0] == 1:
+            self.entry_signal_count += 1
 
-        # 检查入场信号
-        if (not self.position and  # 没有持仓
-                not self.entry_order and  # 没有待执行的入场订单
-                not self.stop_order and  # 没有待执行的止损单
-                self.entry_sig[0] == 1):  # 有入场信号
+        current_price = self.dataclose[0]
 
-            # 计算仓位大小
-            size = self.calculate_position_size(self.dataclose[0])
+        # 处理入场信号 - 不再检查是否有仓位
+        if (self.entry_sig[0] == 1 and  # 有入场信号
+                not self.entry_order):  # 没有待执行的入场订单
+
+            # 计算新的仓位大小
+            size = self.calculate_position_size(current_price)
 
             if size > 0:
-                self.log(f'创建买入订单 - 价格: {self.dataclose[0]:.2f}, '
-                         f'数量: {size:.8f}')
+                self.log(f'创建买入订单 - 价格: {current_price:.2f}, '
+                         f'数量: {size:.8f}, '
+                         f'当前持仓: {self.position.size if self.position else 0}')
                 self.entry_order = self.buy(size=size)
 
+                if self.p.debug:
+                    self.log(f'买入信号详情 - '
+                             f'可用资金: {self.broker.getcash():.2f}, '
+                             f'总资产: {self.broker.getvalue():.2f}, '
+                             f'现有持仓: {self.position.size if self.position else 0}')
+
+                # 止损单管理 - 只要有仓位就管理止损单
+            if self.position:
+                # 获取最新止损价
+                stop_price = self.sell_price[0]
+
+                # 检查是否需要更新止损单
+                if not self.stop_order:
+                    # 没有止损单，创建新的
+                    self.place_stop_order()
+                elif abs(self.stop_order.price - stop_price) > 0.01:
+                    # 止损价格有变化，更新止损单
+                    self.cancel(self.stop_order)
+                    self.place_stop_order()
+
+                if self.p.debug:
+                    self.log(f'仓位状态 - '
+                             f'持仓量: {self.position.size:.8f}, '
+                             f'当前价格: {current_price:.2f}, '
+                             f'止损价格: {stop_price:.2f}')
+
     def calculate_position_size(self, price: float) -> float:
-        """计算仓位大小"""
-        # 计算每笔交易的资金量
-        cash = self.broker.getcash()
-        trade_value = cash * (self.p.risk_percent / 100)
+        """
+        改进的仓位计算:
+        - 考虑现有持仓
+        - 基于总资产计算新仓位
+        """
+        # 计算目标交易价值
+        portfolio_value = self.broker.getvalue()
+        trade_value = portfolio_value * (self.p.risk_percent / 100)
 
-        # 计算基础持仓规模
-        size = trade_value / price
+        # 计算最大允许的总仓位价值
+        max_position_value = portfolio_value * self.p.max_position_size
 
-        # 考虑最大仓位限制
-        current_value = self.broker.getvalue()
-        max_total_position = current_value * self.p.max_position_size
-        position_size = min(size, max_total_position / price)
+        # 计算现有仓位价值
+        current_position_value = self.position.size * price if self.position else 0
 
-        # 确保至少达到最小交易单位
-        min_size = 0.001
-        if position_size < min_size:
+        # 计算还可以增加的仓位价值
+        available_position_value = max_position_value - current_position_value
+
+        # 确定本次交易的目标价值
+        target_trade_value = min(trade_value, available_position_value)
+
+        # 如果可用金额太小，返回0
+        if target_trade_value < price * 0.001:  # 最小交易单位
+            if self.p.debug:
+                self.log(f'仓位太小 - 目标交易价值: {target_trade_value:.2f}, '
+                         f'最小要求: {price * 0.001:.2f}')
             return 0
 
-        return position_size
+        # 计算实际可以购买的数量
+        size = target_trade_value / price
+
+        if self.p.debug:
+            self.log(f'仓位计算 - '
+                     f'总资产: {portfolio_value:.2f}, '
+                     f'目标交易值: {target_trade_value:.2f}, '
+                     f'现有仓位: {current_position_value:.2f}, '
+                     f'计算数量: {size:.8f}')
+
+        return size
 
     def stop(self):
         """
