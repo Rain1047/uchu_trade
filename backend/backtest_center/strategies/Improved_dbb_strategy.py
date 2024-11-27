@@ -69,10 +69,13 @@ class ImprovedDBBStrategy(bt.Strategy):
             else:
                 # 计算收益
                 if self.buy_price:
-                    profit = (order.executed.price - self.buy_price) * order.executed.size
+                    profit = (order.executed.price - self.buy_price) * abs(order.executed.size)
                     trade_record.pnl = profit
-                    self.log(f'卖出执行 - 价格: {order.executed.price:.2f}, '
-                             f'收益: {profit:.2f}')
+                    self.log(f'卖出执行 - 卖出价格: {order.executed.price:.2f}, '
+                             f'买入价格: {self.buy_price:.2f}, '
+                             f'卖出仓位: {abs(order.executed.size):.8f}, '
+                             f'收益: {profit:.2f}'
+                             f'{"(盈利)" if profit > 0 else "(亏损)"}')
 
                     # 更新统计
                     if profit > 0:
