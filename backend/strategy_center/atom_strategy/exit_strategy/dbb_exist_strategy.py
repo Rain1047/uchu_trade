@@ -8,7 +8,7 @@ def dbb_exist_strategy_for_backtest(df: DataFrame) -> DataFrame:
         return df
 
     df['sell_sig'] = 0  # Default to hold
-    df['sell_price'] = np.nan
+    df['sell_price'] = df['sma20']
 
     # 获取上一个buy_sig=1的bar, 并且该之间所有的sell_sig=0
     # 如果未满足说明没有进场或已经卖出, sell_sig=0
