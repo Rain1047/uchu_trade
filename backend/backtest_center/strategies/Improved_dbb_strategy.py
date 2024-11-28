@@ -47,6 +47,13 @@ class ImprovedDBBStrategy(bt.Strategy):
         if order.status in [order.Submitted, order.Accepted]:
             return
 
+            # 打印止损单状态
+        if order.status == order.Canceled:
+            if order.status == order.Canceled:
+                # 通过exectype判断订单类型更准确
+                order_type = "止损单" if order.exectype == bt.Order.Stop else "入场单"
+                # self.log(f"订单取消详情 - 订单类型: {order_type}, 当前价格: {self.dataclose[0]:.2f}, "
+                #          f"订单价格: {order.price:.2f}, exectype: {order.exectype}")
         if order.status == order.Completed:
             # 记录交易
             trade_record = TradeRecord(
@@ -83,15 +90,15 @@ class ImprovedDBBStrategy(bt.Strategy):
                     else:
                         self.losing_trades += 1
                     self.trade_count += 1
-
-                # 重置状态
-                self.buy_price = None
-                self.stop_order = None
+                    # 重置状态
+                    self.buy_price = None
+                    self.stop_order = None
 
             self.trade_records.append(trade_record)
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            self.log(f'订单失败 - 状态: {order.getstatusname()}')
+            # self.log(f'订单失败 - 状态: {order.getstatusname()}')
+            pass
 
         # 重置相关订单引用
         if order == self.entry_order:
@@ -117,8 +124,7 @@ class ImprovedDBBStrategy(bt.Strategy):
         # 配置参数
         TRAIL_PERCENT = 0.02  # 2% 追踪止损
         USE_TRAIL_STOP = False  # 是否使用追踪止损
-        USE_STOP_LIMIT = True  # 是否使用限价止损
-        LIMIT_OFFSET = 0.005  # 限价偏移量 (0.5%)
+        USE_STOP = True  # 是否使用限价止损
 
         try:
             # 取消现有止损单
@@ -137,48 +143,23 @@ class ImprovedDBBStrategy(bt.Strategy):
                          f'当前价格: {current_price:.2f}')
 
             # 2. 限价止损
-            elif USE_STOP_LIMIT:
-                limit_price = stop_price * (1 - LIMIT_OFFSET)  # 设置略低的限价
+            elif USE_STOP:
                 self.stop_order = self.sell(
                     size=self.position.size,
-                    exectype=bt.Order.StopLimit,
+                    exectype=bt.Order.Stop,
                     price=stop_price,  # 触发价
-                    plimit=limit_price,  # 限价
                 )
-                self.log(f'设置限价止损单 - 触发价: {stop_price:.2f}, '
-                         f'限价: {limit_price:.2f}, '
-                         f'当前价格: {current_price:.2f}')
-
-            # 3. 普通止损单
-            else:
-                # 如果当前价格已经低于止损价，直接市价卖出
-                if current_price <= stop_price:
-                    self.stop_order = self.sell(
-                        size=self.position.size,
-                        exectype=bt.Order.Market
-                    )
-                    self.log(f'价格低于止损线，执行市价卖出 - '
-                             f'当前价格: {current_price:.2f}, '
-                             f'止损价: {stop_price:.2f}')
-                else:
-                    self.stop_order = self.sell(
-                        size=self.position.size,
-                        exectype=bt.Order.Stop,
-                        price=stop_price
-                    )
-                    self.log(f'设置止损单 - 止损价: {stop_price:.2f}, '
-                             f'当前价格: {current_price:.2f}, '
-                             f'入场价: {entry_price:.2f}')
+                # self.log(f'设置限价止损单 - 触发价: {stop_price:.2f}, '
+                #          f'当前价格: {current_price:.2f}')
 
         except Exception as e:
             self.log(f'设置止损单失败: {str(e)}')
             self.stop_order = None
 
             # 记录止损设置
-        if self.stop_order:
-            self.log(f'止损单详情 - 类型: {self.stop_order.exectype}, '
-                     f'价格: {getattr(self.stop_order, "price", "N/A")}, '
-                     f'限价: {getattr(self.stop_order, "plimit", "N/A")}')
+        # if self.stop_order:
+        #     self.log(f'止损单详情 - 类型: {self.stop_order.exectype}, '
+        #              f'价格: {getattr(self.stop_order, "price", "N/A")}')
 
     def next(self):
         """
@@ -205,31 +186,31 @@ class ImprovedDBBStrategy(bt.Strategy):
                          f'当前持仓: {self.position.size if self.position else 0}')
                 self.entry_order = self.buy(size=size)
 
-                if self.p.debug:
-                    self.log(f'买入信号详情 - '
-                             f'可用资金: {self.broker.getcash():.2f}, '
-                             f'总资产: {self.broker.getvalue():.2f}, '
-                             f'现有持仓: {self.position.size if self.position else 0}')
+                # if self.p.debug:
+                #     self.log(f'买入信号详情 - '
+                #              f'可用资金: {self.broker.getcash():.2f}, '
+                #              f'总资产: {self.broker.getvalue():.2f}, '
+                #              f'现有持仓: {self.position.size if self.position else 0}')
 
-                # 止损单管理 - 只要有仓位就管理止损单
-            if self.position:
-                # 获取最新止损价
-                stop_price = self.sell_price[0]
+        # 止损单管理 - 只要有仓位就管理止损单
+        if self.position:
+            # 获取最新止损价
+            stop_price = self.sell_price[0]
 
-                # 检查是否需要更新止损单
-                if not self.stop_order:
-                    # 没有止损单，创建新的
-                    self.place_stop_order()
-                elif abs(self.stop_order.price - stop_price) > 0.01:
-                    # 止损价格有变化，更新止损单
-                    self.cancel(self.stop_order)
-                    self.place_stop_order()
+            # 检查是否需要更新止损单
+            if not self.stop_order:
+                # 没有止损单，创建新的
+                self.place_stop_order()
+            elif abs(self.stop_order.price - stop_price) > 0.01:
+                # 止损价格有变化，更新止损单
+                self.cancel(self.stop_order)
+                self.place_stop_order()
 
-                if self.p.debug:
-                    self.log(f'仓位状态 - '
-                             f'持仓量: {self.position.size:.8f}, '
-                             f'当前价格: {current_price:.2f}, '
-                             f'止损价格: {stop_price:.2f}')
+            # if self.p.debug:
+            #     self.log(f'仓位状态 - '
+            #              f'持仓量: {self.position.size:.8f}, '
+            #              f'当前价格: {current_price:.2f}, '
+            #              f'止损价格: {stop_price:.2f}')
 
     def calculate_position_size(self, price: float) -> float:
         """
@@ -262,13 +243,6 @@ class ImprovedDBBStrategy(bt.Strategy):
 
         # 计算实际可以购买的数量
         size = target_trade_value / price
-
-        if self.p.debug:
-            self.log(f'仓位计算 - '
-                     f'总资产: {portfolio_value:.2f}, '
-                     f'目标交易值: {target_trade_value:.2f}, '
-                     f'现有仓位: {current_position_value:.2f}, '
-                     f'计算数量: {size:.8f}')
 
         return size
 
