@@ -5,7 +5,7 @@ import yaml
 from apscheduler.schedulers.background import BackgroundScheduler
 from backend.schedule_center.core.task_chain import TaskChain
 from backend.schedule_center.tasks.common_task import DataFetchTask, AnalysisTask, ExecutionTask
-from .core.base_task import TaskConfig
+from backend.schedule_center.core.base_task import TaskConfig
 
 # 日志配置
 LOGGING_CONFIG = {
