@@ -6,7 +6,6 @@ from tvDatafeed import Interval
 from backend.backtest_center.strategies.Improved_dbb_strategy import ImprovedDBBStrategy
 from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
-from backend.backtest_center.strategies.fixed_dbb_strategy import FixedInvestmentStrategy
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_backtest
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exist_strategy import dbb_exist_strategy_for_backtest
@@ -34,6 +33,7 @@ def _print_results(results: BacktestResults) -> None:
         print(f'平均盈利: ${results.avg_win:.2f}')
     if results.losing_trades:
         print(f'平均亏损: ${results.avg_loss:.2f}')
+
 
 class BacktestSystem:
     """回测系统主类"""
@@ -159,7 +159,7 @@ def main():
 
     # 准备数据
     tv = KlineDataCollector()
-    file_abspath = tv.get_abspath(symbol='BTC', interval=Interval.in_daily)
+    file_abspath = tv.get_abspath(symbol='BTC', interval=Interval.in_4_hour)
     df = pd.read_csv(f"{file_abspath}")
 
     # 执行策略生成信号
