@@ -1,6 +1,6 @@
 import backtrader as bt
 import pandas as pd
-from backend.backtest_center.strategies.strategy_for_backtest import StrategyForBacktest
+from backend.backtest_center.strategy_for_backtest import StrategyForBacktest
 from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
 
