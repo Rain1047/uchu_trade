@@ -7,7 +7,7 @@ from backend.data_center.data_object.enum_obj import EnumOrderStatus, EnumOperat
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
-from backend.utils.decorator import *
+from backend.decorator.decorator import *
 from backend.api_center.okx_api import OKXAPIWrapper
 from backend.utils.utils import *
 from backend.constant.okx_code import *
