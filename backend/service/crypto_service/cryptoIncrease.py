@@ -3,6 +3,7 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime
 
+
 def get_top_cryptos_symbols():
     # CoinGecko API endpoint for fetching cryptocurrency data
     api_url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -47,7 +48,6 @@ def get_crypto_price_data(symbol):
 
 
 def export_to_excel(results, filename='crypto_data.xlsx'):
-
     # 创建DataFrame
     df = pd.DataFrame(results)
 
