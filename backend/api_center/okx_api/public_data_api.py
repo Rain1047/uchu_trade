@@ -4,7 +4,7 @@ import okx.PublicData as PublicData
 from typing import Optional
 
 from backend.data_center.data_object.enum_obj import EnumUnit
-from backend.utils.decorator import add_docstring
+from backend.decorator.decorator import add_docstring
 
 
 class PublicDataAPIWrapper:

@@ -3,7 +3,7 @@ from backend.data_center.data_object.dao.fills_history import FillsHistory
 from backend.service.data_api import *
 from backend.constant.okx_code import *
 from backend.service.req.page_req import PageRequest
-from backend.utils.decorator import add_docstring
+from backend.decorator.decorator import add_docstring
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 # 设置日志

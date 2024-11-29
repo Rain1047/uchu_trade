@@ -2,7 +2,7 @@
 
 import okx.MarketData as Market
 from typing import Dict
-from backend.utils.decorator import add_docstring
+from backend.decorator.decorator import add_docstring
 from backend.utils.utils import *
 
 

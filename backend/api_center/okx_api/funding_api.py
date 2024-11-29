@@ -10,7 +10,7 @@ from typing import Dict, Optional
 
 import requests
 
-from backend.utils.decorator import add_docstring
+from backend.decorator.decorator import add_docstring
 from backend.data_center.data_object.enum_obj import *
 from backend.utils.utils import ConfigUtils
 
