@@ -5,7 +5,7 @@ import backtrader as bt
 from backend.backtest_center.models.trade_record import TradeRecord
 
 
-class ImprovedDBBStrategy(bt.Strategy):
+class StrategyForBacktest(bt.Strategy):
     """改进后的DBB策略，使用动态止损单管理"""
 
     params = (
