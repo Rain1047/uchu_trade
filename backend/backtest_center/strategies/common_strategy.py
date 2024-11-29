@@ -138,8 +138,6 @@ class CommonStrategy(BaseStrategy):
         if self.position and self.sell_sig[0] == 1:
             self._handle_exit_signal()
 
-
-
     def _handle_entry_signal(self):
         """处理入场信号"""
         current_price = self.dataclose[0]
