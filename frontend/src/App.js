@@ -1,10 +1,8 @@
 import React from 'react';
 import '@fontsource/inter';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './account/dashboard'; // 导入Dashboard组件
-import Positions from "./account/positions"; // 导入App样式
 import './App.css';
-import TradeHistoryTable from "./trade/history";
+import TradeHistoryTable from "./features/trade/components/history";
 import { darkTheme} from "./theme";
 import './index.css';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
@@ -12,6 +10,8 @@ import './styles/global.css';
 import Layout from './components/Layout';
 import {Container, Typography} from "@material-ui/core";
 import StrategyPage from "./features/strategy"
+import BalanceList from "./features/balance"
+import Backtest from "./features/backtest";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -50,11 +50,10 @@ function App() {
                 <Router>
                     <Layout>
                         <Routes>
-                            <Route path="/account/dashboard" element={<Dashboard />} />
-                            <Route path="/account/positions" element={<Positions />} />
-                            <Route path="/trade/order" element={<Positions />} />
                             <Route path="/trade/history" element={<TradeHistoryTable />} />
                             <Route path="/strategy" element={<StrategyPage />} />
+                            <Route path="/balance" element={<BalanceList />} />
+                            <Route path="/backtest" element={<Backtest />} />
                         </Routes>
                     </Layout>
                 </Router>

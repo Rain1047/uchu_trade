@@ -1,13 +1,15 @@
 from typing import Dict, List
 
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.dao.algo_order_instance import AlgoOrderInstance
+from backend.object_center.object_dao.algo_order_instance import AlgoOrderInstance
+from backend.data_center.data_object.enum_obj import EnumOrderStatus, EnumOperationMode, EnumTdMode, EnumSide, \
+    EnumAlgoOrdType
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
-from backend.service.decorator import *
-from backend.service.okx_api.okx_main_api import OKXAPIWrapper
-from backend.service.utils import *
+from backend.decorator.decorator import *
+from backend.api_center.okx_api import OKXAPIWrapper
+from backend.utils.utils import *
 from backend.constant.okx_code import *
 
 
@@ -95,7 +97,7 @@ class TradeAPIWrapper:
             instId=request.instId,
             tdMode=EnumTdMode.CASH.value,
             side=EnumSide.SELL.value,
-            ordType=EnumOrdType.CONDITIONAL.value,
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
             algoClOrdId=UuidUtils.generate_32_digit_numeric_id(),
             sz=sz,
             slTriggerPx=slTriggerPx,
@@ -122,12 +124,10 @@ if __name__ == '__main__':
 
     # 下单
 
-
-
     # 止损
-    # req = StopLossReq()
-    # req.instId = "ETH-USDT"
-    # tradeApi_demo.stop_loss(req)
+    req = StopLossReq()
+    req.instId = "ETH-USDT"
+    tradeApi_demo.stop_loss(req)
 
     # 查询当前未结束的止损订单
     # instId = "ETH-USDT"

@@ -1,9 +1,7 @@
 from sqlalchemy import or_
-from sqlalchemy.exc import SQLAlchemyError
 
-from backend.service.req.page_req import PageRequest
 from backend.service.res.res_utils import StdPageResult
-from backend.service.utils import *
+from backend.utils.utils import *
 
 
 class DataAPIWrapper:
