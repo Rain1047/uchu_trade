@@ -10,6 +10,7 @@ from backend.data_center.data_gather.ticker_price_collector import TickerPriceCo
 from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumTimeFrame
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
+from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,6 +49,7 @@ def convert_timeframe_to_interval(time_frame: str) -> Interval:
     return mapping.get(time_frame, None)
 
 
+@StrategyRegistry.register("dbb_entry_strategy")
 def dbb_entry_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
         return dbb_entry_long_strategy_backtest(df)
@@ -55,6 +57,7 @@ def dbb_entry_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
         return dbb_entry_long_strategy_live(df, stIns)
 
 
+@StrategyRegistry.register("dbb_entry_long_strategy_backtest")
 def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
@@ -71,7 +74,7 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
             (df['open'] < df['upper_band1'])  # 条件1
             & (df['close'] > df['upper_band1'])  # 条件2
             & (df['prev_open_1'] < df['prev_upper_band1_1'])  # 条件3
-            # & (df['prev_open_2'] < df['prev_upper_band1_2'])  # 条件4
+        # & (df['prev_open_2'] < df['prev_upper_band1_2'])  # 条件4
     )
 
     # 添加调试信息
@@ -101,6 +104,7 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
     return df
 
 
+@StrategyRegistry.register("dbb_entry_long_strategy_live")
 def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     双布林带突破策略：在股价突破双布林带上轨时执行买入操作。
