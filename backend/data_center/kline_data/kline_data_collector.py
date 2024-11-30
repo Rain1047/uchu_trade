@@ -8,7 +8,6 @@ from tvDatafeed import TvDatafeed
 
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.utils.utils import ConfigUtils
-from backend.data_center.data_object.dao.symbol_instance import *
 
 
 class KlineDataCollector:

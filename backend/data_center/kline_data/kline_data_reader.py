@@ -1,10 +1,8 @@
 import os
-from typing import Optional, Dict
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
-
-from backend.data_center.data_object.dao.symbol_instance import *
 
 
 class KlineDataReader:
