@@ -1,7 +1,10 @@
 from pandas import DataFrame
 
+from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
 
-def sma_perfect_order_filter_strategy(df: DataFrame) -> DataFrame:
+
+@StrategyRegistry.register("sma_diff_increasing_filter_strategy")
+def sma_diff_increasing_filter_strategy(df: DataFrame) -> DataFrame:
     if not df.empty:
         df['sma10_diff_sma20'] = df['sma10'] - df['sma20']
         df['prev_sma10_diff_sma20_1'] = df['sma10_diff_sma20'].shift(1)

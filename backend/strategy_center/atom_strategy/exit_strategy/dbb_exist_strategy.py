@@ -2,7 +2,10 @@ import pandas as pd
 from pandas import DataFrame
 import numpy as np
 
+from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
 
+
+@StrategyRegistry.register("dbb_exist_strategy_for_backtest")
 def dbb_exist_strategy_for_backtest(df: DataFrame) -> DataFrame:
     if df.empty:
         return df
