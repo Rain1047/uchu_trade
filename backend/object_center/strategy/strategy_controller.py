@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 
-from backend.controller.strategy.strategy_request import StrategyCreateOrUpdateRequest
-from backend.controller.strategy.strategy_service import StrategyService
+from backend.object_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
+from backend.object_center.strategy.strategy_service import StrategyService
 
 # 创建路由器实例
 router = APIRouter()

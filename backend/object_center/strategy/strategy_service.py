@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from backend.utils.utils import DatabaseUtils
-from backend.data_center.data_object.dao.st_instance import StInstance
-from backend.controller.strategy.strategy_request import StrategyCreateOrUpdateRequest
+from backend.object_center.object_dao.st_instance import StInstance
+from backend.object_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
 
 
 class StrategyService:

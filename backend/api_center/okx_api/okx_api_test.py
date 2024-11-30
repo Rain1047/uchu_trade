@@ -1,4 +1,4 @@
-from backend.data_center.data_object.dao.account_balance import AccountBalance
+from backend.object_center.object_dao.account_balance import AccountBalance
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
-from backend.data_center.data_object.dao.account_balance import AccountBalance
-from backend.data_center.data_object.dao.auto_trade_config import AutoTradeConfig
+from backend.object_center.object_dao.account_balance import AccountBalance
+from backend.object_center.object_dao.auto_trade_config import AutoTradeConfig
 
 okx = OKXAPIWrapper()
 account = okx.account

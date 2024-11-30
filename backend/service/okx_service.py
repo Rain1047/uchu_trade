@@ -1,7 +1,7 @@
 
 from typing import Dict, List
 
-from backend.data_center.data_object.dao.algo_order_instance import AlgoOrderInstance
+from backend.object_center.object_dao.algo_order_instance import AlgoOrderInstance
 from backend.data_center.data_object.enum_obj import *
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
