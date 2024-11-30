@@ -17,6 +17,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   formControl: {
     marginBottom: theme.spacing(3),
+    width: '100%'
   },
 
   divider: {
@@ -48,4 +49,20 @@ export const useStyles = makeStyles((theme) => ({
     fontSize: '0.75rem',
     marginTop: theme.spacing(0.5),
   },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
+  },
+  select: {
+    '&:focus': {
+      backgroundColor: 'transparent',
+    },
+  },
+  menuPaper: {
+    maxHeight: 300,
+  },
+
 }));
