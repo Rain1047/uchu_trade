@@ -1,5 +1,6 @@
 from typing import List
 
+from pyparsing import Optional
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -30,9 +31,36 @@ class StInstance(Base):
     gmt_create = Column(String, nullable=False, comment='生成时间')
     gmt_modified = Column(String, nullable=False, comment='更新时间')
 
+    @classmethod
+    def get_all_active(cls) -> List['StInstance']:
+        """Get all non-deleted strategy instances"""
+        return DatabaseUtils.get_db_session().query(cls).filter_by(is_del=0).all()
 
-def query_all_st_instance() -> List[StInstance]:
-    return DatabaseUtils.get_db_session().query(StInstance).all()
+    @classmethod
+    def get_by_id(cls, id: int) -> Optional['StInstance']:
+        """Get strategy instance by ID"""
+        return DatabaseUtils.get_db_session().query(cls).filter_by(id=id, is_del=0).first()
+
+    def to_dict(self) -> dict:
+        """Convert model to dictionary"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'trade_pair': self.trade_pair,
+            'side': self.side,
+            'entry_per_trans': self.entry_per_trans,
+            'loss_per_trans': self.loss_per_trans,
+            'time_frame': self.time_frame,
+            'entry_st_code': self.entry_st_code,
+            'exit_st_code': self.exit_st_code,
+            'filter_st_code': self.filter_st_code,
+            'stop_loss_config': self.stop_loss_config,
+            'schedule_config': self.schedule_config,
+            'switch': self.switch,
+            'env': self.env,
+            'gmt_create': self.gmt_create.isoformat() if self.gmt_create else None,
+            'gmt_modified': self.gmt_modified.isoformat() if self.gmt_modified else None
+        }
 
 
 if __name__ == '__main__':
