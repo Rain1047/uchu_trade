@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 import pandas as pd
 import logging
 
@@ -30,3 +30,5 @@ class StrategyRegistry:
         except Exception as e:
             logger.error(f"Strategy execution failed: {str(e)}")
             raise
+
+

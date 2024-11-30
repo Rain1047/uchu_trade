@@ -49,8 +49,8 @@ def convert_timeframe_to_interval(time_frame: str) -> Interval:
     return mapping.get(time_frame, None)
 
 
-@StrategyRegistry.register("dbb_entry_strategy")
-def dbb_entry_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
+@StrategyRegistry.register("dbb_entry_long_strategy")
+def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
         return dbb_entry_long_strategy_backtest(df)
     else:
