@@ -78,6 +78,11 @@ const SideBar = ({ open, setOpen }) => {
             icon: <AccountBalanceIcon />,
             path: '/balance'
         },
+        {
+            text: 'Backtest',  // 新增 Balance 菜单项
+            icon: <AccountBalanceIcon />,
+            path: '/backtest'
+        },
     ];
 
     return (

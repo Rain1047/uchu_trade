@@ -1,6 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional
 import logging
 
 from backend.service.okx_service.balance import list_account_balance
