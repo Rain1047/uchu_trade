@@ -1,7 +1,4 @@
-# scheduler_center/tasks/trading_tasks.py
 from typing import Dict, Any, List, Optional
-import pandas as pd
-from datetime import datetime, timedelta
 
 from backend.data_center.data_object.dao.account_balance import AccountBalance
 from backend.data_center.data_object.dao.auto_trade_config import AutoTradeConfig
@@ -10,7 +7,6 @@ from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskCon
 
 
 class StopLossUpdateTask(BaseTask):
-    """任务B: 更新止损设置"""
 
     def __init__(self, name: str = "stop_loss_update"):
         config = TaskConfig(
@@ -31,7 +27,7 @@ class StopLossUpdateTask(BaseTask):
                     message="没有获取到交易数据"
                 )
 
-            # trade_data = self.previous_result.data.get("trade_data", {})
+            trade_data = self.previous_result.data.get("trade_data", {})
 
             # 获取所有交易配置内容
             balance_list = AccountBalance.list_all()

@@ -1,10 +1,11 @@
 import React from 'react';
 import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
+    Box, Chip,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    Typography,
 } from '@material-ui/core';
 import { useStyles } from './styles';
 
@@ -20,6 +21,52 @@ const StrategyConfigSection = ({
   }
 }) => {
   const classes = useStyles();
+
+  const handleFilterChange = (event) => {
+    const { value } = event.target;
+    onFieldChange('filter_st_code')({ target: { value: Array.isArray(value) ? value.join(',') : value } });
+  };
+
+  // Convert comma-separated string to array for Select
+  const getFilterValues = () => {
+    if (!formData.filter_st_code) return [];
+    return formData.filter_st_code.split(',').filter(Boolean);
+  };
+
+  const CustomSelect = ({ children, ...props }) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Select
+      {...props}
+      onOpen={handleOpen}
+      onClose={handleClose}
+      MenuProps={{
+        anchorEl,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'left',
+        },
+        transformOrigin: {
+          vertical: 'top',
+          horizontal: 'left',
+        },
+        getContentAnchorEl: null,
+      }}
+    >
+      {children}
+    </Select>
+  );
+};
+
 
   return (
     <>
@@ -74,18 +121,32 @@ const StrategyConfigSection = ({
         error={!!errors.filter_st_code}
       >
         <InputLabel>过滤策略</InputLabel>
-        <Select
+        <CustomSelect
+          multiple
           label="过滤策略"
-          value={formData.filter_st_code || ''}
-          onChange={onFieldChange('filter_st_code')}
+          value={getFilterValues()}
+          onChange={handleFilterChange}
           disabled={viewMode}
+          className={classes.select}
+          renderValue={(selected) => (
+            <Box className={classes.chips}>
+              {selected.map((value) => (
+                <Chip
+                  key={value}
+                  label={value}
+                  className={classes.chip}
+                  size="small"
+                />
+              ))}
+            </Box>
+          )}
         >
           {strategies.filterStrategies.map((strategy) => (
             <MenuItem key={strategy} value={strategy}>
               {strategy}
             </MenuItem>
           ))}
-        </Select>
+        </CustomSelect>
       </FormControl>
     </>
   );
