@@ -1,8 +1,18 @@
+from typing import Optional
+
 import pandas as pd
 from pandas import DataFrame
-import numpy as np
 
+from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
+
+
+@StrategyRegistry.register("dbb_exist_long_strategy")
+def dbb_exist_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
+    if stIns is None:
+        return dbb_exist_strategy_for_backtest(df)
+    else:
+        return dbb_exist_strategy_for_backtest(df)
 
 
 @StrategyRegistry.register("dbb_exist_strategy_for_backtest")
