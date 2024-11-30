@@ -10,7 +10,7 @@ from backend.data_center.data_gather.ticker_price_collector import TickerPriceCo
 from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumTimeFrame
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
+from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -49,7 +49,7 @@ def convert_timeframe_to_interval(time_frame: str) -> Interval:
     return mapping.get(time_frame, None)
 
 
-@StrategyRegistry.register("dbb_entry_long_strategy")
+@registry.register("dbb_entry_long_strategy")
 def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
         return dbb_entry_long_strategy_backtest(df)
@@ -57,7 +57,7 @@ def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
         return dbb_entry_long_strategy_live(df, stIns)
 
 
-@StrategyRegistry.register("dbb_entry_long_strategy_backtest")
+@registry.register("dbb_entry_long_strategy_backtest")
 def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
@@ -88,13 +88,13 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
 
     # 验证信号
     problematic_signals = df[df['entry_sig'] == 1]
-    if len(problematic_signals) > 0:
-        print("\nSignal Verification:")
-        for idx in problematic_signals.index:
-            print(f"\nTime: {problematic_signals.loc[idx, 'datetime']}")
-            print(f"Condition 1 (current open < upper_band1): {problematic_signals.loc[idx, 'debug_condition1']}")
-            print(f"Condition 2 (current close > upper_band1): {problematic_signals.loc[idx, 'debug_condition2']}")
-            print(f"Condition 3 (prev open < prev upper_band1): {problematic_signals.loc[idx, 'debug_condition3']}")
+    # if len(problematic_signals) > 0:
+    #     print("\nSignal Verification:")
+    #     for idx in problematic_signals.index:
+    #         print(f"\nTime: {problematic_signals.loc[idx, 'datetime']}")
+    #         print(f"Condition 1 (current open < upper_band1): {problematic_signals.loc[idx, 'debug_condition1']}")
+    #         print(f"Condition 2 (current close > upper_band1): {problematic_signals.loc[idx, 'debug_condition2']}")
+    #         print(f"Condition 3 (prev open < prev upper_band1): {problematic_signals.loc[idx, 'debug_condition3']}")
 
     # Clean up temporary columns
     df.drop(['prev_open_1', 'prev_upper_band1_1',
@@ -104,7 +104,7 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
     return df
 
 
-@StrategyRegistry.register("dbb_entry_long_strategy_live")
+@registry.register("dbb_entry_long_strategy_live")
 def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     双布林带突破策略：在股价突破双布林带上轨时执行买入操作。
@@ -165,4 +165,4 @@ def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
 
 
 if __name__ == '__main__':
-    pass
+    print(registry.list_strategies())
