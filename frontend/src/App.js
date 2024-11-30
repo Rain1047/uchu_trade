@@ -11,6 +11,7 @@ import Layout from './components/Layout';
 import {Container, Typography} from "@material-ui/core";
 import StrategyPage from "./features/strategy"
 import BalanceList from "./features/balance"
+import Backtest from "./features/backtest";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -52,6 +53,7 @@ function App() {
                             <Route path="/trade/history" element={<TradeHistoryTable />} />
                             <Route path="/strategy" element={<StrategyPage />} />
                             <Route path="/balance" element={<BalanceList />} />
+                            <Route path="/backtest" element={<Backtest />} />
                         </Routes>
                     </Layout>
                 </Router>
