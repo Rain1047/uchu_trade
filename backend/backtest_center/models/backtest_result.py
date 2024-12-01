@@ -23,6 +23,8 @@ class BacktestResults:
     avg_win: float
     avg_loss: float
     win_rate: float
+    total_entry_signals: int
+    total_sell_signals: int
 
     def format_percentage(self, value: float) -> str:
         """格式化百分比值"""

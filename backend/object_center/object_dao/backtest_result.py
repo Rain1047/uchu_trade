@@ -44,7 +44,7 @@ class BacktestResult(Base):
     def insert_or_update(cls, data: dict):
         # 检查是否已存在相同 strategy_id 的记录
         existing = session.query(cls).filter(
-            cls.strategy_id == data['strategy_id']
+            cls.back_test_result_key == data['back_test_result_key']
         ).first()
 
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
