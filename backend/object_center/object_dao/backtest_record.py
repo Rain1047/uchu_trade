@@ -33,20 +33,20 @@ class BacktestRecord(Base):
     @classmethod
     def insert_or_update(cls, data: dict):
         # 检查是否已存在相同 back_test_result_key 和 transaction_time 的记录
-        existing = session.query(cls).filter(
-            cls.back_test_result_key == data['back_test_result_key'],
-            cls.transaction_time == data['transaction_time']
-        ).first()
-
-        if existing:
-            # 更新现有记录
-            for key, value in data.items():
-                setattr(existing, key, value)
-            result = existing
-        else:
-            # 插入新记录
-            result = cls(**data)
-            session.add(result)
+        # existing = session.query(cls).filter(
+        #     cls.back_test_result_key == data['back_test_result_key'],
+        #     cls.transaction_time == data['transaction_time']
+        # ).first()
+        #
+        # if existing:
+        #     # 更新现有记录
+        #     for key, value in data.items():
+        #         setattr(existing, key, value)
+        #     result = existing
+        # else:
+        # 插入新记录
+        result = cls(**data)
+        session.add(result)
 
         session.commit()
         return result
