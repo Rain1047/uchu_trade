@@ -7,6 +7,7 @@ from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.object_center.object_dao.backtest_record import BacktestRecord
 from backend.object_center.object_dao.backtest_result import BacktestResult
+from backend.object_center.object_dao.st_instance import StInstance
 
 
 class BacktestSystem:
@@ -110,13 +111,13 @@ class BacktestSystem:
             records_df.to_excel(writer, sheet_name='Trade Records', index=False)
             stats_df.to_excel(writer, sheet_name='Summary', index=False)
 
-    def run(self, df: pd.DataFrame, strategy_id: int, plot: bool = True) -> BacktestResults:
+    def run(self, df: pd.DataFrame, st: StInstance, plot: bool = True) -> BacktestResults:
         """运行回测"""
         self.prepare_data(df)
         results = self.cerebro.run()
 
         backtest_results = self._process_results(results)
-        record_backtest_results(backtest_results, results, strategy_id)
+        record_backtest_results(backtest_results, results, st)
 
         # 导出交易记录
         self._export_trade_records(results)
@@ -152,11 +153,14 @@ def _print_results(results: BacktestResults) -> None:
         print(f'平均亏损: ${results.avg_loss:.2f}')
 
 
-def record_backtest_results(backtest_results: BacktestResults, results, strategy_id: int):
+def record_backtest_results(backtest_results: BacktestResults, results, st: StInstance):
+    key = 'BTC-USDT' + f'ST{st.id}' + datetime.now().strftime('%Y%m%d%H%M')
+
     # 插入回测结果表
     result_data = {
-        'strategy_id': strategy_id,
-        'symbol': 'BTC-USDT',  # 从参数传入或其他方式获取
+        'strategy_id': st.id,
+        'back_test_result_key': key,
+        'symbol': st.name,
         'test_finished_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'buy_signal_count': len(results[0].trade_records),
         'sell_signal_count': len(results[0].trade_records),

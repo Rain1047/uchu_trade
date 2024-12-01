@@ -79,6 +79,13 @@ class EnumTimeFrame(Enum):
     in_monthly = "1M"
 
 
+def get_interval_by_value(value: str) -> EnumTimeFrame:
+    for interval in EnumTimeFrame:
+        if interval.value == value:
+            return interval
+    raise ValueError(f"Invalid interval value: {value}")
+
+
 class EnumInstanceType(Enum):
     SPOT = "SPOT"
 
