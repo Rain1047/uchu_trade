@@ -1,6 +1,5 @@
 import backtrader as bt
 import pandas as pd
-from tvDatafeed import Interval
 from backend.backtest_center.backtest_core.backtest_system import BacktestSystem
 from backend.data_center.data_object.enum_obj import EnumTimeFrame, get_interval_by_value
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
@@ -29,12 +28,7 @@ def main():
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df[df['datetime'] > "2023-12-31 08:00:00"]
 
-    # 打印生成的信号统计
-    total_entry_signals = df['entry_sig'].sum()
-    total_sell_signals = df['sell_sig'].sum()
-    print(f"\n信号统计:")
-    print(f"总买入信号数: {total_entry_signals}")
-    print(f"总卖出信号数: {total_sell_signals}")
+
 
     # 运行回测
     results = backtest.run(df, plot=True, st=st)

@@ -119,6 +119,13 @@ class BacktestSystem:
         backtest_results = self._process_results(results)
         record_backtest_results(backtest_results, results, st)
 
+        # 打印生成的信号统计
+        backtest_results.total_entry_signals = df['entry_sig'].sum()
+        backtest_results.total_sell_signals = df['sell_sig'].sum()
+        print(f"\n信号统计:")
+        print(f"总买入信号数: {backtest_results.total_entry_signals}")
+        print(f"总卖出信号数: {backtest_results.total_sell_signals}")
+
         # 导出交易记录
         self._export_trade_records(results)
         _print_results(backtest_results)
@@ -154,16 +161,17 @@ def _print_results(results: BacktestResults) -> None:
 
 
 def record_backtest_results(backtest_results: BacktestResults, results, st: StInstance):
-    key = 'BTC-USDT' + f'ST{st.id}' + datetime.now().strftime('%Y%m%d%H%M')
+    key = 'BTC-USDT_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
 
     # 插入回测结果表
     result_data = {
         'strategy_id': st.id,
+        'strategy_name': st.name,
         'back_test_result_key': key,
-        'symbol': st.name,
+        'symbol': st.trade_pair,
         'test_finished_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'buy_signal_count': len(results[0].trade_records),
-        'sell_signal_count': len(results[0].trade_records),
+        'buy_signal_count': backtest_results.total_entry_signals,
+        'sell_signal_count': backtest_results.total_sell_signals,
         'transaction_count': backtest_results.total_trades,
         'profit_count': backtest_results.winning_trades,
         'loss_count': backtest_results.losing_trades,
