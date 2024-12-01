@@ -6,6 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 from tvDatafeed import TvDatafeed, Interval
 
+from backend.data_center.data_object.enum_obj import EnumTimeFrame
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center.object_dao.symbol_instance import query_all_symbol_instance, SymbolInstance
 from backend.utils.utils import ConfigUtils
@@ -77,7 +78,7 @@ class KlineDataCollector:
             return pd.DataFrame()
 
     @staticmethod
-    def get_abspath(symbol: Optional[str], interval: Optional[Interval]) -> str:
+    def get_abspath(symbol: Optional[str], interval: Optional[EnumTimeFrame]) -> str:
         # Get the directory of the current script
         if symbol is None or interval is None:
             print(os.path.dirname(os.path.realpath(__file__)))

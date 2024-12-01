@@ -71,3 +71,7 @@ class BacktestResult(Base):
         session.execute(stmt)
         session.commit()
 
+
+if __name__ == '__main__':
+    result = BacktestResult.list_all()
+    print(result)
