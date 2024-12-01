@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+from sqlalchemy import select
+
 from backend.data_center.data_object.enum_obj import EnumTradeEnv
 
 
@@ -45,5 +47,11 @@ class StrategyInstance(BaseModel):
     gmtCreate: str = datetime.now()
     # 更新时间
     gmtUpdate: str = datetime.now()
+
+    @classmethod
+    def get_by_id(cls, id: int):
+        stmt = select(cls).where(cls.id == id, cls.delete == 0)
+        return session.execute(stmt).scalar_one_or_none()
+
 
 

@@ -1,5 +1,5 @@
 from typing import Optional
-from backend.object_center.object_dao import FillsHistory
+from backend.object_center.object_dao.fills_history import FillsHistory
 from backend.service.data_api import *
 from backend.constant.okx_code import *
 from backend.service.req.page_req import PageRequest

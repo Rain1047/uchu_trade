@@ -8,6 +8,7 @@ from backend.utils.utils import DatabaseUtils
 
 # 创建基类
 Base = declarative_base()
+session = DatabaseUtils.get_db_session()
 
 
 # 定义 ORM 模型类
@@ -37,9 +38,22 @@ class StInstance(Base):
         return DatabaseUtils.get_db_session().query(cls).filter_by(is_del=0).all()
 
     @classmethod
-    def get_by_id(cls, id: int) -> Optional['StInstance']:
+    def get_st_instance_by_id(cls, id: int) -> 'StInstance':
+        strategy = session.query(StInstance).filter(
+            StInstance.id == id,
+            StInstance.is_del == 0
+        ).first()
         """Get strategy instance by ID"""
         return DatabaseUtils.get_db_session().query(cls).filter_by(id=id, is_del=0).first()
+
+
+def get_st_instance_by_id(id: int) -> StInstance:
+    strategy = session.query(StInstance).filter(
+        StInstance.id == id,
+        StInstance.is_del == 0
+    ).first()
+    """Get strategy instance by ID"""
+    return DatabaseUtils.get_db_session().query(StInstance).filter_by(id=id, is_del=0).first()
 
     def to_dict(self) -> dict:
         """Convert model to dictionary"""
@@ -67,6 +81,12 @@ if __name__ == '__main__':
     session = DatabaseUtils.get_db_session()
 
     # 查询所有策略实例
+    # st = get_st_instance_by_id(id=8)
+    # print(st.name)
+
+    st = StInstance.get_st_instance_by_id(id=8)
+    print(st.name)
+
 
     # # 创建一条记录
     # new_instance = StInstance(
