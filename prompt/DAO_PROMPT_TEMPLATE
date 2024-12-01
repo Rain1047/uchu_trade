@@ -1,8 +1,10 @@
 基于api返回的DICT结果，提供SQLITE的建表语句，和基于于
 from sqlalchemy.ext.declarative import declarative_base的python对象，使用下划线代替驼峰
 
+基于这个object类生成sqlite的建表sql，携带上注释的内容
+
 在对象中实现：
-1. 获取全部实例，
+1. list查询和get_by_id方法
 2. 根据api结果插入表，如果xxx字段已存在，则改为更新
 3. 根据id删除表中的数据
 
