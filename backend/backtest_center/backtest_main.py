@@ -34,7 +34,7 @@ def main():
     print(f"总卖出信号数: {total_sell_signals}")
 
     # 运行回测
-    results = backtest.run(df, plot=True)
+    results = backtest.run(df, plot=True, strategy_id=1)
 
 
 if __name__ == '__main__':
