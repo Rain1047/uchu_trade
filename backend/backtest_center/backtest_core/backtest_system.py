@@ -82,7 +82,9 @@ class BacktestSystem:
             losing_trades=losing_trades,
             avg_win=avg_win,
             avg_loss=avg_loss,
-            win_rate=win_rate
+            win_rate=win_rate,
+            total_entry_signals=0,
+            total_sell_signals=0
         )
 
     def _export_trade_records(self, results) -> None:
@@ -117,14 +119,13 @@ class BacktestSystem:
         results = self.cerebro.run()
 
         backtest_results = self._process_results(results)
-        record_backtest_results(backtest_results, results, st)
-
         # 打印生成的信号统计
         backtest_results.total_entry_signals = df['entry_sig'].sum()
         backtest_results.total_sell_signals = df['sell_sig'].sum()
         print(f"\n信号统计:")
         print(f"总买入信号数: {backtest_results.total_entry_signals}")
         print(f"总卖出信号数: {backtest_results.total_sell_signals}")
+        record_backtest_results(backtest_results, results, st)
 
         # 导出交易记录
         self._export_trade_records(results)
@@ -184,7 +185,7 @@ def record_backtest_results(backtest_results: BacktestResults, results, st: StIn
     # 插入交易记录表
     for record in results[0].trade_records:
         record_data = {
-            'back_test_result_key': result.id,
+            'back_test_result_key': key,
             'transaction_time': record.datetime,
             'transaction_result': f"Price: {record.price}, Size: {record.size}, PnL: {record.pnl}"
         }

@@ -28,8 +28,6 @@ def main():
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df[df['datetime'] > "2023-12-31 08:00:00"]
 
-
-
     # 运行回测
     results = backtest.run(df, plot=True, st=st)
 
