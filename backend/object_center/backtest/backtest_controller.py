@@ -13,13 +13,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.get("/list_backtest")
-def list_backtest():
+@router.get("/list_backtest_record")
+def list_backtest_record(key: str):
     try:
-        backtest_list = BacktestService.list_backtest()
+        record_list = BacktestService.list_record_by_key(key)
         return {
             "success": True,
-            "data": backtest_list
+            "data": record_list
         }
     except Exception as e:
         return {
@@ -31,12 +31,12 @@ def list_backtest():
 @router.get("/list_key")
 def list_key(strategy_id: int, symbol: str):
     try:
-        result = BacktestService.list_key(str(strategy_id), symbol=symbol)
-        for item in result:
+        key_list = BacktestService.list_key(str(strategy_id), symbol=symbol)
+        for item in key_list:
             print(json.dumps(item))
         return {
             "success": True,
-            "data": result
+            "data": key_list
         }
     except Exception as e:
         return {

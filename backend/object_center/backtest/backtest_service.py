@@ -15,3 +15,7 @@ class BacktestService:
     @staticmethod
     def run_backtest(st_instance_id):
         result: BacktestResults = backtest_main(st_instance_id)
+
+    @staticmethod
+    def list_record_by_key(key: str):
+        pass
