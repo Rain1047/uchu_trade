@@ -1,4 +1,3 @@
-import backtrader as bt
 import pandas as pd
 from backend.backtest_center.backtest_core.backtest_system import BacktestSystem
 from backend.data_center.data_object.enum_obj import EnumTimeFrame, get_interval_by_value
