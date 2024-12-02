@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, delete, select
+from sqlalchemy import Column, Integer, String, delete, select, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend.utils.utils import DatabaseUtils
@@ -14,6 +14,7 @@ class BacktestRecord(Base):
     back_test_result_key = Column(String, comment='回测结果FK')
     transaction_time = Column(String, comment='交易时间')
     transaction_result = Column(String, comment='交易结果')
+    transaction_pnl = Column(Float(precision=2), comment='交易收益')
 
     @classmethod
     def list_all(cls):
@@ -56,3 +57,13 @@ class BacktestRecord(Base):
         stmt = delete(cls).where(cls.id == id)
         session.execute(stmt)
         session.commit()
+
+    @classmethod
+    def delete_all(cls):
+        stmt = delete(cls)
+        session.execute(stmt)
+        session.commit()
+
+
+if __name__ == '__main__':
+    BacktestRecord.delete_all()
