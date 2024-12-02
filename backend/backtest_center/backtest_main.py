@@ -6,13 +6,13 @@ from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 
 
-def backtest_main():
+def backtest_main(st_instance_id):
     """主函数"""
     # 创建回测系统实例
     backtest = BacktestSystem(initial_cash=100000.0, risk_percent=2.0, commission=0.001)
 
     # get strategy instance
-    st = StInstance.get_st_instance_by_id(8)
+    st = StInstance.get_st_instance_by_id(st_instance_id)
     interval = get_interval_by_value(st.time_frame)
     # 准备数据
     tv = KlineDataCollector()
@@ -32,5 +32,5 @@ def backtest_main():
 
 
 if __name__ == '__main__':
-    backtest_main()
+    backtest_main(8)
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -71,7 +72,17 @@ class BacktestResult(Base):
         session.execute(stmt)
         session.commit()
 
+    @classmethod
+    def list_key_by_strategy_and_symbol(cls, strategy_id: str, symbol: str) -> list[dict]:
+        results = session.scalars(
+            select(cls)
+            .where(cls.strategy_id == strategy_id)
+            .where(cls.symbol == symbol)
+            .order_by(cls.id.desc())
+        ).all()
+        return [{'back_test_result_key': result.back_test_result_key} for result in results] if results else []
+
 
 if __name__ == '__main__':
-    result = BacktestResult.list_all()
+    result = BacktestResult.list_key_by_strategy_and_symbol('8', 'BTC-USDT')
     print(result)
