@@ -6,7 +6,7 @@ from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 
 
-def main():
+def backtest_main():
     """主函数"""
     # 创建回测系统实例
     backtest = BacktestSystem(initial_cash=100000.0, risk_percent=2.0, commission=0.001)
@@ -28,9 +28,9 @@ def main():
     df = df[df['datetime'] > "2023-12-31 08:00:00"]
 
     # 运行回测
-    results = backtest.run(df, plot=True, st=st)
+    return backtest.run(df, plot=True, st=st)
 
 
 if __name__ == '__main__':
-    main()
+    backtest_main()
 
