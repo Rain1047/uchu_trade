@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, HTTPException
 import logging
 
@@ -11,13 +13,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.get("/list_backtest")
-def list_backtest():
+@router.get("/list_backtest_record")
+def list_backtest_record(key: str):
     try:
-        backtest_list = BacktestService.list_backtest()
+        record_list = BacktestService.list_record_by_key(key)
         return {
             "success": True,
-            "data": backtest_list
+            "data": record_list
         }
     except Exception as e:
         return {
@@ -26,10 +28,27 @@ def list_backtest():
         }
 
 
-@router.get("/run_backtest")
-def run_backtest():
+@router.get("/list_key")
+def list_key(strategy_id: int, symbol: str):
     try:
-        run_result = BacktestService.run_backtest()
+        key_list = BacktestService.list_key(str(strategy_id), symbol=symbol)
+        for item in key_list:
+            print(json.dumps(item))
+        return {
+            "success": True,
+            "data": key_list
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.post("/run_backtest")
+def run_backtest(strategy_id: int):
+    try:
+        run_result = BacktestService.run_backtest(strategy_id)
         return {
             "success": True,
             "data": run_result
@@ -42,4 +61,6 @@ def run_backtest():
 
 
 if __name__ == '__main__':
-    list_backtest()
+    # list_backtest()
+    result = list_key(symbol='BTC-USDT', strategy_id=8)
+    print(result)

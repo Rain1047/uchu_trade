@@ -1,4 +1,3 @@
-import backtrader as bt
 import pandas as pd
 from backend.backtest_center.backtest_core.backtest_system import BacktestSystem
 from backend.data_center.data_object.enum_obj import EnumTimeFrame, get_interval_by_value
@@ -7,13 +6,13 @@ from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 
 
-def main():
+def backtest_main(st_instance_id):
     """主函数"""
     # 创建回测系统实例
     backtest = BacktestSystem(initial_cash=100000.0, risk_percent=2.0, commission=0.001)
 
     # get strategy instance
-    st = StInstance.get_st_instance_by_id(8)
+    st = StInstance.get_st_instance_by_id(st_instance_id)
     interval = get_interval_by_value(st.time_frame)
     # 准备数据
     tv = KlineDataCollector()
@@ -29,9 +28,9 @@ def main():
     df = df[df['datetime'] > "2023-12-31 08:00:00"]
 
     # 运行回测
-    results = backtest.run(df, plot=True, st=st)
+    return backtest.run(df, plot=True, st=st)
 
 
 if __name__ == '__main__':
-    main()
+    backtest_main(8)
 

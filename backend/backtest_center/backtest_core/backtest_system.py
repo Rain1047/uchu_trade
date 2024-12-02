@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 
 import backtrader as bt
@@ -184,9 +185,11 @@ def record_backtest_results(backtest_results: BacktestResults, results, st: StIn
 
     # 插入交易记录表
     for record in results[0].trade_records:
-        record_data = {
-            'back_test_result_key': key,
-            'transaction_time': record.datetime,
-            'transaction_result': f"Price: {record.price}, Size: {record.size}, PnL: {record.pnl}"
-        }
-        BacktestRecord.insert_or_update(record_data)
+        if record.pnl != 0:
+            record_data = {
+                'back_test_result_key': key,
+                'transaction_time': record.datetime,
+                'transaction_result': f"Price: {record.price}, Size: {record.size}, PnL: {record.pnl}",
+                'transaction_pnl': round(record.pnl, 2)
+            }
+            BacktestRecord.insert_or_update(record_data)
