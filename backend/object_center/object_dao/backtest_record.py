@@ -16,15 +16,24 @@ class BacktestRecord(Base):
     transaction_result = Column(String, comment='交易结果')
     transaction_pnl = Column(Float(precision=2), comment='交易收益')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'back_test_result_key': self.back_test_result_key,
+            'transaction_time': self.transaction_time,
+            'transaction_result': self.transaction_result,
+            'transaction_pnl': self.transaction_pnl
+        }
+
     @classmethod
     def list_all(cls):
         stmt = select(cls)
-        return session.execute(stmt).scalars().all()
+        return [record.to_dict() for record in stmt]
 
     @classmethod
     def list_by_key(cls, back_test_result_key: str):
         stmt = select(cls).where(cls.back_test_result_key == back_test_result_key)
-        return session.execute(stmt).scalars().all()
+        return [record.to_dict() for record in stmt]
 
     @classmethod
     def get_by_id(cls, id: int):
