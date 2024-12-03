@@ -1,5 +1,6 @@
 from backend.backtest_center.backtest_main import *
 from backend.backtest_center.models.backtest_result import BacktestResults
+from backend.object_center.object_dao.backtest_record import BacktestRecord
 from backend.object_center.object_dao.backtest_result import BacktestResult
 
 
@@ -19,8 +20,8 @@ class BacktestService:
 
     @staticmethod
     def list_record_by_key(key: str):
-        pass
+        return BacktestRecord.list_by_key(key)
 
     @staticmethod
     def get_backtest_detail(key):
-        return BacktestResult.get_by_key(key=key)
+        return BacktestResult.get_by_key(key)

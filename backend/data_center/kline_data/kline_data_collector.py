@@ -49,12 +49,13 @@ class KlineDataCollector:
             df.to_csv(filename, mode='a', index=True)
 
     def batch_collect_data(self) -> Dict:
+        interval_list = ['1D', '4H']
         try:
             item_list: List[SymbolInstance] = query_all_symbol_instance()
             for item in item_list:
-                print(f"{item.symbol}, {item.interval} Start Collecting.")
-                self.collect_data(item.symbol, Interval(item.interval))
-                print(f"{item.symbol}, {item.interval} Collecting Finished.")
+                for interval in interval_list:
+                    self.collect_data(item.symbol, Interval(interval))
+                    print(f"{item.symbol} Collecting Finished.")
             print("Batch Collecting Finished.")
             return {
                 "success": True,
