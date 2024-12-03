@@ -31,9 +31,10 @@ class BacktestRecord(Base):
         return [record.to_dict() for record in stmt]
 
     @classmethod
-    def list_by_key(cls, back_test_result_key: str):
+    def list_by_key(cls, back_test_result_key: str) -> list:
         stmt = select(cls).where(cls.back_test_result_key == back_test_result_key)
-        return [record.to_dict() for record in stmt]
+        records = session.execute(stmt).scalars().all()
+        return [record.to_dict() for record in records]
 
     @classmethod
     def get_by_id(cls, id: int):
