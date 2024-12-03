@@ -1,13 +1,14 @@
 # 创建基类
 from typing import List
 
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, select
 from sqlalchemy.orm import declarative_base
 from tvDatafeed import Interval
 
 from backend.utils.utils import DatabaseUtils
 
 Base = declarative_base()
+session = DatabaseUtils.get_db_session()
 
 
 # 定义 ORM 模型类
@@ -15,16 +16,31 @@ class SymbolInstance(Base):
     __tablename__ = 'symbol_instance'
     id = Column(Integer, primary_key=True, autoincrement=True, comment='交易对实例ID')
     symbol = Column(String(255), nullable=False, comment='交易对')
+
     # interval = Column(String(255), nullable=False, comment='时间窗口')
+
+    @classmethod
+    def query_all(cls):
+        results = session.scalars(
+            select(cls)
+        ).all()
+        return {'symbol_list': [str(result.symbol) for result in results]} if results else {
+            'symbol_list': []}
+
+    @classmethod
+    def query_all_usdt(cls):
+        results = session.scalars(
+            select(cls)
+        ).all()
+        return {'symbol_list': [f"{result.symbol}-USDT" for result in results]} if results else {
+            'symbol_list': []}
 
 
 def query_symbol_instance(symbol) -> SymbolInstance:
-    session = DatabaseUtils.get_db_session()
     return session.query(SymbolInstance).filter_by(symbol=symbol).first()
 
 
 def add_symbol_instance(symbol):
-    session = DatabaseUtils.get_db_session()
     # 检查是否已存在相同的记录
     existing_instance = session.query(SymbolInstance).filter_by(symbol=symbol).first()
     if existing_instance:
@@ -46,7 +62,10 @@ if __name__ == '__main__':
     # result = query_symbol_instance('BTC', '4H')
     # print(result.symbol, result.interval)
 
-    resList: List[SymbolInstance] = query_all_symbol_instance()
-    for res in resList:
-        print(res.symbol)
-    print(f"total count:{len(resList)}")
+    # resList: List[SymbolInstance] = query_all_symbol_instance()
+    # for res in resList:
+    #     print(res.symbol)
+    # print(f"total count:{len(resList)}")
+
+    result = SymbolInstance.query_all()
+    print(result)

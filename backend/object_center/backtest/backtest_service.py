@@ -2,11 +2,18 @@ from backend.backtest_center.backtest_main import *
 from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.object_center.object_dao.backtest_record import BacktestRecord
 from backend.object_center.object_dao.backtest_result import BacktestResult
+from backend.object_center.object_dao.symbol_instance import SymbolInstance
 
 
 class BacktestService:
+
     @staticmethod
-    def list_backtest() -> dict:
+    def list_symbol() -> dict:
+        return SymbolInstance.query_all_usdt()
+    # {'symbol_list': ['BTC-USDT', 'SOL-USDT', 'ETH-USDT', 'DOGE-USDT']}
+
+    @staticmethod
+    def list_strategy_by_symbol() -> dict:
         pass
 
     @staticmethod
@@ -25,3 +32,8 @@ class BacktestService:
     @staticmethod
     def get_backtest_detail(key):
         return BacktestResult.get_by_key(key)
+
+
+if __name__ == '__main__':
+    result = BacktestService.list_symbol()
+    print(result)
