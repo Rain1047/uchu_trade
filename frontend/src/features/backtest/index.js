@@ -5,6 +5,7 @@ import { useBacktest } from './hooks/useBacktest';
 import { BacktestControls } from './components/BacktestControls';
 import { BacktestStatistics } from './components/BacktestStatistics';
 import { BacktestRecords } from './components/BacktestRecords';
+import {BacktestChart} from "./components/BacktestChart";
 
 const BacktestResults = () => {
   const classes = useStyles();
@@ -58,7 +59,17 @@ const BacktestResults = () => {
         ) : (
           <>
             <BacktestStatistics details={details} />
-            <BacktestRecords records={records} />
+            {/*<BacktestRecords records={records} />*/}
+            {loading ? (
+            <Box className={classes.loading}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <BacktestStatistics details={details} />
+              <BacktestChart records={records} />
+            </>
+)}
           </>
         )}
       </Paper>

@@ -28,8 +28,23 @@ def list_symbol():
         }
 
 
-@router.get("/list_backtest_record")
-def list_backtest_record(key: str):
+@router.get('/list_strategy_by_symbol')
+def list_strategy_by_symbol(symbol: str):
+    try:
+        strategy_list = BacktestService.list_strategy_by_symbol(symbol=symbol)
+        return {
+            "success": True,
+            "data": strategy_list
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get("/list_record_by_key")
+def list_record_by_key(key: str):
     try:
         record_list = BacktestService.list_record_by_key(key)
         return {
