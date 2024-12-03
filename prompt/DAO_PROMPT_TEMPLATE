@@ -13,6 +13,8 @@ from sqlalchemy.ext.declarative import declarative_base的python对象，使用�
     insert()方法：入参为dict，返回布尔类型
     get_by_id()方法，返回dict类型
     list_by_{condition} 方法，返回dict(list)类型，条件为{condition}
+        注意这里是dict[list]:
+        return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
     delete_by_id()方法，返回布尔
 
 

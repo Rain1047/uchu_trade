@@ -28,12 +28,11 @@ class SymbolInstance(Base):
             'symbol_list': []}
 
     @classmethod
-    def query_all_usdt(cls):
+    def query_all_usdt(cls) -> list:
         results = session.scalars(
             select(cls)
         ).all()
-        return {'symbol_list': [f"{result.symbol}-USDT" for result in results]} if results else {
-            'symbol_list': []}
+        return [f"{result.symbol}-USDT" for result in results]
 
 
 def query_symbol_instance(symbol) -> SymbolInstance:
