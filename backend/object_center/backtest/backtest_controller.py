@@ -13,6 +13,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+@router.get("/list_symbol")
+def list_symbol():
+    try:
+        symbols = BacktestService.list_symbol()
+        return {
+            "success": True,
+            "data": symbols
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
 @router.get("/list_backtest_record")
 def list_backtest_record(key: str):
     try:
