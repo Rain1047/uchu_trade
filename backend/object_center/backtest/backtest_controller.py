@@ -28,6 +28,21 @@ def list_backtest_record(key: str):
         }
 
 
+@router.get("/get_backtest_detail")
+def get_backtest_detail(key: str):
+    try:
+        record_list = BacktestService.get_backtest_detail(key)
+        return {
+            "success": True,
+            "data": record_list
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
 @router.get("/list_key")
 def list_key(strategy_id: int, symbol: str):
     try:
