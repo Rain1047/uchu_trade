@@ -48,7 +48,6 @@ def get_account_balance():
 
 
 if __name__ == "__main__":
-    # Set the application import string for reload
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     uvicorn.run("main:app",  # Use the import string here
                 host=settings.API_HOST,
