@@ -64,7 +64,7 @@ class BacktestResult(Base):
     @classmethod
     def get_by_key(cls, key: str):
         stmt = select(cls).where(cls.back_test_result_key == key)
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).scalar_one_or_none().to_dict()
 
     @classmethod
     def insert_or_update(cls, data: dict):
