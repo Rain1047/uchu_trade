@@ -18,7 +18,8 @@ import {
     ChevronLeft as ChevronLeftIcon,
     Menu as MenuIcon,
     Settings as SettingsIcon,
-    AccountBalance as AccountBalanceIcon
+    AccountBalance as AccountBalanceIcon,
+    Assessment as AssessmentIcon
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -80,7 +81,7 @@ const SideBar = ({ open, setOpen }) => {
         },
         {
             text: 'Backtest',  // 新增 Balance 菜单项
-            icon: <AccountBalanceIcon />,
+            icon: <AssessmentIcon />,
             path: '/backtest'
         },
     ];

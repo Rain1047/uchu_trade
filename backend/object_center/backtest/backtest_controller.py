@@ -107,5 +107,5 @@ def run_backtest(strategy_id: int):
 
 if __name__ == '__main__':
     # list_backtest()
-    result = list_key(symbol='BTC-USDT', strategy_id=8)
+    result = run_backtest(strategy_id=8)
     print(result)
