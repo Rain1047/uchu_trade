@@ -123,5 +123,9 @@ centerLine: {
   right: 0,
   top: '50%',
   borderTop: '1px dashed #444',
+},
+runButton: {
+  minWidth: 120,
+  marginRight: theme.spacing(2)
 }
 }));

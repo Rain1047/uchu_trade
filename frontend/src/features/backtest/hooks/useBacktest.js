@@ -12,6 +12,7 @@ export const useBacktest = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [runningBacktest, setRunningBacktest] = useState(false);
 
   useEffect(() => {
     fetchSymbols();
@@ -92,6 +93,24 @@ export const useBacktest = () => {
     }
   };
 
+  const runBacktest = async () => {
+    if (!selectedStrategy) return;
+
+    setRunningBacktest(true);
+    try {
+      const result = await fetchBacktestData.runBacktest(selectedStrategy);
+      if (result.success) {
+        setSelectedKey(result.data.key);
+        await fetchRecordsAndDetails();
+      }
+    } catch (error) {
+      console.error('Run backtest failed:', error);
+    } finally {
+      setRunningBacktest(false);
+    }
+  };
+
+
   return {
     symbols,
     selectedSymbol,
@@ -105,6 +124,8 @@ export const useBacktest = () => {
     records,
     details,
     loading,
-    error
+    error,
+    runBacktest,
+    runningBacktest,
   };
 };
