@@ -40,6 +40,13 @@ class BacktestService:
     @staticmethod
     def run_backtest(st_instance_id):
         return backtest_main(st_instance_id)
+    # {'success': True,
+    #  'data': {'initial_value': 100000.0, 'final_value': 101801.6119191148, 'total_return': 0.017855752178952206,
+    #           'annual_return': 0.013361783830799084, 'sharpe_ratio': -0.11011698955825451,
+    #           'max_drawdown': 0.43074964153891127, 'max_drawdown_amount': 434.76787154827616, 'total_trades': 85,
+    #           'winning_trades': 31, 'losing_trades': 54, 'avg_win': 113.26613022175843, 'avg_loss': -31.6599651437001,
+    #           'win_rate': 36.470588235294116, 'total_entry_signals': 113, 'total_sell_signals': 77,
+    #           'key': 'BTC双布林带策略_ST8_202412042237'}}
 
     @staticmethod
     def list_record_by_key(key: str):
