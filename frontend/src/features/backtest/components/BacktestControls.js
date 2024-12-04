@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
+import {Box, FormControl, InputLabel, Select, MenuItem, Button} from '@material-ui/core';
 import { useStyles } from '../utils/styles';
+import { PlayArrow as PlayArrowIcon } from '@material-ui/icons';
 
 export const BacktestControls = ({
   symbols,
@@ -11,7 +12,9 @@ export const BacktestControls = ({
   onStrategyChange,
   backtestKeys,
   selectedKey,
-  onKeyChange
+  onKeyChange,
+  onRunBacktest,
+  runningBacktest
 }) => {
   const classes = useStyles();
 
@@ -44,6 +47,17 @@ export const BacktestControls = ({
           ))}
         </Select>
       </FormControl>
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={onRunBacktest}
+        disabled={runningBacktest || !selectedStrategy}
+        startIcon={<PlayArrowIcon />}
+        className={classes.runButton}
+      >
+        {runningBacktest ? '运行中...' : '运行回测'}
+      </Button>
 
       <FormControl variant="outlined" className={classes.formControl}>
         <InputLabel>回测记录</InputLabel>
