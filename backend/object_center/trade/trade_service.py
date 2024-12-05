@@ -53,5 +53,6 @@ class TradeService:
         return dbApi.page(page_request, FillsHistory)
 
     @staticmethod
-    def update_history_note(req: UpdateNoteRequest) -> dict:
-        
+    def update_history_note(req: UpdateNoteRequest) -> bool:
+        FillsHistory.update_note(req)
+        return True

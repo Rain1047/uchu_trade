@@ -55,4 +55,8 @@ async def get_fills_history(request: TradePageRequest):
 
 @router.post("/update_history_note")  # 注意这里使用 router 而不是 app
 async def get_fills_history(request: UpdateNoteRequest):
-    result = TradeService.
+    result = TradeService.update_history_note(request)
+    return {
+        "success": True,
+        "data": result
+    }
