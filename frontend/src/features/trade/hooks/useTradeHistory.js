@@ -52,6 +52,10 @@ export const useTradeHistory = () => {
     }));
   };
 
+  const handleReset = () => {
+ setFilters(INITIAL_FILTERS);
+};
+
   return {
     tradeData,
     filters,
@@ -59,6 +63,7 @@ export const useTradeHistory = () => {
     handleFilterChange,
     handlePageChange,
     handleNoteChange,
-    fetchData
+    fetchData,
+    handleReset
   };
 };
