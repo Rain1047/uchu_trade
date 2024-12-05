@@ -1,9 +1,11 @@
 from sqlalchemy import Column, Integer, String, or_
 from sqlalchemy.ext.declarative import declarative_base
 
+from backend.object_center.trade.trade_request import UpdateNoteRequest
 from backend.utils.utils import DatabaseUtils, FormatUtils
 
 Base = declarative_base()
+session = DatabaseUtils.get_db_session()
 
 
 class FillsHistory(Base):
@@ -37,15 +39,17 @@ class FillsHistory(Base):
     fee_rate = Column(String, comment='手续费费率')
     note = Column(String, comment='交易备注')
 
-
     @classmethod
-    def update_note(cls, UpdateNoteRequest):
-        pass
-
+    def update_note(cls, request: UpdateNoteRequest):
+        session.query(cls).filter(
+            cls.id == request.id
+        ).update({
+            'note': request.note
+        })
+        session.commit()
 
     @classmethod
     def insert_response_to_db(cls, api_response):
-        session = DatabaseUtils.get_db_session()
         data = api_response.get('data', [])
 
         for response in data:
