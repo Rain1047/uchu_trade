@@ -6,4 +6,5 @@ if __name__ == '__main__':
     account = okx.account
     response = account.get_account_balance()
     # AccountBalance.insert_or_update(response)
-    print(len(AccountBalance.list_all()))
+    # print(len(AccountBalance.list_all()))
+    print(response)
