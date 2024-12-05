@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/list_balance")
-def get_balance():
+def get_balance_list():
     try:
         balance_list = list_account_balance()
         return {
@@ -27,4 +27,4 @@ def get_balance():
 
 
 if __name__ == '__main__':
-    get_balance()
+    get_balance_list()

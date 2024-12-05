@@ -55,7 +55,7 @@ function TradeHistoryTable() {
 
   return (
     <Container>
-      <Typography variant="h5" gutterBottom>Trade History</Typography>
+      <Typography variant="h5" gutterBottom>交易历史</Typography>
 
       <Card>
         <CardContent>
