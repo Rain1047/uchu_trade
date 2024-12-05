@@ -36,7 +36,8 @@ function TradeHistoryTable() {
     handleFilterChange,
     handlePageChange,
     handleNoteChange,
-    fetchData
+    fetchData,
+    handleReset
   } = useTradeHistory();
 
   const getSideChipStyle = (side) => {
@@ -53,6 +54,7 @@ function TradeHistoryTable() {
             filters={filters}
             onChange={handleFilterChange}
             onSearch={fetchData}
+            onReset={handleReset}
           />
         </CardContent>
       </Card>
