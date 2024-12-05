@@ -35,34 +35,37 @@ class FillsHistory(Base):
     ts = Column(String, comment='成交明细产生时间（Unix时间戳）')
     fill_time = Column(String, comment='成交时间')
     fee_rate = Column(String, comment='手续费费率')
+    note = Column(String, comment='交易备注')
 
-    @staticmethod
-    def insert_response_to_db(api_response, db_model_class):
+
+    @classmethod
+    def update_note(cls, UpdateNoteRequest):
+        pass
+
+
+    @classmethod
+    def insert_response_to_db(cls, api_response):
         session = DatabaseUtils.get_db_session()
         data = api_response.get('data', [])
 
         for response in data:
             # Convert dictionary to db_model_class instance
-            instance = FormatUtils.dict2dao(db_model_class, response)
-
+            instance = FormatUtils.dict2dao(cls, response)
             # Initialize the list of conditions
             conditions = []
-
             # Check and append conditions if attributes exist and are not None
             if hasattr(instance, 'ord_id') and instance.ord_id is not None:
-                conditions.append(db_model_class.ord_id == instance.ord_id)
+                conditions.append(cls.ord_id == instance.ord_id)
             if hasattr(instance, 'cl_ord_id') and instance.cl_ord_id is not None:
-                conditions.append(db_model_class.cl_ord_id == instance.cl_ord_id)
-
+                conditions.append(cls.cl_ord_id == instance.cl_ord_id)
             # Execute query if there are conditions
             if conditions:
-                exists = session.query(db_model_class).filter(or_(*conditions)).first()
+                exists = session.query(cls).filter(or_(*conditions)).first()
                 if exists:
                     print(f"Record with ord_id {instance.ord_id} already exists. Skipping.")
                     continue
 
             # Add instance to the session
             session.add(instance)
-
         # Commit the transaction
         session.commit()

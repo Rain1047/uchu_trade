@@ -15,3 +15,8 @@ class TradeResponse(BaseModel):
     success: bool
     data: Optional[dict] = None
     message: Optional[str] = None
+
+
+class UpdateNoteRequest(BaseModel):
+    id: int
+    note: str = ''

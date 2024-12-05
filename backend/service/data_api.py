@@ -71,7 +71,7 @@ class DataAPIWrapper:
 
             # Apply filters if provided
             if inst_id is not None and inst_id != '':
-                query = query.filter(db_model_class.inst_id == inst_id)
+                query = query.filter(db_model_class.inst_id.like(f'%{inst_id}%'))
 
             if fill_start_time is not None and fill_start_time != '':
                 query = query.filter(db_model_class.fill_time >= fill_start_time)
