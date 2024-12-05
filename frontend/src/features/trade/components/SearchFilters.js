@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, TextField, Button } from '@material-ui/core';
+import {Grid, TextField, Button, Box} from '@material-ui/core';
 import { Search as SearchIcon } from '@material-ui/icons';
 
 export const SearchFilters = ({ filters, onChange, onSearch, onReset }) => {
@@ -40,9 +40,8 @@ export const SearchFilters = ({ filters, onChange, onSearch, onReset }) => {
        />
      </Grid>
      <Grid item xs={12} md={3}>
-       <Box display="flex" gap={1}>
+       <Box className={classes.buttonGroup}>
          <Button
-           fullWidth
            variant="contained"
            color="primary"
            onClick={onSearch}
@@ -51,13 +50,12 @@ export const SearchFilters = ({ filters, onChange, onSearch, onReset }) => {
            Search
          </Button>
          <Button
-           fullWidth
            variant="outlined"
            onClick={onReset}
          >
            Reset
          </Button>
-       </Box>
+        </Box>
      </Grid>
    </Grid>
  );

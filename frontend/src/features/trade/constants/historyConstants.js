@@ -1,5 +1,6 @@
 export const API_ENDPOINTS = {
-  LIST_HISTORY: 'http://127.0.0.1:8000/api/trade/list_history'
+  LIST_HISTORY: 'http://127.0.0.1:8000/api/trade/list_history',
+  UPDATE_NOTE: 'http://127.0.0.1:8000/api/trade/update_history_note'
 };
 
 export const INITIAL_FILTERS = {
