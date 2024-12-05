@@ -101,9 +101,9 @@ function TradeHistoryTable() {
                     <TextField
                      size="small"
                      variant="outlined"
-                     value={notes[row.trade_id] || row.note || ''}
-                     onChange={(e) => handleNoteChange(row.trade_id, e.target.value)}
-                     onBlur={() => handleNoteBlur(row.id, notes[row.trade_id])}
+                     value={notes[row.id] ?? row.note ?? ''}
+                     onChange={(e) => handleNoteChange(row.id, e.target.value)}
+                     onBlur={() => handleNoteBlur(row.id, notes[row.id])}
                      placeholder="Add note..."
                      multiline
                      maxRows={4}
