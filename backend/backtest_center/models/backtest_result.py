@@ -25,6 +25,27 @@ class BacktestResults:
     win_rate: float
     total_entry_signals: int
     total_sell_signals: int
+    key: str
+
+    def to_dict(self) -> dict:
+        return {
+            "initial_value": self.initial_value,
+            "final_value": self.final_value,
+            "total_return": self.total_return,
+            "annual_return": self.annual_return,
+            "sharpe_ratio": self.sharpe_ratio,
+            "max_drawdown": self.max_drawdown,
+            "max_drawdown_amount": self.max_drawdown_amount,
+            "total_trades": self.total_trades,
+            "winning_trades": self.winning_trades,
+            "losing_trades": self.losing_trades,
+            "avg_win": self.avg_win,
+            "avg_loss": self.avg_loss,
+            "win_rate": self.win_rate,
+            "total_entry_signals": self.total_entry_signals,
+            "total_sell_signals": self.total_sell_signals,
+            "key": self.key
+        }
 
     def format_percentage(self, value: float) -> str:
         """格式化百分比值"""

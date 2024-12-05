@@ -20,7 +20,7 @@ async def get_fills_history(request: TradePageRequest):
     try:
         print(f"Received trade request: {request}")
 
-        page_result = get_fill_history(request)
+        page_result = TradeService.get_fill_history(request)
 
         if page_result.get("success"):
             return page_result
@@ -51,3 +51,12 @@ async def get_fills_history(request: TradePageRequest):
             status_code=500,
             detail=str(e)
         )
+
+
+@router.post("/update_history_note")
+async def update_history_note(request: UpdateNoteRequest):
+    result = TradeService.update_history_note(request)
+    return {
+        "success": True,
+        "data": result
+    }

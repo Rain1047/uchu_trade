@@ -13,10 +13,55 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.get("/list_backtest_record")
-def list_backtest_record(key: str):
+@router.get("/list_symbol")
+def list_symbol():
+    try:
+        symbols = BacktestService.list_symbol()
+        return {
+            "success": True,
+            "data": symbols
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get('/list_strategy_by_symbol')
+def list_strategy_by_symbol(symbol: str):
+    try:
+        strategy_list = BacktestService.list_strategy_by_symbol(symbol=symbol)
+        return {
+            "success": True,
+            "data": strategy_list
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get("/list_record_by_key")
+def list_record_by_key(key: str):
     try:
         record_list = BacktestService.list_record_by_key(key)
+        return {
+            "success": True,
+            "data": record_list
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get("/get_backtest_detail")
+def get_backtest_detail(key: str):
+    try:
+        record_list = BacktestService.get_backtest_detail(key)
         return {
             "success": True,
             "data": record_list
@@ -62,5 +107,5 @@ def run_backtest(strategy_id: int):
 
 if __name__ == '__main__':
     # list_backtest()
-    result = list_key(symbol='BTC-USDT', strategy_id=8)
+    result = run_backtest(strategy_id=8)
     print(result)

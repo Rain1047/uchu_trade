@@ -85,7 +85,8 @@ class BacktestSystem:
             avg_loss=avg_loss,
             win_rate=win_rate,
             total_entry_signals=0,
-            total_sell_signals=0
+            total_sell_signals=0,
+            key=''
         )
 
     def _export_trade_records(self, results) -> None:
@@ -114,7 +115,7 @@ class BacktestSystem:
             records_df.to_excel(writer, sheet_name='Trade Records', index=False)
             stats_df.to_excel(writer, sheet_name='Summary', index=False)
 
-    def run(self, df: pd.DataFrame, st: StInstance, plot: bool = True) -> BacktestResults:
+    def run(self, df: pd.DataFrame, st: StInstance, plot: bool = False) -> dict:
         """运行回测"""
         self.prepare_data(df)
         results = self.cerebro.run()
@@ -126,16 +127,19 @@ class BacktestSystem:
         print(f"\n信号统计:")
         print(f"总买入信号数: {backtest_results.total_entry_signals}")
         print(f"总卖出信号数: {backtest_results.total_sell_signals}")
-        record_backtest_results(backtest_results, results, st)
+        key = f'{st.trade_pair}_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
+        record_backtest_results(backtest_results, results, st, key)
+        backtest_results.key = key
 
         # 导出交易记录
         self._export_trade_records(results)
         _print_results(backtest_results)
 
         if plot:
-            self.cerebro.plot(style='candlestick')
+            # self.cerebro.plot(style='candlestick')
+            pass
 
-        return backtest_results
+        return backtest_results.to_dict()
 
 
 def _print_results(results: BacktestResults) -> None:
@@ -162,9 +166,7 @@ def _print_results(results: BacktestResults) -> None:
         print(f'平均亏损: ${results.avg_loss:.2f}')
 
 
-def record_backtest_results(backtest_results: BacktestResults, results, st: StInstance):
-    key = 'BTC-USDT_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
-
+def record_backtest_results(backtest_results: BacktestResults, results, st: StInstance, key: str):
     # 插入回测结果表
     result_data = {
         'strategy_id': st.id,

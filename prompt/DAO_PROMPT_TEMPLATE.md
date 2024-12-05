@@ -1,0 +1,29 @@
+基于api返回的DICT结果，提供SQLITE的建表语句，和基于于
+from sqlalchemy.ext.declarative import declarative_base的python对象，使用下划线代替驼峰
+
+基于这个object类生成sqlite的建表sql，携带上注释的内容
+
+#p 用于全局搜索，快速定位
+
+#p DAO PROMPT
+在这个类
+    copy ur object class code here
+的基础上，添加
+    to_dict()方法，返回dict
+    insert()方法：入参为dict，返回布尔类型
+    get_by_id()方法，返回dict类型
+    list_by_{condition} 方法，返回dict(list)类型，条件为{condition}
+        注意这里是dict[list]:
+        return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
+    delete_by_id()方法，返回布尔
+
+在这个页面上增加“运行回测”的按钮，按钮的位置在策略的输入框之后，回测记录之前。回测需要加一个loading判断是否执行完成。完成后自动取
+
+在对象中实现：
+1. list查询和get_by_id方法
+2. 根据api结果插入表，如果xxx字段已存在，则改为更新
+3. 根据id删除表中的数据
+
+可选功能：
+1. 根据
+

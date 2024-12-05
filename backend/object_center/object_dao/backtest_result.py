@@ -31,6 +31,26 @@ class BacktestResult(Base):
     gmt_create = Column(String, nullable=False, comment='生成时间')
     gmt_modified = Column(String, nullable=False, comment='更新时间')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'back_test_result_key': self.back_test_result_key,
+            'symbol': self.symbol,
+            'strategy_id': self.strategy_id,
+            'strategy_name': self.strategy_name,
+            'test_finished_time': self.test_finished_time,
+            'buy_signal_count': self.buy_signal_count,
+            'sell_signal_count': self.sell_signal_count,
+            'transaction_count': self.transaction_count,
+            'profit_count': self.profit_count,
+            'loss_count': self.loss_count,
+            'profit_total_count': self.profit_total_count,
+            'profit_average': self.profit_average,
+            'profit_rate': self.profit_rate,
+            'gmt_create': self.gmt_create,
+            'gmt_modified': self.gmt_modified
+        }
+
     @classmethod
     def list_all(cls):
         stmt = select(cls)
@@ -40,6 +60,11 @@ class BacktestResult(Base):
     def get_by_id(cls, id: int):
         stmt = select(cls).where(cls.id == id)
         return session.execute(stmt).scalar_one_or_none()
+
+    @classmethod
+    def get_by_key(cls, key: str):
+        stmt = select(cls).where(cls.back_test_result_key == key)
+        return session.execute(stmt).scalar_one_or_none().to_dict()
 
     @classmethod
     def insert_or_update(cls, data: dict):
@@ -73,17 +98,20 @@ class BacktestResult(Base):
         session.commit()
 
     @classmethod
-    def list_key_by_strategy_and_symbol(cls, strategy_id: str, symbol: str) -> dict[str, list[str]]:
+    def list_key_by_strategy_and_symbol(cls, strategy_id: str, symbol: str) -> list:
         results = session.scalars(
             select(cls)
             .where(cls.strategy_id == strategy_id)
             .where(cls.symbol == symbol)
             .order_by(cls.id.desc())
         ).all()
-        return {'back_test_result_key': [str(result.back_test_result_key) for result in results]} if results else {
-            'back_test_result_key': []}
+        return [str(result.back_test_result_key) for result in results]
 
 
 if __name__ == '__main__':
     result = BacktestResult.list_key_by_strategy_and_symbol('8', 'BTC-USDT')
     print(result)
+
+    result = BacktestResult.get_by_key(key='BTC-USDT_ST8_202412022210')
+    print(result.to_dict())
+

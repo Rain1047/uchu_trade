@@ -1,9 +1,11 @@
 from sqlalchemy import Column, Integer, String, or_
 from sqlalchemy.ext.declarative import declarative_base
 
+from backend.object_center.trade.trade_request import UpdateNoteRequest
 from backend.utils.utils import DatabaseUtils, FormatUtils
 
 Base = declarative_base()
+session = DatabaseUtils.get_db_session()
 
 
 class FillsHistory(Base):
@@ -35,34 +37,46 @@ class FillsHistory(Base):
     ts = Column(String, comment='成交明细产生时间（Unix时间戳）')
     fill_time = Column(String, comment='成交时间')
     fee_rate = Column(String, comment='手续费费率')
+    note = Column(String, comment='交易备注')
 
-    @staticmethod
-    def insert_response_to_db(api_response, db_model_class):
-        session = DatabaseUtils.get_db_session()
+    @classmethod
+    def update_note(cls, request: UpdateNoteRequest):
+        if request.note is None:
+            request.note = ''
+        session.query(cls).filter(
+            cls.id == request.id
+        ).update({
+            'note': request.note
+        })
+        session.commit()
+
+    @classmethod
+    def insert_response_to_db(cls, api_response):
         data = api_response.get('data', [])
 
         for response in data:
             # Convert dictionary to db_model_class instance
-            instance = FormatUtils.dict2dao(db_model_class, response)
-
+            instance = FormatUtils.dict2dao(cls, response)
             # Initialize the list of conditions
             conditions = []
-
             # Check and append conditions if attributes exist and are not None
             if hasattr(instance, 'ord_id') and instance.ord_id is not None:
-                conditions.append(db_model_class.ord_id == instance.ord_id)
+                conditions.append(cls.ord_id == instance.ord_id)
             if hasattr(instance, 'cl_ord_id') and instance.cl_ord_id is not None:
-                conditions.append(db_model_class.cl_ord_id == instance.cl_ord_id)
-
+                conditions.append(cls.cl_ord_id == instance.cl_ord_id)
             # Execute query if there are conditions
             if conditions:
-                exists = session.query(db_model_class).filter(or_(*conditions)).first()
+                exists = session.query(cls).filter(or_(*conditions)).first()
                 if exists:
                     print(f"Record with ord_id {instance.ord_id} already exists. Skipping.")
                     continue
 
             # Add instance to the session
             session.add(instance)
-
         # Commit the transaction
         session.commit()
+
+
+if __name__ == '__main__':
+    request = UpdateNoteRequest(id=28, note='测试')
+    FillsHistory.update_note(request)

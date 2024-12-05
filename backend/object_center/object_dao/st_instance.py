@@ -1,7 +1,7 @@
 from typing import List
 
 from pyparsing import Optional
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, select, update
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend.utils.utils import DatabaseUtils
@@ -32,6 +32,67 @@ class StInstance(Base):
     gmt_create = Column(String, nullable=False, comment='生成时间')
     gmt_modified = Column(String, nullable=False, comment='更新时间')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'trade_pair': self.trade_pair,
+            'side': self.side,
+            'entry_per_trans': self.entry_per_trans,
+            'loss_per_trans': self.loss_per_trans,
+            'time_frame': self.time_frame,
+            'entry_st_code': self.entry_st_code,
+            'exit_st_code': self.exit_st_code,
+            'filter_st_code': self.filter_st_code,
+            'stop_loss_config': self.stop_loss_config,
+            'schedule_config': self.schedule_config,
+            'switch': self.switch,
+            'is_del': self.is_del,
+            'env': self.env,
+            'gmt_create': self.gmt_create,
+            'gmt_modified': self.gmt_modified
+        }
+
+    @classmethod
+    def insert(cls, data: dict) -> bool:
+        try:
+            instance = cls(**data)
+            session.add(instance)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            return False
+
+    @classmethod
+    def get_by_id(cls, id: int) -> dict:
+        stmt = select(cls).where(cls.id == id)
+        result = session.execute(stmt).scalar_one_or_none()
+        return result.to_dict() if result else None
+
+    @classmethod
+    def list_by_env(cls, env: str) -> list:
+        stmt = select(cls).where(cls.env == env, cls.is_del == 0)
+        results = session.execute(stmt).scalars().all()
+        return [result.to_dict() for result in results]
+
+    @classmethod
+    def list_by_trade_pair(cls, trade_pair: str) -> list:
+        stmt = select(cls).where(cls.trade_pair == trade_pair, cls.is_del == 0)
+        results = session.execute(stmt).scalars().all()
+        return [result.to_dict() for result in results]
+
+    @classmethod
+    def delete_by_id(cls, id: int) -> bool:
+        try:
+            stmt = update(cls).where(cls.id == id).values(is_del=1)
+            session.execute(stmt)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            return False
+
     @classmethod
     def get_all_active(cls) -> List['StInstance']:
         """Get all non-deleted strategy instances"""
@@ -55,27 +116,6 @@ def get_st_instance_by_id(id: int) -> StInstance:
     """Get strategy instance by ID"""
     return DatabaseUtils.get_db_session().query(StInstance).filter_by(id=id, is_del=0).first()
 
-    def to_dict(self) -> dict:
-        """Convert model to dictionary"""
-        return {
-            'id': self.id,
-            'name': self.name,
-            'trade_pair': self.trade_pair,
-            'side': self.side,
-            'entry_per_trans': self.entry_per_trans,
-            'loss_per_trans': self.loss_per_trans,
-            'time_frame': self.time_frame,
-            'entry_st_code': self.entry_st_code,
-            'exit_st_code': self.exit_st_code,
-            'filter_st_code': self.filter_st_code,
-            'stop_loss_config': self.stop_loss_config,
-            'schedule_config': self.schedule_config,
-            'switch': self.switch,
-            'env': self.env,
-            'gmt_create': self.gmt_create.isoformat() if self.gmt_create else None,
-            'gmt_modified': self.gmt_modified.isoformat() if self.gmt_modified else None
-        }
-
 
 if __name__ == '__main__':
     session = DatabaseUtils.get_db_session()
@@ -86,7 +126,6 @@ if __name__ == '__main__':
 
     st = StInstance.get_st_instance_by_id(id=8)
     print(st.name)
-
 
     # # 创建一条记录
     # new_instance = StInstance(
