@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { INITIAL_FILTERS, MOCK_DATA } from '../constants/historyConstants';
-import { fetchTradeHistory } from '../utils/api';
+import {fetchTradeHistory, updateTradeNote} from '../utils/api';
 
 export const useTradeHistory = () => {
   const [tradeData, setTradeData] = useState({
@@ -53,8 +53,16 @@ export const useTradeHistory = () => {
   };
 
   const handleReset = () => {
- setFilters(INITIAL_FILTERS);
-};
+    setFilters(INITIAL_FILTERS);
+  };
+
+  const handleNoteBlur = async (id, note) => {
+     try {
+       await updateTradeNote(id, note);
+     } catch (error) {
+       console.error('Failed to update note:', error);
+     }
+    };
 
   return {
     tradeData,
@@ -64,6 +72,7 @@ export const useTradeHistory = () => {
     handlePageChange,
     handleNoteChange,
     fetchData,
-    handleReset
+    handleReset,
+    handleNoteBlur
   };
 };

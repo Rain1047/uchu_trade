@@ -90,14 +90,15 @@ function TradeHistoryTable() {
                   <TableCell>{formatTimestamp(row.fill_time)}</TableCell>
                   <TableCell>
                     <TextField
-                      size="small"
-                      variant="outlined"
-                      value={notes[row.trade_id] || row.note || ''}
-                      onChange={(e) => handleNoteChange(row.trade_id, e.target.value)}
-                      placeholder="Add note..."
-                      multiline
-                      maxRows={4}
-                      className={classes.noteField}
+                     size="small"
+                     variant="outlined"
+                     value={notes[row.trade_id] || row.note || ''}
+                     onChange={(e) => handleNoteChange(row.trade_id, e.target.value)}
+                     onBlur={() => handleNoteBlur(row.trade_id, notes[row.trade_id])}
+                     placeholder="Add note..."
+                     multiline
+                     maxRows={4}
+                     className={classes.noteField}
                     />
                   </TableCell>
                 </TableRow>

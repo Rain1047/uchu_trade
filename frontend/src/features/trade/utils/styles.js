@@ -33,5 +33,10 @@ export const useStyles = makeStyles((theme) => ({
         borderColor: 'rgba(255, 255, 255, 0.23)',
       }
     }
-  }
+  },
+  buttonGroup: {
+ '& > :not(:last-child)': {
+   marginRight: theme.spacing(2),
+ }
+}
 }));

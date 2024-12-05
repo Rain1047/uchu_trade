@@ -8,3 +8,12 @@ export const fetchTradeHistory = async (filters) => {
   });
   return response.json();
 };
+
+export const updateTradeNote = async (id, note) => {
+ const response = await fetch(API_ENDPOINTS.UPDATE_NOTE, {
+   method: 'POST',
+   headers: { 'Content-Type': 'application/json' },
+   body: JSON.stringify({ id, note })
+ });
+ return response.json();
+};
