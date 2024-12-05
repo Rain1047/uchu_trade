@@ -1,8 +1,10 @@
 import React from 'react';
 import {Grid, TextField, Button, Box} from '@material-ui/core';
 import { Search as SearchIcon } from '@material-ui/icons';
+import {useStyles} from "../utils/styles";
 
 export const SearchFilters = ({ filters, onChange, onSearch, onReset }) => {
+    const classes = useStyles();
   return (
    <Grid container spacing={3} alignItems="flex-end">
      <Grid item xs={12} md={3}>
@@ -57,6 +59,7 @@ export const SearchFilters = ({ filters, onChange, onSearch, onReset }) => {
          </Button>
         </Box>
      </Grid>
+
    </Grid>
  );
 };
