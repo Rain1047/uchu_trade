@@ -45,12 +45,12 @@ export const useTradeHistory = () => {
     }));
   };
 
-  const handleNoteChange = (tradeId, value) => {
-    setNotes(prev => ({
+ const handleNoteChange = (id, value) => {
+  setNotes(prev => ({
     ...prev,
-    [tradeId]: value === '' ? null : value // 当值为空时设为null
+    [id]: value
   }));
-  };
+};
 
   const handleReset = () => {
     setFilters(INITIAL_FILTERS);
