@@ -41,6 +41,8 @@ class FillsHistory(Base):
 
     @classmethod
     def update_note(cls, request: UpdateNoteRequest):
+        if request.note is None:
+            request.note = ''
         session.query(cls).filter(
             cls.id == request.id
         ).update({
@@ -73,3 +75,8 @@ class FillsHistory(Base):
             session.add(instance)
         # Commit the transaction
         session.commit()
+
+
+if __name__ == '__main__':
+    request = UpdateNoteRequest(id=28, note='测试')
+    FillsHistory.update_note(request)

@@ -47,9 +47,9 @@ export const useTradeHistory = () => {
 
   const handleNoteChange = (tradeId, value) => {
     setNotes(prev => ({
-      ...prev,
-      [tradeId]: value
-    }));
+    ...prev,
+    [tradeId]: value === '' ? null : value // 当值为空时设为null
+  }));
   };
 
   const handleReset = () => {

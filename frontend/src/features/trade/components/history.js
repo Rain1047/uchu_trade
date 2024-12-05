@@ -26,6 +26,7 @@ import { useStyles } from '../utils/styles';
 import { useTradeHistory } from '../hooks/useTradeHistory';
 import { SearchFilters } from './SearchFilters';
 import { formatTimestamp, calculateAmount } from '../utils/helpers';
+import {updateTradeNote} from "../utils/api";
 
 function TradeHistoryTable() {
   const classes = useStyles();
@@ -42,6 +43,14 @@ function TradeHistoryTable() {
 
   const getSideChipStyle = (side) => {
     return side.toLowerCase() === 'buy' ? classes.buyChip : classes.sellChip;
+  };
+
+  const handleNoteBlur = async (id, note) => {
+   try {
+     await updateTradeNote(id, note);
+   } catch (error) {
+     console.error('Failed to update note:', error);
+   }
   };
 
   return (
@@ -94,7 +103,7 @@ function TradeHistoryTable() {
                      variant="outlined"
                      value={notes[row.trade_id] || row.note || ''}
                      onChange={(e) => handleNoteChange(row.trade_id, e.target.value)}
-                     onBlur={() => handleNoteBlur(row.trade_id, notes[row.trade_id])}
+                     onBlur={() => handleNoteBlur(row.id, notes[row.trade_id])}
                      placeholder="Add note..."
                      multiline
                      maxRows={4}
