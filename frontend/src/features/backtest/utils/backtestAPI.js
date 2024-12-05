@@ -25,8 +25,9 @@ export const fetchBacktestData = {
     const response = await fetch(`${BASE_URL}${API_ENDPOINTS.GET_DETAIL}?key=${key}`);
     return response.json();
   },
+
   async runBacktest(strategyId) {
-   const response = await fetch(`${BASE_URL}/api/backtest/run_backtest`, {
+   const response = await fetch(`${BASE_URL}${API_ENDPOINTS.RUN_BACKTEST}`, {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
      body: JSON.stringify({ strategy_id: strategyId })
