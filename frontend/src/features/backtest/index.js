@@ -22,7 +22,9 @@ const BacktestResults = () => {
     records,
     details,
     loading,
-    error
+    error,
+    runBacktest,      // Add this
+    runningBacktest,
   } = useBacktest();
 
   if (error) {
@@ -50,6 +52,8 @@ const BacktestResults = () => {
           backtestKeys={backtestKeys}
           selectedKey={selectedKey}
           onKeyChange={setSelectedKey}
+          onRunBacktest={runBacktest}
+          runningBacktest={runningBacktest}
         />
 
         {loading ? (
