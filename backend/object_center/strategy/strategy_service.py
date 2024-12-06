@@ -244,10 +244,10 @@ class StrategyService:
             session.close()
 
     @staticmethod
-    def get_strategy_config():
+    def get_strategy_config() -> list:
         registry = StrategyRegistry()
-        print(registry.list_strategies())
+        return registry.list_strategies()
 
 
 if __name__ == '__main__':
-    StrategyService.get_strategy_config()
+    print(StrategyService.get_strategy_config())
