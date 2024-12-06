@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import os
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, List
 import pandas as pd
 import logging
 
@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 class StrategyRegistry:
     _instance = None
     _strategies: Dict[str, Callable] = {}
+    _strategies_config: List[Dict[str, str]] = []
 
     def __new__(cls):
         if cls._instance is None:
@@ -45,9 +46,17 @@ class StrategyRegistry:
             logger.error(f"Failed to load {file_path}: {str(e)}")
 
     @classmethod
-    def register(cls, name: str):
+    def register(cls, name: str, desc: str, type: str, side: str):
         def decorator(func):
             cls._strategies[name] = func
+            cls._strategies_config.append(
+                {
+                    "name": name,
+                    "desc": desc,
+                    "side": side,
+                    "type": type
+                }
+            )
             return func
 
         return decorator
@@ -84,7 +93,7 @@ class StrategyRegistry:
             print("No strategies registered")
 
     def list_strategies(self) -> list:
-        return list(self._strategies.keys())
+        return self._strategies_config
 
 
 registry = StrategyRegistry()
@@ -98,5 +107,4 @@ from backend.strategy_center.atom_strategy.filter_strategy.sma_perfect_order_fil
 
 if __name__ == '__main__':
     # registry = StrategyRegistry(directory='backend/strategy_center/atom_strategy')
-
     print(registry.list_strategies())

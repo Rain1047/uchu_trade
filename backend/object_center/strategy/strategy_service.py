@@ -1,5 +1,7 @@
 import json
 from datetime import datetime
+
+from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
 from backend.utils.utils import DatabaseUtils
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.object_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
@@ -241,3 +243,11 @@ class StrategyService:
         finally:
             session.close()
 
+    @staticmethod
+    def get_strategy_config() -> list:
+        registry = StrategyRegistry()
+        return registry.list_strategies()
+
+
+if __name__ == '__main__':
+    print(StrategyService.get_strategy_config())

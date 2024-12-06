@@ -57,6 +57,17 @@ async def toggle_strategy(strategy_id: int, active: bool):
     return result
 
 
+@router.get("/get_strategy_config")
+async def get_strategy_config():
+    return {
+        "success": True,
+        "data": StrategyService.get_strategy_config()
+    }
+
+
 if __name__ == '__main__':
-    result = StrategyService.list_strategies(1, 10)
-    print(result)
+    # result = StrategyService.list_strategies(1, 10)
+    print({
+        "success": True,
+        "data": StrategyService.get_strategy_config()
+    })

@@ -1,7 +1,11 @@
+import logging
+
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.constant.okx_code import SUCCESS_CODE, okx_constants
 from backend.object_center.object_dao.account_balance import AccountBalance
 from backend.object_center.object_dao.auto_trade_config import AutoTradeConfig
 
+logger = logging.getLogger(__name__)
 okx = OKXAPIWrapper()
 account = okx.account
 
@@ -9,8 +13,11 @@ account = okx.account
 def list_account_balance():
     # 1. 更新现有记录
     response = account.get_account_balance()
-    if response.get('code') == '200':
+    if response.get('code') == okx_constants.SUCCESS_CODE:
         AccountBalance.insert_or_update(response)
+    else:
+        print(response)
+        logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
 
     # 2. 获取列表结果并转换为可修改的字典列表
     balance_list = [dict(balance) for balance in AccountBalance.list_all()]
