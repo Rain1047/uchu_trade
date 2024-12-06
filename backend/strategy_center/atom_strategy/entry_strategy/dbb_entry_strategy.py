@@ -28,27 +28,6 @@ price_collector = TickerPriceCollector()
 tv = KlineDataCollector()
 
 
-def convert_timeframe_to_interval(time_frame: str) -> Interval:
-    # 创建映射字典
-    mapping = {
-        "1m": Interval.in_1_minute,
-        "3m": Interval.in_3_minute,
-        "5m": Interval.in_5_minute,
-        "15m": Interval.in_15_minute,
-        "30m": Interval.in_30_minute,
-        "45m": Interval.in_45_minute,
-        "1h": Interval.in_1_hour,
-        "2h": Interval.in_2_hour,
-        "3h": Interval.in_3_hour,
-        "4h": Interval.in_4_hour,
-        "1d": Interval.in_daily,
-        "1w": Interval.in_weekly,
-        "1M": Interval.in_monthly
-    }
-
-    return mapping.get(time_frame, None)
-
-
 @registry.register(name="dbb_entry_long_strategy", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
@@ -57,6 +36,7 @@ def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
         return dbb_entry_long_strategy_live(df, stIns)
 
 
+@registry.register(name="dbb_entry_long_strategy_backtest", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
@@ -103,6 +83,7 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
     return df
 
 
+@registry.register(name="dbb_entry_long_strategy_live", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     双布林带突破策略：在股价突破双布林带上轨时执行买入操作。

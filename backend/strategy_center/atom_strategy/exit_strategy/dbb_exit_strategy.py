@@ -16,6 +16,7 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     return dbb_exit_strategy_for_live(df, stIns)
 
 
+@registry.register(name="dbb_exit_strategy_for_live", desc="布林带做多止损策略", side="long")
 def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
     """
     Live trading implementation of the exit strategy.
@@ -25,6 +26,7 @@ def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
     return dbb_exit_strategy_for_backtest(df)
 
 
+@registry.register(name="dbb_exit_strategy_for_backtest", desc="布林带做多止损策略", side="long")
 def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
     """
     Backtest implementation of the exit strategy.
