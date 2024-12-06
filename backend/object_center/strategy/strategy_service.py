@@ -241,3 +241,6 @@ class StrategyService:
         finally:
             session.close()
 
+    @staticmethod
+    def get_strategy_config():
+        return None

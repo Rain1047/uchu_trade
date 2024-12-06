@@ -45,7 +45,7 @@ class StrategyRegistry:
             logger.error(f"Failed to load {file_path}: {str(e)}")
 
     @classmethod
-    def register(cls, name: str):
+    def register(cls, name: str, desc: str, side: str):
         def decorator(func):
             cls._strategies[name] = func
             return func
