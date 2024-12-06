@@ -3,7 +3,7 @@ from pandas import DataFrame
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 
-@registry.register(name="sma_diff_increasing_filter_strategy", desc="SMA差值增长过滤策略", side="long")
+@registry.register(name="sma_diff_increasing_filter_strategy", desc="SMA差值增长过滤策略", side="long", type="filter")
 def sma_diff_increasing_filter_strategy(df: DataFrame) -> DataFrame:
     if not df.empty:
         df['sma10_diff_sma20'] = df['sma10'] - df['sma20']
