@@ -3,12 +3,12 @@ from typing import Dict, List
 from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
 from backend.object_center.object_dao.algo_order_instance import AlgoOrderInstance
 from backend.data_center.data_object.enum_obj import EnumOrderStatus, EnumOperationMode, EnumTdMode, EnumSide, \
-    EnumAlgoOrdType
+    EnumAlgoOrdType, EnumTradeEnv
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.req.stop_loss_req import StopLossReq
 from backend.service.data_api import DataAPIWrapper
 from backend.decorator.decorator import *
-from backend.api_center.okx_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.utils.utils import *
 from backend.constant.okx_code import *
 

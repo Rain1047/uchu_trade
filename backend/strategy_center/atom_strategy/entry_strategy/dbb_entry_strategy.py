@@ -49,7 +49,7 @@ def convert_timeframe_to_interval(time_frame: str) -> Interval:
     return mapping.get(time_frame, None)
 
 
-@registry.register("dbb_entry_long_strategy")
+@registry.register(name="dbb_entry_long_strategy", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
         return dbb_entry_long_strategy_backtest(df)
@@ -57,7 +57,6 @@ def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
         return dbb_entry_long_strategy_live(df, stIns)
 
 
-@registry.register("dbb_entry_long_strategy_backtest")
 def dbb_entry_long_strategy_backtest(df: DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
@@ -104,7 +103,6 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
     return df
 
 
-@registry.register("dbb_entry_long_strategy_live")
 def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     双布林带突破策略：在股价突破双布林带上轨时执行买入操作。

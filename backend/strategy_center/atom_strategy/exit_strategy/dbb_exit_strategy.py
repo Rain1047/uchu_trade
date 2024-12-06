@@ -5,7 +5,7 @@ from backend.data_center.data_object.dto.strategy_instance import StrategyInstan
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 
-@registry.register("dbb_exit_long_strategy")
+@registry.register(name="dbb_exit_long_strategy", desc="布林带做多止损策略", side="long")
 def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     """
     Main entry point for the exit strategy.
@@ -16,7 +16,6 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     return dbb_exit_strategy_for_live(df, stIns)
 
 
-@registry.register("dbb_exit_strategy_for_live")
 def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
     """
     Live trading implementation of the exit strategy.
@@ -26,7 +25,6 @@ def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
     return dbb_exit_strategy_for_backtest(df)
 
 
-@registry.register("dbb_exit_strategy_for_backtest")
 def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
     """
     Backtest implementation of the exit strategy.
