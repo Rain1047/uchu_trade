@@ -98,5 +98,4 @@ from backend.strategy_center.atom_strategy.filter_strategy.sma_perfect_order_fil
 
 if __name__ == '__main__':
     # registry = StrategyRegistry(directory='backend/strategy_center/atom_strategy')
-
     print(registry.list_strategies())
