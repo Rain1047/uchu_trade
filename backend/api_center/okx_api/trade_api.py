@@ -35,6 +35,7 @@ class TradeAPIWrapper:
                     px: Optional[str] = '', slOrdPx: Optional[str] = "-1", tdMode: Optional[str] = 'cash',
                     ordType: Optional[str] = 'conditional', clOrdId: Optional[str] = '') -> Dict:
         return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz, side=side, posSide=posSide,
+                                         clOrdId=clOrdId,  # 客户自定义订单ID
                                          ordType=ordType, px=px, slTriggerPx=slTriggerPx, slOrdPx=slOrdPx)
 
     @add_docstring("撤销订单")
