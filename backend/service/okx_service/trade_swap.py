@@ -161,21 +161,21 @@ if __name__ == '__main__':
     #     clOrdId="testPlaceOrder12080119",
     #     attachAlgoOrds=attachAlgoOrds
     # )
-    # # ordId = result.get('data')[0].get('ordId')
+    # # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # # print(ordId)
     # print(result)
 
-    # 2. 获取订单 get_order clOrdId
+    # 2. 获取订单 get_order clOrdId -> 查看过程和结果
     # 2049761648444694528
     # testPlaceOrder12080041
     result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId='testPlaceOrder12080119')
     print(result)
-
-    # 3. 获取策略订单 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080119')
-    print(result)
-    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
-    print(result)
+    #
+    # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
+    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080119')
+    # print(result)
+    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    # print(result)
 
     # 4. 修改策略止损价
     # result = trade.amend_algo_order(
@@ -184,18 +184,14 @@ if __name__ == '__main__':
     # )
     # print(result)
 
-    # 5. 查看过程和结果
+    # 5. 查看algo_order的执行结果
+    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
 
+    # 6. 查看持仓历史
+    # print(account.get_positions_history())
 
-
-
-    # 3. 修改止损价
-    # result = trade.amend_order(instId='ETH-USDT-SWAP', clOrdId='testPlaceOrder12080041', ordId='',
-    #                            newSlTriggerPx='200', newSlOrdPx='-1')
-    # print(result)
-
-    # 2. 策略止损委托 place_algo_order 止损委托 algoClOrdId
-    # 2.1 撤销策略委托 cancel_algo_order algoId
+    # 7. 获取成交历史
+    print(trade.get_fills(instType='SWAP', ordId=''))
 
     # # 永续合约的限价委托
     # get_swap_limit_order_list()
@@ -207,8 +203,6 @@ if __name__ == '__main__':
     # print(order_algos_history())
 
     # print(get_order(insId='ETH-USDT-SWAP', ordId='2049135686594535424', clOrdId=''))
-
-    # print(get_positions_history())
 
     # result = trade.place_algo_order(
     #     instId="ETH-USDT-SWAP",
