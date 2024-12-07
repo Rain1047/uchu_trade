@@ -18,8 +18,12 @@ class AccountAPIWrapper:
         return self.accountAPI.get_positions(instId=instId, instType=instType)
 
     @add_docstring("账户历史持仓信息")
-    def get_positions_history(self) -> Dict:
-        return self.accountAPI.get_positions_history()
+    def get_positions_history(self, instType: Optional[str] = '', instId: Optional[str] = '',
+                              mgnMode: Optional[str] = '', type: Optional[str] = '',
+                              posId: Optional[str] = '', after: Optional[str] = '',
+                              before: Optional[str] = '', limit: Optional[str] = '') -> Dict:
+        return self.accountAPI.get_positions_history(instType=instType, instId=instId, mgnMode=mgnMode, type=type,
+                                                     posId=posId, after=after, before=before, limit=limit)
 
     @add_docstring("账户账单流水")
     def get_account_bills_archive(self) -> Dict:
