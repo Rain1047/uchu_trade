@@ -9,6 +9,11 @@ class TradeAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag=flag, debug=False)
 
+    @add_docstring("获取成交明细（近三天）")
+    def get_fills(self, instType: Optional[str] = '', instId: Optional[str] = '', ordId: Optional[str] = ""):
+        return self.tradeAPI.get_fills(
+            instType=instType, instId=instId, ordId=ordId)
+
     @add_docstring("获取成交明细（近三个月）")
     def get_trade_fills_history(self, instType: str, **kwargs) -> Dict:
         return self.tradeAPI.get_fills_history(instType=instType, **kwargs)
@@ -25,7 +30,7 @@ class TradeAPIWrapper:
     def get_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
         return self.tradeAPI.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
-    @add_docstring("获取订单信息")
+    @add_docstring("获取未成交订单列表")
     def get_order_list(self, instType: str, instId='', ordType: Optional[str] = "", state: Optional[str] = "") -> Dict:
         return self.tradeAPI.get_order_list(instType=instType, instId=instId, ordType=ordType, state=state)
 
