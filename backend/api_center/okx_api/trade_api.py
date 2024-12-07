@@ -7,7 +7,7 @@ from backend.data_center.data_object.enum_obj import *
 
 class TradeAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
-        self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag)
+        self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag=flag, debug=False)
 
     @add_docstring("获取成交明细（近三个月）")
     def get_trade_fills_history(self, instType: str, **kwargs) -> Dict:
@@ -33,9 +33,11 @@ class TradeAPIWrapper:
     def place_order(self, instId: str, sz: str, side: Optional[str] = 'buy', posSide: Optional[str] = '',
                     tpTriggerPx: Optional[str] = '', tpOrdPx: Optional[str] = '', slTriggerPx: Optional[str] = '',
                     px: Optional[str] = '', slOrdPx: Optional[str] = "-1", tdMode: Optional[str] = 'cash',
-                    ordType: Optional[str] = 'conditional', clOrdId: Optional[str] = '') -> Dict:
+                    ordType: Optional[str] = 'conditional', clOrdId: Optional[str] = '',
+                    attachAlgoOrds: Optional[dict] = '') -> Dict:
         return self.tradeAPI.place_order(instId=instId, tdMode=tdMode, sz=sz, side=side, posSide=posSide,
                                          clOrdId=clOrdId,  # 客户自定义订单ID
+                                         attachAlgoOrds=attachAlgoOrds,
                                          ordType=ordType, px=px, slTriggerPx=slTriggerPx, slOrdPx=slOrdPx)
 
     @add_docstring("撤销订单")
@@ -98,3 +100,15 @@ class TradeAPIWrapper:
                             orderType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value):
         return self.tradeAPI.order_algos_history(state=state, algoId=algoId, instType=instType, instId=instId,
                                                  after=after, before=before, limit=limit, ordType=orderType)
+
+    @add_docstring("修改策略委托订单")
+    def amend_algo_order(self, instId='', algoId: Optional[str] = '', algoClOrdId: Optional[str] = '',
+                         cxlOnFail: Optional[str] = '',
+                         reqId: Optional[str] = '', newSz: Optional[str] = '', newTpTriggerPx: Optional[str] = '',
+                         newTpOrdPx: Optional[str] = '', newSlTriggerPx: Optional[str] = '',
+                         newSlOrdPx: Optional[str] = '',
+                         newTpTriggerPxType: Optional[str] = '', newSlTriggerPxType: Optional[str] = ''):
+        return self.tradeAPI.amend_algo_order(
+            instId=instId, algoId=algoId, algoClOrdId=algoClOrdId, cxlOnFail=cxlOnFail, reqId=reqId, newSz=newSz,
+            newTpTriggerPx=newTpTriggerPx, newTpOrdPx=newTpOrdPx, newSlTriggerPx=newSlTriggerPx, newSlOrdPx=newSlOrdPx,
+            newTpTriggerPxType=newTpTriggerPxType, newSlTriggerPxType=newSlTriggerPxType)

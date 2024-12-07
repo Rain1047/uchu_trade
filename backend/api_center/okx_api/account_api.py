@@ -7,7 +7,14 @@ from backend.decorator.decorator import add_docstring
 
 class AccountAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
-        self.accountAPI = Account.AccountAPI(apikey, secretkey, passphrase, False, flag)
+        self.accountAPI = Account.AccountAPI(
+            api_key=apikey,
+            api_secret_key=secretkey,
+            passphrase=passphrase,
+            use_server_time=False,
+            flag=flag,
+            debug=False,
+        )
 
     @add_docstring("获取账户余额")
     def get_account_balance(self) -> Dict:

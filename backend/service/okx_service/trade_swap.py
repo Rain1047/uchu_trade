@@ -36,13 +36,13 @@ def get_swap_limit_order_list() -> List[Dict[str, Any]]:
 
 
 # 查看永续合约持仓信息
-def list_swap_positions() -> List[Dict[str, Any]]:
-    # swap_positions = account.get_positions(instType='SWAP')
-    swap_positions = account.get_positions()
-    print(swap_positions)
-    if swap_positions.get('code') == '0':
-        return swap_positions.get('data')
-    return []
+# def list_swap_positions() -> List[Dict[str, Any]]:
+#     # swap_positions = account.get_positions(instType='SWAP')
+#     swap_positions = account.get_positions()
+#     print(swap_positions)
+#     if swap_positions.get('code') == '0':
+#         return swap_positions.get('data')
+#     return []
 
 
 # 获取合约未完成的止盈止损委托
@@ -109,15 +109,15 @@ def get_order(insId: str, ordId: Optional[str], clOrdId: Optional[str]):
 
 
 def amend_order(instId: str, ordId: Optional[str], clOrdId: Optional[str], newSz: Optional[str], newPx: Optional[str],
-                newSlTriggerPx: Optional[str],   # 如果止损触发价或者委托价为0，那代表删除止损。
+                newSlTriggerPx: Optional[str],  # 如果止损触发价或者委托价为0，那代表删除止损。
                 newSlOrdPx: Optional[str]  # 委托价格为-1时，执行市价止损。
                 ):
     return trade.amend_order(instId=instId, ordId=ordId, clOrdId=clOrdId, newSz=newSz, newPx=newPx,
                              newSlTriggerPx=newSlTriggerPx, newSlOrdPx=newSlOrdPx)
 
 
-def get_positions_history():
-    return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
+# def get_positions_history():
+#     return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
 
 
 def place_algo_order(st_result: StrategyExecuteResult):
@@ -139,6 +139,15 @@ def place_algo_order(st_result: StrategyExecuteResult):
 if __name__ == '__main__':
     # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
+
+    # attachAlgoOrds = [
+    #     {
+    #         'attachAlgoClOrdId': "testAlgoPlaceOrder12080244",  # 需要唯一
+    #         'slTriggerPx': "3995",
+    #         'slOrdPx': "-1",
+    #     }
+    # ]
+    #
     # result = trade.place_order(
     #     instId="ETH-USDT-SWAP",
     #     tdMode="isolated",
@@ -146,22 +155,44 @@ if __name__ == '__main__':
     #     posSide="long",
     #     ordType="market",
     #     # px="2.15",  # 委托价格
-    #     sz="2",  # 委托数量
-    #     slTriggerPx="100",
-    #     slOrdPx="-1",
-    #     clOrdId="testPlaceOrder12080041"
+    #     sz="1",  # 委托数量
+    #     # slTriggerPx="3995",
+    #     # slOrdPx="-1",
+    #     clOrdId="testPlaceOrder12080119",
+    #     attachAlgoOrds=attachAlgoOrds
     # )
-    # ordId = result.get('data')[0].get('ordId')
-    # print(ordId)
+    # # ordId = result.get('data')[0].get('ordId')
+    # # print(ordId)
     # print(result)
 
     # 2. 获取订单 get_order clOrdId
     # 2049761648444694528
     # testPlaceOrder12080041
-    result = trade.get_order(instId='ETH-USDT-SWAP', ordId='2049761648444694528', clOrdId='')
+    result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId='testPlaceOrder12080119')
     print(result)
 
+    # 3. 获取策略订单 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
+    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080119')
+    print(result)
+    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    print(result)
+
+    # 4. 修改策略止损价
+    # result = trade.amend_algo_order(
+    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId='testAlgoPlaceOrder12080244',
+    #     newSlTriggerPx='3993', newSlOrdPx='-1'
+    # )
+    # print(result)
+
+    # 5. 查看过程和结果
+
+
+
+
     # 3. 修改止损价
+    # result = trade.amend_order(instId='ETH-USDT-SWAP', clOrdId='testPlaceOrder12080041', ordId='',
+    #                            newSlTriggerPx='200', newSlOrdPx='-1')
+    # print(result)
 
     # 2. 策略止损委托 place_algo_order 止损委托 algoClOrdId
     # 2.1 撤销策略委托 cancel_algo_order algoId
