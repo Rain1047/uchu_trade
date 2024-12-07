@@ -151,25 +151,25 @@ if __name__ == "__main__":
 
     # print(result)
 
-    # # 现货模式限价单
-    # result = okx_demo.trade.place_order(
-    #     instId="ETh-USDT",
-    #     tdMode="cash",
-    #     side="sell",
-    #     ordType="limit",
-    #     # px="2.15",  # 委托价格
-    #     sz="0.5",  # 委托数量
-    #     slTriggerPx="100",
-    #     slOrdPx="90"
-    # )
-    # print(result)
+    # 现货模式限价单
+    result = okx_demo.trade.place_order(
+        instId="ETH-USDT",
+        tdMode="isolated",
+        side="buy",
+        ordType="market",
+        # px="2.15",  # 委托价格
+        sz="0.5",  # 委托数量
+        slTriggerPx="100",
+        slOrdPx="90"
+    )
+    print(result)
     #
     # result = okx_demo.trade.place_algo_order(
     #     instId="ETH-USDT",
     #     tdMode="cash",
     #     side="sell",
     #     ordType="conditional",
-    #     sz="0.1",
+    #     sz="1",
     #     tpTriggerPx="",
     #     tpOrdPx="",
     #     slTriggerPx="2400",

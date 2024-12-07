@@ -2,12 +2,10 @@ import os
 import sys
 from typing import Optional
 
-import pandas as pd
 from pandas import DataFrame
-from tvDatafeed import Interval
 
-from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumTimeFrame
+from backend.strategy_center.ticker_price_collector import TickerPriceCollector
+from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.strategy_registry import registry
@@ -15,7 +13,6 @@ from backend.strategy_center.atom_strategy.strategy_registry import registry
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import talib
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
@@ -85,37 +82,18 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
 
 # @registry.register(name="dbb_entry_long_strategy_live", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
-    """
-    双布林带突破策略：在股价突破双布林带上轨时执行买入操作。
-
-    Args:
-        df (DataFrame)
-        stIns (StrategyInstance): 策略实例对象，包含交易对、时间窗口大小等信息。
-
-    Returns:
-        StrategyExecuteResult: 策略执行结果对象，包含交易信号和交易方向。
-    """
-    # 初始化策略执行结果对象
     res = StrategyExecuteResult()
-    # 检查 DataFrame 是否为空
     if not df.empty:
         df['signal'] = 'no_sig'
-        # 实施交易策略
         if ((df.iloc[-2]['close'] > df.iloc[-2]['upper_band1']) and
                 (df.iloc[-3]['close'] < df.iloc[-3]['upper_band1']) and
                 (df.iloc[-4]['close'] < df.iloc[-4]['upper_band1'])):
             df.loc[df.index[-1], 'signal'] = EnumSide.BUY.value
-
-        # if ((df.iloc[-1]['close'] < df.iloc[-1]['upper_band1']) and
-        #         (df.iloc[-2]['close'] > df.iloc[-1]['upper_band1']) and
-        #         (df.iloc[-3]['close'] > df.iloc[-3]['upper_band1'])):
-        #     df.iloc[-1]['signal'] = EnumSide.SELL.value
-
         # 如果满足买入信号，则设置交易信号为True
-        if df.iloc[-1]['signal'] == EnumSide.BUY.value and stIns.side in [EnumSide.BUY.value, EnumSide.ALL.value]:
+        if df.iloc[-1]['signal'] == EnumSide.BUY.value:
             # 获取仓位
             position = str(
-                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['middle_band']),
+                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['sma20']),
                                              2) * 10)
             print(f"{stIns.trade_pair} position is: {position}")
 
@@ -124,23 +102,11 @@ def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> Stra
             print(f"{stIns.trade_pair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
-            res = get_exit_price(df, res)
+            res.exit_price = str(df.iloc[-2]['sma20'])
             return res
         else:
             res.signal = False
             return res
-
-
-def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
-    if df.iloc[-1]['signal'] == EnumSide.BUY.value:
-        res.exitPrice = str(df.iloc[-2]['middle_band'])
-        if df.iloc[-1]['close'] > df.iloc[-1]['upper_band2']:
-            res.profitPrice = str(df.iloc[-1]['upper_band1'])
-    elif df.iloc[-1]['signal'] == EnumSide.SELL.value:
-        res.exitPrice = str(df.iloc[-1]['middle_band'])
-        if df.iloc[-1]['close'] < df.iloc[-1]['lower_band2']:
-            res.profitPrice = str(df.iloc[-1]['lower_band1'])
-    return res
 
 
 if __name__ == '__main__':

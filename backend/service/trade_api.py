@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
+from backend.strategy_center.ticker_price_collector import TickerPriceCollector
 from backend.object_center.object_dao.algo_order_instance import AlgoOrderInstance
 from backend.data_center.data_object.enum_obj import EnumOrderStatus, EnumOperationMode, EnumTdMode, EnumSide, \
     EnumAlgoOrdType, EnumTradeEnv
@@ -123,6 +123,8 @@ if __name__ == '__main__':
     print(f"当前环境：{tradeApi_demo.okx.env}")
 
     # 下单
+    # TODO@rain
+
 
     # 止损
     req = StopLossReq()
