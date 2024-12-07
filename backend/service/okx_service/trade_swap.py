@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.data_center.data_object.enum_obj import EnumAlgoOrdType, EnumTradeEnv, EnumTdMode, EnumOrdType
@@ -100,12 +100,17 @@ def order_algos_history():
     return trade.order_algos_history(
         orderType=EnumAlgoOrdType.CONDITIONAL_OCO.value,
         instType='SWAP',
-        state='effective'
+        state='canceled'
     )
+
+
+def get_order(insId: str, ordId: Optional[str], clOrdId: Optional[str]):
+    return trade.get_order(instId=insId, ordId=ordId, clOrdId=clOrdId)
 
 
 def get_positions_history():
     return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
+
 
 def place_algo_order(st_result: StrategyExecuteResult):
     place_algo_order_result = trade.place_algo_order(
@@ -117,7 +122,8 @@ def place_algo_order(st_result: StrategyExecuteResult):
         tpTriggerPx="",
         tpOrdPx="",
         slTriggerPx="2400",
-        slOrdPx="2300"
+        slOrdPx="2300",
+        algoClOrdId="test_2024_12_07",
     )
     print(place_algo_order_result)
 
@@ -145,9 +151,11 @@ if __name__ == '__main__':
     # list_swap_positions()
     #
     # 交易历史订单
-    # print(order_algos_history())
+    print(order_algos_history())
 
-    print(get_positions_history())
+    print(get_order(insId='ETH-USDT-SWAP', ordId='2049135686594535424', clOrdId=''))
+
+    # print(get_positions_history())
 
     # result = okx_demo.trade.place_algo_order(
     #     instId="ETH-USDT",
