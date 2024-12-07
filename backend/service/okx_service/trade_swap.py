@@ -108,6 +108,14 @@ def get_order(insId: str, ordId: Optional[str], clOrdId: Optional[str]):
     return trade.get_order(instId=insId, ordId=ordId, clOrdId=clOrdId)
 
 
+def amend_order(instId: str, ordId: Optional[str], clOrdId: Optional[str], newSz: Optional[str], newPx: Optional[str],
+                newSlTriggerPx: Optional[str],   # 如果止损触发价或者委托价为0，那代表删除止损。
+                newSlOrdPx: Optional[str]  # 委托价格为-1时，执行市价止损。
+                ):
+    return trade.amend_order(instId=instId, ordId=ordId, clOrdId=clOrdId, newSz=newSz, newPx=newPx,
+                             newSlTriggerPx=newSlTriggerPx, newSlOrdPx=newSlOrdPx)
+
+
 def get_positions_history():
     return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
 
@@ -123,16 +131,13 @@ def place_algo_order(st_result: StrategyExecuteResult):
         tpOrdPx="",
         slTriggerPx="2400",
         slOrdPx="2300",
-        algoClOrdId="test_2024_12_07",
+        algoClOrdId="test_2024_12_07",  # 客户自定义策略订单ID
     )
     print(place_algo_order_result)
 
 
 if __name__ == '__main__':
-    # print(result)
-    # # 永续合约的限价委托
-    # get_swap_limit_order_list()
-
+    # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
     # result = trade.place_order(
     #     instId="ETH-USDT-SWAP",
@@ -141,33 +146,51 @@ if __name__ == '__main__':
     #     posSide="long",
     #     ordType="market",
     #     # px="2.15",  # 委托价格
-    #     sz="200",  # 委托数量
+    #     sz="2",  # 委托数量
     #     slTriggerPx="100",
-    #     slOrdPx="90"
+    #     slOrdPx="-1",
+    #     clOrdId="testPlaceOrder12080041"
     # )
+    # ordId = result.get('data')[0].get('ordId')
+    # print(ordId)
     # print(result)
-    #
+
+    # 2. 获取订单 get_order clOrdId
+    # 2049761648444694528
+    # testPlaceOrder12080041
+    result = trade.get_order(instId='ETH-USDT-SWAP', ordId='2049761648444694528', clOrdId='')
+    print(result)
+
+    # 3. 修改止损价
+
+    # 2. 策略止损委托 place_algo_order 止损委托 algoClOrdId
+    # 2.1 撤销策略委托 cancel_algo_order algoId
+
+    # # 永续合约的限价委托
+    # get_swap_limit_order_list()
+
     # # 永续合约持仓信息
     # list_swap_positions()
     #
     # 交易历史订单
-    print(order_algos_history())
+    # print(order_algos_history())
 
-    print(get_order(insId='ETH-USDT-SWAP', ordId='2049135686594535424', clOrdId=''))
+    # print(get_order(insId='ETH-USDT-SWAP', ordId='2049135686594535424', clOrdId=''))
 
     # print(get_positions_history())
 
-    # result = okx_demo.trade.place_algo_order(
-    #     instId="ETH-USDT",
-    #     tdMode="cash",
-    #     side="sell",
+    # result = trade.place_algo_order(
+    #     instId="ETH-USDT-SWAP",
+    #     tdMode="isolated",
+    #     side="buy",
+    #     posSide="long",
     #     ordType="conditional",
-    #     sz="1",
-    #     tpTriggerPx="",
-    #     tpOrdPx="",
-    #     slTriggerPx="2400",
-    #     slOrdPx="2300"
+    #     sz="10",
+    #     slTriggerPx="4000",
+    #     slOrdPx="-1",
+    #     algoClOrdId="testAlgoPlaceOrder12080031",
     # )
     # print(result)
+
     # # 未完成的永续合约止盈止损委托
     # result = list_swap_unfinished_algo_order()

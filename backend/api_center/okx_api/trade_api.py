@@ -42,6 +42,25 @@ class TradeAPIWrapper:
     def cancel_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
         return self.tradeAPI.cancel_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
+    @add_docstring("修改订单")
+    def amend_order(self, instId: str, cxlOnFail: Optional[str] = '', ordId: Optional[str] = '',
+                    clOrdId: Optional[str] = '', reqId: Optional[str] = '', newSz: Optional[str] = '',
+                    newPx: Optional[str] = '', newTpTriggerPx: Optional[str] = '', newTpOrdPx: Optional[str] = '',
+                    newSlTriggerPx: Optional[str] = '', newSlOrdPx: Optional[str] = '',
+                    newTpTriggerPxType: Optional[str] = '', newSlTriggerPxType: Optional[str] = ''):
+        return self.tradeAPI.amend_order(instId=instId, cxlOnFail=cxlOnFail, ordId=ordId, clOrdId=clOrdId, reqId=reqId,
+                                         newSz=newSz, newPx=newPx, newTpTriggerPx=newTpTriggerPx, newTpOrdPx=newTpOrdPx,
+                                         newSlTriggerPx=newSlTriggerPx, newSlOrdPx=newSlOrdPx,
+                                         newTpTriggerPxType=newTpTriggerPxType, newSlTriggerPxType=newSlTriggerPxType)
+
+    @add_docstring("市价仓位全平")
+    def close_positions(self, instId: str, posSide: Optional[str], mgnMode: Optional[str],
+                        ccy: Optional[str] = '', clOrdId: Optional[str] = '',
+                        tag: Optional[str] = ''  # 订单标签
+                        ):
+        return self.tradeAPI.close_positions(instId=instId, posSide=posSide, mgnMode=mgnMode, ccy=ccy, clOrdId=clOrdId,
+                                             tag=tag)
+
     '''
     策略交易
     '''
