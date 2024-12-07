@@ -28,6 +28,7 @@ def cancel_swap_unfinished_algo_order(swap_unfinished_algo_list):
 def get_swap_limit_order_list() -> List[Dict[str, Any]]:
     swap_limit_orders = trade.get_order_list(
         instType='SWAP', ordType='limit')
+    print(swap_limit_orders)
     if swap_limit_orders.get('code') == '0':
         return swap_limit_orders.get('data')
     return []
@@ -55,6 +56,7 @@ def list_swap_unfinished_algo_order() -> List[Dict[str, Any]]:
             instType='SWAP',
             ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
         )
+        print(swap_algo_orders)
 
         # 检查result和data是否存在且有效
         data = swap_algo_orders.get('data')
@@ -69,11 +71,42 @@ def list_swap_unfinished_algo_order() -> List[Dict[str, Any]]:
         return []
 
 
+def place_order():
+    # 现货模式限价单
+    result = trade.place_order(
+        instId="ETH-USDT",
+        tdMode="isolated",
+        side="buy",
+        ordType="market",
+        # px="2.15",  # 委托价格
+        sz="0.5",  # 委托数量
+        slTriggerPx="100",
+        slOrdPx="90"
+    )
+    print(result)
+
+
+def place_algo_order():
+    result = trade.place_algo_order(
+        instId="ETH-USDT",
+        tdMode="cash",
+        side="sell",
+        ordType="conditional",
+        sz="1",
+        tpTriggerPx="",
+        tpOrdPx="",
+        slTriggerPx="2400",
+        slOrdPx="2300"
+    )
+    print(result)
+
+
 if __name__ == '__main__':
     # 永续合约持仓信息
-    list_swap_positions()
+    # list_swap_positions()
     # # 未完成的永续合约止盈止损委托
-    # result = list_swap_unfinished_algo_order()
+    result = list_swap_unfinished_algo_order()
+
     # print(result)
     # # 永续合约的限价委托
     # get_swap_limit_order_list()
