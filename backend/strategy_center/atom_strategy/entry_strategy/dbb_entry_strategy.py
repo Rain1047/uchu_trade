@@ -2,12 +2,10 @@ import os
 import sys
 from typing import Optional
 
-import pandas as pd
 from pandas import DataFrame
-from tvDatafeed import Interval
 
-from backend.data_center.data_gather.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumTimeFrame
+from backend.strategy_center.ticker_price_collector import TickerPriceCollector
+from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.strategy_registry import registry
@@ -15,7 +13,6 @@ from backend.strategy_center.atom_strategy.strategy_registry import registry
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import talib
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
@@ -112,7 +109,7 @@ def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> Stra
         #     df.iloc[-1]['signal'] = EnumSide.SELL.value
 
         # 如果满足买入信号，则设置交易信号为True
-        if df.iloc[-1]['signal'] == EnumSide.BUY.value and stIns.side in [EnumSide.BUY.value, EnumSide.ALL.value]:
+        if df.iloc[-1]['signal'] == EnumSide.BUY.value:
             # 获取仓位
             position = str(
                 stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['middle_band']),
@@ -124,14 +121,14 @@ def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> Stra
             print(f"{stIns.trade_pair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
-            res = get_exit_price(df, res)
+            res = get_stop_loss_price(df, res)
             return res
         else:
             res.signal = False
             return res
 
 
-def get_exit_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
+def get_stop_loss_price(df, res: StrategyExecuteResult) -> StrategyExecuteResult:
     if df.iloc[-1]['signal'] == EnumSide.BUY.value:
         res.exitPrice = str(df.iloc[-2]['middle_band'])
         if df.iloc[-1]['close'] > df.iloc[-1]['upper_band2']:

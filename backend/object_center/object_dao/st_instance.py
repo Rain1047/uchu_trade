@@ -1,6 +1,5 @@
 from typing import List
 
-from pyparsing import Optional
 from sqlalchemy import Column, Integer, String, Float, select, update
 from sqlalchemy.ext.declarative import declarative_base
 
