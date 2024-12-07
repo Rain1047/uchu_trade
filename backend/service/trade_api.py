@@ -123,6 +123,8 @@ if __name__ == '__main__':
     print(f"当前环境：{tradeApi_demo.okx.env}")
 
     # 下单
+    # TODO@rain
+
 
     # 止损
     req = StopLossReq()

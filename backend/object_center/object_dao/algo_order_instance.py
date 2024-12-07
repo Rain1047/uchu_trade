@@ -8,8 +8,8 @@ Base = declarative_base()
 
 class AlgoOrderInstance(Base):
     __tablename__ = 'algo_order_instance'
-
-    # 字段定义
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    # okx字段定义
     algo_cl_ord_id = Column(String, comment='客户自定义策略订单ID')
     algo_id = Column(String, comment='策略委托单ID')
     ord_id = Column(String, comment='订单ID')
@@ -25,8 +25,9 @@ class AlgoOrderInstance(Base):
     operation_mode = Column(String, comment='操作模式')
     env = Column(String, comment='交易环境')
 
-    # 根据 SQLAlchemy 的规范，你可能还需要主键字段
-    id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')
+    # 新增字段
+    # st_inst_id = Column(String, commment="策略实例ID")
+    # st_inst_name = Column(String, commment="策略实例名称")
 
 
 if __name__ == '__main__':
