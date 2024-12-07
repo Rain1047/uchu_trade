@@ -9,7 +9,7 @@ from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 kline_reader = KlineDataReader()
 okx = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
 trade = okx.trade_api
-account = okx.account
+account = okx.account_api
 
 
 # 取消永续合约的委托
@@ -37,7 +37,8 @@ def get_swap_limit_order_list() -> List[Dict[str, Any]]:
 
 # 查看永续合约持仓信息
 def list_swap_positions() -> List[Dict[str, Any]]:
-    swap_positions = account.get_positions(instType='SWAP')
+    # swap_positions = account.get_positions(instType='SWAP')
+    swap_positions = account.get_positions()
     print(swap_positions)
     if swap_positions.get('code') == '0':
         return swap_positions.get('data')
@@ -87,6 +88,14 @@ def place_order(st_result: StrategyExecuteResult):
     print(place_order_result)
 
 
+def _save_place_order_record(st_result: StrategyExecuteResult):
+    pass
+
+
+def _save_place_algo_order_record(st_result: StrategyExecuteResult):
+    pass
+
+
 def place_algo_order(st_result: StrategyExecuteResult):
     place_algo_order_result = trade.place_algo_order(
         instId="ETH-USDT",
@@ -103,27 +112,26 @@ def place_algo_order(st_result: StrategyExecuteResult):
 
 
 if __name__ == '__main__':
-    # 永续合约持仓信息
-    # list_swap_positions()
-    # # 未完成的永续合约止盈止损委托
-    result = list_swap_unfinished_algo_order()
-
     # print(result)
     # # 永续合约的限价委托
     # get_swap_limit_order_list()
 
-    # 现货模式限价单
+    # 合约市价下单
     result = trade.place_order(
-        instId="ETH-USDT",
+        instId="ETH-USDT-SWAP",
         tdMode="isolated",
         side="buy",
+        posSide="long",
         ordType="market",
         # px="2.15",  # 委托价格
-        sz="0.5",  # 委托数量
+        sz="200",  # 委托数量
         slTriggerPx="100",
         slOrdPx="90"
     )
     print(result)
+
+    # 永续合约持仓信息
+    list_swap_positions()
     #
 
     # result = okx_demo.trade.place_algo_order(
@@ -138,3 +146,5 @@ if __name__ == '__main__':
     #     slOrdPx="2300"
     # )
     # print(result)
+    # # 未完成的永续合约止盈止损委托
+    # result = list_swap_unfinished_algo_order()

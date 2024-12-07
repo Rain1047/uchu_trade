@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class StrategyExecuteResult:
-    #
+    # 交易对
     symbol: str
     # 买入方向
     side: Optional[str] = None
@@ -19,6 +19,10 @@ class StrategyExecuteResult:
     exit_price: Optional[str] = ''
     # 买入仓位
     sz: Optional[str] = ''
+    # USDT仓位
+    sz_usdt: Optional[str] = ''
+    # 交易实例id
+    st_inst_id: int
 
 
 
