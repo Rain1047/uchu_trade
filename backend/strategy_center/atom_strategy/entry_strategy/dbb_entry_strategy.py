@@ -102,7 +102,7 @@ def dbb_entry_long_strategy_live(df: DataFrame, stIns: StrategyInstance) -> Stra
             print(f"{stIns.trade_pair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
-            res.exitPrice = str(df.iloc[-2]['sma20'])
+            res.exit_price = str(df.iloc[-2]['sma20'])
             return res
         else:
             res.signal = False
