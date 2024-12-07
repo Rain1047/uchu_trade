@@ -12,13 +12,13 @@ class StrategyPageRequest(BaseModel):
 
 @dataclass
 class StrategyCreateOrUpdateRequest(BaseModel):
-    id: int | None = None
     name: str
+    id: int | None = None
     trade_pair: str | None = None
     time_frame: str | None = None
     side: str | None = None
-    entry_per_trans: float | None = None
-    loss_per_trans: float | None = None
+    entry_per_trans: str = "0"
+    loss_per_trans: str = "0"
     entry_st_code: str | None = None
     exit_st_code: str | None = None
     filter_st_code: str | None = None
