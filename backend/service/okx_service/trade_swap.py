@@ -2,7 +2,8 @@ import logging
 from typing import List, Dict, Any
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
-from backend.data_center.data_object.enum_obj import EnumAlgoOrdType, EnumTradeEnv
+from backend.data_center.data_object.enum_obj import EnumAlgoOrdType, EnumTradeEnv, EnumTdMode, EnumOrdType
+from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 
 kline_reader = KlineDataReader()
@@ -71,7 +72,46 @@ def list_swap_unfinished_algo_order() -> List[Dict[str, Any]]:
         return []
 
 
-def place_order():
+def place_order(st_result: StrategyExecuteResult):
+    # 现货模式限价单
+    place_order_result = trade.place_order(
+        instId=st_result.symbol,
+        tdMode=EnumTdMode.ISOLATED.value,
+        side=st_result.side,
+        ordType=EnumOrdType.MARKET.value,
+        # px="2.15",  # 委托价格
+        sz=st_result.sz,  # 委托数量
+        slTriggerPx=st_result.stop_loss_price,
+        slOrdPx="-1"  # 委托价格为-1时，执行市价止损
+    )
+    print(place_order_result)
+
+
+def place_algo_order(st_result: StrategyExecuteResult):
+    place_algo_order_result = trade.place_algo_order(
+        instId="ETH-USDT",
+        tdMode="cash",
+        side="sell",
+        ordType="conditional",
+        sz="1",
+        tpTriggerPx="",
+        tpOrdPx="",
+        slTriggerPx="2400",
+        slOrdPx="2300"
+    )
+    print(place_algo_order_result)
+
+
+if __name__ == '__main__':
+    # 永续合约持仓信息
+    # list_swap_positions()
+    # # 未完成的永续合约止盈止损委托
+    result = list_swap_unfinished_algo_order()
+
+    # print(result)
+    # # 永续合约的限价委托
+    # get_swap_limit_order_list()
+
     # 现货模式限价单
     result = trade.place_order(
         instId="ETH-USDT",
@@ -84,29 +124,17 @@ def place_order():
         slOrdPx="90"
     )
     print(result)
+    #
 
-
-def place_algo_order():
-    result = trade.place_algo_order(
-        instId="ETH-USDT",
-        tdMode="cash",
-        side="sell",
-        ordType="conditional",
-        sz="1",
-        tpTriggerPx="",
-        tpOrdPx="",
-        slTriggerPx="2400",
-        slOrdPx="2300"
-    )
-    print(result)
-
-
-if __name__ == '__main__':
-    # 永续合约持仓信息
-    # list_swap_positions()
-    # # 未完成的永续合约止盈止损委托
-    result = list_swap_unfinished_algo_order()
-
+    # result = okx_demo.trade.place_algo_order(
+    #     instId="ETH-USDT",
+    #     tdMode="cash",
+    #     side="sell",
+    #     ordType="conditional",
+    #     sz="1",
+    #     tpTriggerPx="",
+    #     tpOrdPx="",
+    #     slTriggerPx="2400",
+    #     slOrdPx="2300"
+    # )
     # print(result)
-    # # 永续合约的限价委托
-    # get_swap_limit_order_list()

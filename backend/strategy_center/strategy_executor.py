@@ -159,7 +159,7 @@ def get_post_order_request(result: StrategyExecuteResult, strategy: StrategyInst
         sz=result.sz,
         side=result.side,
         ordType=EnumOrdType.MARKET.value,
-        slTriggerPx=str(result.exitPrice),
+        slTriggerPx=str(result.exit_price),
         slOrdPx="-1"
     )
 
