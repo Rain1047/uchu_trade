@@ -5,6 +5,9 @@ SUCCESS_CODE = '0'
 ORDER_NOT_EXIST = '51603'
 IP_NOT_INCLUDED = '50110'
 
+MARKET_REST = "https://www.okx.com"
+AWS_REST = "https://aws.okx.com"
+
 
 class okx_constants:
     SUCCESS_CODE = '0'
