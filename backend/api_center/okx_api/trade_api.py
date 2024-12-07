@@ -70,3 +70,11 @@ class TradeAPIWrapper:
     @add_docstring("撤销策略订单")
     def cancel_algo_order(self, algo_orders: list) -> Dict:
         return self.tradeAPI.cancel_algo_order(algo_orders)
+
+    @add_docstring("获取历史策略委托单列表")
+    def order_algos_history(self, state: Optional[str], algoId: Optional[str] = '', instType: Optional[str] = '',
+                            instId: Optional[str] = '', after: Optional[str] = '', before: Optional[str] = '',
+                            limit: Optional[str] = '',
+                            orderType: Optional[str] = EnumAlgoOrdType.CONDITIONAL.value):
+        return self.tradeAPI.order_algos_history(state=state, algoId=algoId, instType=instType, instId=instId,
+                                                 after=after, before=before, limit=limit, ordType=orderType)

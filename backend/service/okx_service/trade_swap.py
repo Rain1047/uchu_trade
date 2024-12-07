@@ -7,7 +7,7 @@ from backend.data_center.data_object.res.strategy_execute_result import Strategy
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 
 kline_reader = KlineDataReader()
-okx = OKXAPIWrapper(env=EnumTradeEnv.DEMO.value)
+okx = OKXAPIWrapper(env=EnumTradeEnv.MARKET.value)
 trade = okx.trade_api
 account = okx.account_api
 
@@ -96,6 +96,17 @@ def _save_place_algo_order_record(st_result: StrategyExecuteResult):
     pass
 
 
+def order_algos_history():
+    return trade.order_algos_history(
+        orderType=EnumAlgoOrdType.CONDITIONAL_OCO.value,
+        instType='SWAP',
+        state='effective'
+    )
+
+
+def get_positions_history():
+    return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
+
 def place_algo_order(st_result: StrategyExecuteResult):
     place_algo_order_result = trade.place_algo_order(
         instId="ETH-USDT",
@@ -117,22 +128,26 @@ if __name__ == '__main__':
     # get_swap_limit_order_list()
 
     # 合约市价下单
-    result = trade.place_order(
-        instId="ETH-USDT-SWAP",
-        tdMode="isolated",
-        side="buy",
-        posSide="long",
-        ordType="market",
-        # px="2.15",  # 委托价格
-        sz="200",  # 委托数量
-        slTriggerPx="100",
-        slOrdPx="90"
-    )
-    print(result)
-
-    # 永续合约持仓信息
-    list_swap_positions()
+    # result = trade.place_order(
+    #     instId="ETH-USDT-SWAP",
+    #     tdMode="isolated",
+    #     side="buy",
+    #     posSide="long",
+    #     ordType="market",
+    #     # px="2.15",  # 委托价格
+    #     sz="200",  # 委托数量
+    #     slTriggerPx="100",
+    #     slOrdPx="90"
+    # )
+    # print(result)
     #
+    # # 永续合约持仓信息
+    # list_swap_positions()
+    #
+    # 交易历史订单
+    # print(order_algos_history())
+
+    print(get_positions_history())
 
     # result = okx_demo.trade.place_algo_order(
     #     instId="ETH-USDT",
