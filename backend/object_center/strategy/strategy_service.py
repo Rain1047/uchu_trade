@@ -20,8 +20,8 @@ class StrategyService:
                 trade_pair=request.trade_pair,
                 time_frame=request.time_frame,
                 side=request.side,
-                entry_per_trans=float(request.entry_per_trans),
-                loss_per_trans=float(request.loss_per_trans),
+                entry_per_trans=int(request.entry_per_trans) if request.entry_per_trans else 0,
+                loss_per_trans=int(request.loss_per_trans) if request.loss_per_trans else 0,
                 entry_st_code=request.entry_st_code,
                 exit_st_code=request.exit_st_code,
                 filter_st_code=request.filter_st_code,
@@ -136,8 +136,8 @@ class StrategyService:
             strategy.trade_pair = request.trade_pair
             strategy.time_frame = request.time_frame
             strategy.side = request.side
-            strategy.entry_per_trans = float(request.entry_per_trans)
-            strategy.loss_per_trans = float(request.loss_per_trans)
+            strategy.entry_per_trans = 0 if request.entry_per_trans == "" else int(request.entry_per_trans)
+            strategy.loss_per_trans = 0 if request.loss_per_trans == "" else int(request.loss_per_trans)
             strategy.entry_st_code = request.entry_st_code
             strategy.exit_st_code = request.exit_st_code
             strategy.filter_st_code = request.filter_st_code
