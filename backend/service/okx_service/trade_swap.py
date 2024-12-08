@@ -117,10 +117,6 @@ def amend_order(instId: str, ordId: Optional[str], clOrdId: Optional[str], newSz
                              newSlTriggerPx=newSlTriggerPx, newSlOrdPx=newSlOrdPx)
 
 
-# def get_positions_history():
-#     return account.get_positions_history(instType='SWAP', mgnMode='isolated', type='2')
-
-
 def place_algo_order(st_result: StrategyExecuteResult):
     place_algo_order_result = trade.place_algo_order(
         instId="ETH-USDT",
