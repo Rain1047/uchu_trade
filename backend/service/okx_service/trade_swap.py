@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
@@ -10,6 +11,7 @@ kline_reader = KlineDataReader()
 okx = OKXAPIWrapper(env=EnumTradeEnv.MARKET.value)
 trade = okx.trade_api
 account = okx.account_api
+market = okx.market_api
 
 
 # 取消永续合约的委托
@@ -139,12 +141,22 @@ def place_algo_order(st_result: StrategyExecuteResult):
 if __name__ == '__main__':
     # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
+    current_time = datetime.now().strftime("%H%M")
+    attachAlgoClOrdId = f"attachAlgoClOrdId1208{current_time}"
+    clOrdId = f"clOrdId1208{current_time}"
+
+    # attachAlgoClOrdId = "attachAlgoClOrdId12082142"
+    # clOrdId = "clOrdId12082142"
+    print(f"clOrdId: {clOrdId}, attachAlgoClOrdId: {attachAlgoClOrdId}")
+    # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
 
     # attachAlgoOrds = [
     #     {
-    #         'attachAlgoClOrdId': "testAlgoPlaceOrder12080244",  # 需要唯一
+    #         'attachAlgoClOrdId': attachAlgoClOrdId,  # 需要唯一
     #         'slTriggerPx': "3995",
     #         'slOrdPx': "-1",
+    #         'tpTriggerPx': "4005",
+    #         'tpOrdPx': "-1"
     #     }
     # ]
     #
@@ -154,44 +166,51 @@ if __name__ == '__main__':
     #     side="buy",
     #     posSide="long",
     #     ordType="market",
-    #     # px="2.15",  # 委托价格
     #     sz="1",  # 委托数量
-    #     # slTriggerPx="3995",
-    #     # slOrdPx="-1",
-    #     clOrdId="testPlaceOrder12080119",
+    #     clOrdId=clOrdId,
     #     attachAlgoOrds=attachAlgoOrds
     # )
-    # # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    # # print(ordId)
+    # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
+    # print(f"ordId: {ordId}")  #
     # print(result)
-
-    # 2. 获取订单 get_order clOrdId -> 查看过程和结果
-    # 2049761648444694528
-    # testPlaceOrder12080041
-    result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId='testPlaceOrder12080119')
-    print(result)
-    #
-    # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080119')
+    # #
+    # # 2. 获取订单 get_order clOrdId -> 查看过程和结果
+    # result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId=clOrdId)
+    # print("通过clOrdId查看订单：")
     # print(result)
-    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    # #
+    # # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
+    # # 委托订单待生效-live  委托订单已生效-effective
+    # result = trade.get_algo_order(algoId='', algoClOrdId=attachAlgoClOrdId)
+    # print("通过algoClOrdId查看策略委托订单：")
     # print(result)
+    # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
+    # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
 
     # 4. 修改策略止损价
+    # 只修改止损触发价，止盈传"", 取消止损，传"0"
     # result = trade.amend_algo_order(
-    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId='testAlgoPlaceOrder12080244',
-    #     newSlTriggerPx='3993', newSlOrdPx='-1'
+    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
+    #     newSlTriggerPx='3994.5', newSlOrdPx='-1',
+    #     newTpTriggerPx="", newTpOrdPx="",
     # )
     # print(result)
 
-    # 5. 查看algo_order的执行结果
-    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    result = trade.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP', before='2052302587604230144')
+    print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+    print(result)
 
-    # 6. 查看持仓历史
+    # 6.1 查看持仓历史
     # print(account.get_positions_history())
 
+    # 6.2 查看持仓信息
+    # print("查看持仓信息：")
+    # print(account.get_positions())  # ⚠️注意下algoId
+
+    # 6.3 查看委托执行记录
+
     # 7. 获取成交历史
-    print(trade.get_fills(instType='SWAP', ordId=''))
+    # print(trade.get_fills(instType='SWAP', instId="ETH-USDT-SWAP", ordId='2051114252093349888'))
 
     # # 永续合约的限价委托
     # get_swap_limit_order_list()

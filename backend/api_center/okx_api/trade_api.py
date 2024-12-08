@@ -34,6 +34,12 @@ class TradeAPIWrapper:
     def get_order_list(self, instType: str, instId='', ordType: Optional[str] = "", state: Optional[str] = "") -> Dict:
         return self.tradeAPI.get_order_list(instType=instType, instId=instId, ordType=ordType, state=state)
 
+    @add_docstring("获取历史订单记录（近七天）")
+    def get_orders_history(self, instType: str, instId='', ordType='', state: Optional[str] = "",
+                           after='', before='', limit=''):
+        return self.tradeAPI.get_orders_history(instType=instType, instId=instId, ordType=ordType, state=state,
+                                                after=after, before=before, limit=limit)
+
     @add_docstring("下单")
     def place_order(self, instId: str, sz: str, side: Optional[str] = 'buy', posSide: Optional[str] = '',
                     tpTriggerPx: Optional[str] = '', tpOrdPx: Optional[str] = '', slTriggerPx: Optional[str] = '',
