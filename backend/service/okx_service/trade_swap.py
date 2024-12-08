@@ -82,7 +82,6 @@ def place_order(st_result: StrategyExecuteResult):
         tdMode=EnumTdMode.ISOLATED.value,
         side=st_result.side,
         ordType=EnumOrdType.MARKET.value,
-        # px="2.15",  # 委托价格
         sz=st_result.sz,  # 委托数量
         slTriggerPx=st_result.stop_loss_price,
         slOrdPx="-1"  # 委托价格为-1时，执行市价止损
@@ -136,6 +135,19 @@ def place_algo_order(st_result: StrategyExecuteResult):
         algoClOrdId="test_2024_12_07",  # 客户自定义策略订单ID
     )
     print(place_algo_order_result)
+
+
+def find_order_by_attach_algo_id(data_dict, target_attach_id):
+    # 确保有 data 字段且是列表
+    if not data_dict.get('data') or not isinstance(data_dict['data'], list):
+        return None
+
+    # 遍历 data 列表查找匹配的字典
+    for order in data_dict['data']:
+        if order.get('algoClOrdId') == target_attach_id:
+            return order
+
+    return None
 
 
 if __name__ == '__main__':
@@ -196,45 +208,18 @@ if __name__ == '__main__':
     # )
     # print(result)
 
+    # 5. 匹配历史订单
     result = trade.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP', before='2052302587604230144')
     print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+
+    orders_history_list = result.get('data')
+    # 查找特定的 attachAlgoClOrdId
+    target_attach_id = "attachAlgoClOrdId12082149"
+    result = find_order_by_attach_algo_id(result, target_attach_id)
+
+    if result:
+        print(f"找到匹配的订单: {result}")
+    else:
+        print("未找到匹配的订单")
+
     print(result)
-
-    # 6.1 查看持仓历史
-    # print(account.get_positions_history())
-
-    # 6.2 查看持仓信息
-    # print("查看持仓信息：")
-    # print(account.get_positions())  # ⚠️注意下algoId
-
-    # 6.3 查看委托执行记录
-
-    # 7. 获取成交历史
-    # print(trade.get_fills(instType='SWAP', instId="ETH-USDT-SWAP", ordId='2051114252093349888'))
-
-    # # 永续合约的限价委托
-    # get_swap_limit_order_list()
-
-    # # 永续合约持仓信息
-    # list_swap_positions()
-    #
-    # 交易历史订单
-    # print(order_algos_history())
-
-    # print(get_order(insId='ETH-USDT-SWAP', ordId='2049135686594535424', clOrdId=''))
-
-    # result = trade.place_algo_order(
-    #     instId="ETH-USDT-SWAP",
-    #     tdMode="isolated",
-    #     side="buy",
-    #     posSide="long",
-    #     ordType="conditional",
-    #     sz="10",
-    #     slTriggerPx="4000",
-    #     slOrdPx="-1",
-    #     algoClOrdId="testAlgoPlaceOrder12080031",
-    # )
-    # print(result)
-
-    # # 未完成的永续合约止盈止损委托
-    # result = list_swap_unfinished_algo_order()
