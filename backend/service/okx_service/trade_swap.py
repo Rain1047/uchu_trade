@@ -142,9 +142,11 @@ if __name__ == '__main__':
 
     # attachAlgoOrds = [
     #     {
-    #         'attachAlgoClOrdId': "testAlgoPlaceOrder12080244",  # 需要唯一
-    #         'slTriggerPx': "3995",
+    #         'attachAlgoClOrdId': "testAlgoPlaceOrder12081000",  # 需要唯一
+    #         'slTriggerPx': "3989",
     #         'slOrdPx': "-1",
+    #         'tpTriggerPx': "3995",
+    #         'tpOrdPx': "-1"
     #     }
     # ]
     #
@@ -158,23 +160,21 @@ if __name__ == '__main__':
     #     sz="1",  # 委托数量
     #     # slTriggerPx="3995",
     #     # slOrdPx="-1",
-    #     clOrdId="testPlaceOrder12080119",
+    #     clOrdId="testPlaceOrder12081000",
     #     attachAlgoOrds=attachAlgoOrds
     # )
-    # # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    # # print(ordId)
+    # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
+    # print(ordId)  # 2050884986739089408
     # print(result)
 
     # 2. 获取订单 get_order clOrdId -> 查看过程和结果
     # 2049761648444694528
     # testPlaceOrder12080041
-    result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId='testPlaceOrder12080119')
-    print(result)
-    #
-    # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080119')
+    # result = trade.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId='testPlaceOrder12081000')
     # print(result)
-    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    # #
+    # # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
+    # result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12081000')
     # print(result)
 
     # 4. 修改策略止损价
@@ -185,7 +185,8 @@ if __name__ == '__main__':
     # print(result)
 
     # 5. 查看algo_order的执行结果
-    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12080244')
+    result = trade.get_algo_order(algoId='', algoClOrdId='testAlgoPlaceOrder12081000')
+    print(result)
 
     # 6. 查看持仓历史
     # print(account.get_positions_history())
