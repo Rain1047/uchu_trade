@@ -3,6 +3,8 @@ from typing import Optional, Dict, Type
 import logging
 from abc import ABC, abstractmethod
 
+import pandas as pd
+
 from backend.object_center.object_dao.order_instance import OrderInstance
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
@@ -11,52 +13,7 @@ from backend.data_center.data_object.req.place_order.place_order_req import Post
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
-from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import dbb_entry_long_strategy_live
-
-
-class StrategyRegistry:
-    """策略注册中心"""
-    _strategies: Dict[str, 'TradingStrategy'] = {}
-
-    @classmethod
-    def register(cls, strategy_name: str = None):
-        """
-        策略注册装饰器
-        @register() or @register('custom_name')
-        """
-
-        def decorator(strategy_class: Type['TradingStrategy']):
-            name = strategy_name or strategy_class.__name__.lower()
-            cls._strategies[name] = strategy_class()
-
-            @wraps(strategy_class)
-            def wrapper(*args, **kwargs):
-                return strategy_class(*args, **kwargs)
-
-            return wrapper
-
-        return decorator
-
-    @classmethod
-    def get_strategy(cls, strategy_name: str) -> 'TradingStrategy':
-        if strategy_name not in cls._strategies:
-            raise ValueError(f"Strategy {strategy_name} not found")
-        return cls._strategies[strategy_name]
-
-
-# 基础策略接口
-class TradingStrategy(ABC):
-    @abstractmethod
-    def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
-        """执行策略并返回结果"""
-        pass
-
-
-# 具体策略实现
-@StrategyRegistry.register('dbb_strategy')
-class DBBStrategy(TradingStrategy):
-    def execute(self, instance: 'StrategyInstance') -> 'StrategyExecuteResult':
-        return dbb_entry_long_strategy_live(instance)
+from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 
 
 def _handle_trade_result(trade_result: dict):
@@ -125,17 +82,19 @@ class StrategyExecutor:
             strategy_dto = self._convert_to_dto(st_instance)
             # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
+            # 获取df
+            df = pd.DataFrame
             if st_instance.entry_st_code:
-                entry_strategy = StrategyRegistry.get_strategy(st_instance.entry_st_code)
-                entry_result = entry_strategy.execute(strategy_dto)
+                entry_strategy = registry.get_strategy(st_instance.entry_st_code)
+                entry_result = entry_strategy(df, strategy_dto)
                 logging.info(f"Entry strategy result: {entry_result.signal if entry_result else None}")
             if entry_result is None:
                 return
             # 执行过滤策略
             filter_result = None
             if st_instance.filter_st_code:
-                filter_strategy = StrategyRegistry.get_strategy(st_instance.filter_st_code)
-                filter_result = filter_strategy.execute(strategy_dto)
+                filter_strategy = registry.get_strategy(st_instance.filter_st_code)
+                filter_result = filter_strategy(df, strategy_dto)
                 # TODO: 过滤策略结果处理,和入场策略结果合并
                 logging.info(f"Filter strategy result: {filter_result.signal if filter_result else None}")
 
