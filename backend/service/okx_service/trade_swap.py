@@ -125,7 +125,7 @@ class TradeSwapManager:
         )
 
     @staticmethod
-    def find_order_by_attach_algo_id(self, data_dict: Dict[str, Any], target_attach_id: str) -> Optional[
+    def find_order_by_attach_algo_id(data_dict: Dict[str, Any], target_attach_id: str) -> Optional[
         Dict[str, Any]]:
         if not data_dict.get('data') or not isinstance(data_dict['data'], list):
             return None

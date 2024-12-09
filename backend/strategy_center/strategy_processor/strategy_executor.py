@@ -8,45 +8,9 @@ from backend.data_center.data_object.enum_obj import EnumTradeEnv, EnumSide, Enu
 from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.service.okx_service.trade_swap import TradeSwapManager
 from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
-
-
-def _handle_trade_result(trade_result: dict):
-    """处理交易结果"""
-    order_instance = FormatUtils.dict2dao(OrderInstance, trade_result)
-    if CheckUtils.is_not_empty(order_instance):
-        DatabaseUtils.save(order_instance)
-        logging.info(f"Order saved successfully: {order_instance.order_id}")
-
-
-def _setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
-
-
-def _check_trading_signals(entry_result: Optional['StrategyExecuteResult'],
-                           filter_result: Optional['StrategyExecuteResult']) -> bool:
-    """
-    检查交易信号是否有效
-
-    Args:
-        entry_result: 入场策略结果
-        filter_result: 过滤策略结果
-
-    Returns:
-        bool: 是否应该执行交易
-    """
-    # 如果配置了入场策略但结果为None，不交易
-    if entry_result is None or filter_result is None:
-        return False
-
-    if filter_result.signal and entry_result.signal:
-        return True
-
-    return False
 
 
 class StrategyExecutor:
@@ -55,6 +19,7 @@ class StrategyExecutor:
         self.tf = time_frame
         self.okx_api = OKXAPIWrapper(env)
         self.trade_api = self.okx_api.trade_api
+        self.trade_swap_manager = TradeSwapManager()
         _setup_logging()
 
     def main_task(self):
@@ -108,12 +73,12 @@ class StrategyExecutor:
     def _execute_trade(self, result: 'StrategyExecuteResult', strategy: 'StrategyInstance'):
         """执行交易操作"""
         try:
-            order_request = self._create_order_request(result, strategy)
+            # order_request = self._create_order_request(result, strategy)
             if result.side == EnumSide.BUY:
-                trade_result = self.trade_api.post_order(order_request)
+                trade_result = self.trade_swap_manager.place_order(result)
                 _handle_trade_result(trade_result)
             elif result.side == EnumSide.SELL:
-                trade_result = self.trade_api.post_order(order_request)
+                trade_result = self.trade_swap_manager.place_order(result)
         except Exception as e:
             logging.error(f"Trade execution error: {e}", exc_info=True)
 
@@ -152,6 +117,43 @@ class StrategyExecutor:
             slTriggerPx=str(result.exit_price),
             slOrdPx="-1"
         )
+
+
+def _handle_trade_result(trade_result: dict):
+    """处理交易结果"""
+    order_instance = FormatUtils.dict2dao(OrderInstance, trade_result)
+    if CheckUtils.is_not_empty(order_instance):
+        DatabaseUtils.save(order_instance)
+        logging.info(f"Order saved successfully: {order_instance.order_id}")
+
+
+def _setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
+
+def _check_trading_signals(entry_result: Optional['StrategyExecuteResult'],
+                           filter_result: Optional['StrategyExecuteResult']) -> bool:
+    """
+    检查交易信号是否有效
+
+    Args:
+        entry_result: 入场策略结果
+        filter_result: 过滤策略结果
+
+    Returns:
+        bool: 是否应该执行交易
+    """
+    # 如果配置了入场策略但结果为None，不交易
+    if entry_result is None or filter_result is None:
+        return False
+
+    if filter_result.signal and entry_result.signal:
+        return True
+
+    return False
 
 
 if __name__ == '__main__':
