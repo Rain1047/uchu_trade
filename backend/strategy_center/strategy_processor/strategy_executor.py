@@ -40,14 +40,13 @@ class StrategyExecutor:
         """处理单个策略实例"""
         try:
             logging.info(f"Processing strategy for {st_instance.trade_pair}")
-            strategy_dto = self._convert_to_dto(st_instance)
             # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
             # 获取df
             df = pd.DataFrame
             if st_instance.entry_st_code:
                 entry_strategy = registry.get_strategy(st_instance.entry_st_code)
-                entry_result = entry_strategy(df, strategy_dto)
+                entry_result = entry_strategy(df, st_instance)
                 logging.info(f"Entry strategy result: {entry_result.signal if entry_result else None}")
             if entry_result is None:
                 return
@@ -55,7 +54,7 @@ class StrategyExecutor:
             filter_result = None
             if st_instance.filter_st_code:
                 filter_strategy = registry.get_strategy(st_instance.filter_st_code)
-                filter_result = filter_strategy(df, strategy_dto)
+                filter_result = filter_strategy(df, st_instance)
                 # TODO: 过滤策略结果处理,和入场策略结果合并
                 logging.info(f"Filter strategy result: {filter_result.signal if filter_result else None}")
 
@@ -65,12 +64,12 @@ class StrategyExecutor:
                 logging.info(f"No valid trading signal for {st_instance.trade_pair}")
                 return
             # 下单
-            self._execute_trade(entry_result, strategy_dto)
+            self._execute_trade(entry_result)
 
         except Exception as e:
             logging.error(f"Error processing strategy: {e}", exc_info=True)
 
-    def _execute_trade(self, result: 'StrategyExecuteResult', strategy: 'StrategyInstance'):
+    def _execute_trade(self, result: 'StrategyExecuteResult'):
         """执行交易操作"""
         try:
             # order_request = self._create_order_request(result, strategy)
