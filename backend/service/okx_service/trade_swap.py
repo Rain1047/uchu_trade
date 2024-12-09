@@ -101,7 +101,10 @@ class TradeSwapManager:
     def get_order(self, instId: str, ordId: Optional[str], clOrdId: Optional[str]) -> Dict[str, Any]:
         return self.trade.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
 
-    def amend_order(
+    def get_algo_order(self, algoId: Optional[str] = '', algoClOrdId: Optional[str] = ''):
+        return self.trade.get_algo_order(algoId=algoId, algoClOrdId=algoClOrdId)
+
+    def amend_algo_order(
             self,
             instId: str,
             algoId: Optional[str] = '',
@@ -121,6 +124,7 @@ class TradeSwapManager:
             newSlOrdPx=newSlOrdPx
         )
 
+    @staticmethod
     def find_order_by_attach_algo_id(self, data_dict: Dict[str, Any], target_attach_id: str) -> Optional[
         Dict[str, Any]]:
         if not data_dict.get('data') or not isinstance(data_dict['data'], list):
@@ -131,6 +135,9 @@ class TradeSwapManager:
              if order.get('algoClOrdId') == target_attach_id),
             None
         )
+
+    def get_orders_history(self, instType: Optional[str], instId: Optional[str], before: Optional[str]):
+        return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
 
 
 if __name__ == '__main__':
@@ -168,15 +175,15 @@ if __name__ == '__main__':
 
     # 4. 修改策略止损价
     # 只修改止损触发价，止盈传"", 取消止损，传"0"
-    result = trade_swap_manager.amend_order(
+    result = trade_swap_manager.amend_algo_order(
         instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
         newSlTriggerPx='3994.5', newSlOrdPx='-1',
-        newTpTriggerPx="", newTpOrdPx="",
     )
     print(result)
 
     # 5. 匹配历史订单
-    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP', before='2052302587604230144')
+    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
+                                                   before='2052302587604230144')
     print("获取历史订单记录（近七天）, 查看ordId后的记录：")
 
     orders_history_list = result.get('data')
