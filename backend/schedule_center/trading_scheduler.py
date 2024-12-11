@@ -1,17 +1,10 @@
-# scheduler_center/trading_scheduler.py
 import time
-
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.combining import OrTrigger
-from datetime import datetime, timedelta
-
 from backend.schedule_center.monitoring.schedule_monitor import SchedulerMonitor
 from backend.schedule_center.core.task_chain import TaskChain
 from backend.schedule_center.tasks.trade_tasks.data_fetch_task import TradeDataFetchTask
 from backend.schedule_center.tasks.trade_tasks.period_strategy_task import PeriodicStrategyTask
-from backend.schedule_center.tasks.trade_tasks.stop_loss_update_task import StopLossUpdateTask
-from monitoring.alerts import AlertManager, Alert, AlertLevel, EmailAlertChannel
 import logging
 
 
@@ -37,10 +30,10 @@ class TradingScheduler:
         """设置早上8点的任务链"""
         # 创建任务
         data_fetch_task = TradeDataFetchTask()
-        stop_loss_task = StopLossUpdateTask()
+        # stop_loss_task = StopLossUpdateTask()
 
         # 创建任务链
-        morning_chain = TaskChain("morning_tasks", [data_fetch_task, stop_loss_task])
+        morning_chain = TaskChain("morning_tasks", [data_fetch_task])
 
         # 添加到调度器
         self.scheduler.add_job(
@@ -83,7 +76,6 @@ class TradingScheduler:
             )
             self.logger.info("15-minute strategy task scheduled successfully")
 
-            #
             task_5sec = PeriodicStrategyTask("strategy", "5SEC")
             self.scheduler.add_job(
                 task_5sec.execute,
@@ -111,10 +103,10 @@ class TradingScheduler:
 
             # 启动调度器
             self.scheduler.start()
-            self.logger.info("Trading scheduler started successfully")
+            self.logger.info("Trading scheduler started successfully.")
 
             # 启动监控
-            self.monitor.start_monitoring(print_interval=30)  # 每30秒打印一次状态
+            self.monitor.start_monitoring(print_interval=60)  # 每30秒打印一次状态
 
             # 立即打印一次当前状态
             self.monitor.print_jobs_status()
