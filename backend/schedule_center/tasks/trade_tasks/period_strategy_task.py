@@ -47,13 +47,14 @@ class PeriodicStrategyTask(BaseTask):
 
     def execute(self) -> TaskResult:
         try:
-            self.logger.info(f"开始执行{self.interval}周期策略...")
-            print(f"开始执行{self.interval}策略...")
+            self.logger.info(f"PeriodicStrategyTask#execute, {self.interval} task start.")
+            print(f"PeriodicStrategyTask execute {self.interval} task start.")
 
             # 1. 获取符合条件的策略列表
             strategies = self._get_active_strategies()
             if not strategies:
-                self.logger.info(f"没有找到符合{self.interval}周期的活跃策略")
+                self.logger.info(f"PeriodicStrategyTask#execute, {self.interval} task not found.")
+                print(f"PeriodicStrategyTask#execute, {self.interval} task not found.")
                 return TaskResult(True, "No active strategies found")
 
             # 2. 并行执行策略
@@ -138,7 +139,7 @@ class PeriodicStrategyTask(BaseTask):
             )
 
     def _execute_strategies(self, strategies: List[StInstance]) -> List[StrategyExecutionResult]:
-        """并行执行所有策略"""
+        self.logger.info(f"PeriodicStrategyTask#_execute_strategies start, task length: {len(strategies)}")
         results = []
         with ThreadPoolExecutor(max_workers=5) as executor:
             future_to_strategy = {
@@ -161,6 +162,7 @@ class PeriodicStrategyTask(BaseTask):
 
         return results
 
+    @staticmethod
     def _summarize_results(self, results: List[StrategyExecutionResult]) -> Dict[str, Any]:
         """汇总执行结果"""
         total = len(results)
@@ -174,6 +176,7 @@ class PeriodicStrategyTask(BaseTask):
             'execution_time': datetime.now().isoformat()
         }
 
+    @staticmethod
     def _load_strategy_config(self, strategy: StInstance) -> Dict:
         """加载策略配置"""
         # TODO: 实现策略配置加载逻辑
