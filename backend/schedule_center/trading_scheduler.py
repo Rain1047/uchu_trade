@@ -104,10 +104,10 @@ class TradingScheduler:
 
             # 启动调度器
             self.scheduler.start()
-            self.logger.info("Trading scheduler started successfully")
+            self.logger.info("Trading scheduler started successfully.")
 
             # 启动监控
-            self.monitor.start_monitoring(print_interval=30)  # 每30秒打印一次状态
+            self.monitor.start_monitoring(print_interval=5)  # 每30秒打印一次状态
 
             # 立即打印一次当前状态
             self.monitor.print_jobs_status()

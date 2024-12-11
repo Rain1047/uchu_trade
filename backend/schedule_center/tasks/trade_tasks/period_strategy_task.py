@@ -35,7 +35,7 @@ class PeriodicStrategyTask(BaseTask):
         interval: 执行间隔，例如 "4H" 或 "15MIN"
         """
         config = TaskConfig(
-            timeout=120,  # 2分钟超时
+            timeout=180,  # 2分钟超时
             max_retries=2,
             retry_delay=5,
             required_success=True
@@ -43,6 +43,7 @@ class PeriodicStrategyTask(BaseTask):
         super().__init__(f"{name}_{interval}", config)
         self.interval = interval
         self.logger = logging.getLogger(f"strategy.{interval}")
+        self.session = DatabaseUtils.get_db_session()
 
     def execute(self) -> TaskResult:
         try:
@@ -79,9 +80,8 @@ class PeriodicStrategyTask(BaseTask):
     def _get_active_strategies(self) -> List[StInstance]:
         """获取所有符合条件的活跃策略"""
         try:
-            session = DatabaseUtils.get_db_session()
             strategies = (
-                session.query(StInstance)
+                self.session.query(StInstance)
                 .filter(
                     StInstance.time_frame == self.interval,
                     StInstance.switch == 1,  # 策略开启
@@ -94,7 +94,7 @@ class PeriodicStrategyTask(BaseTask):
             self.logger.error(f"获取策略列表失败: {str(e)}")
             raise
         finally:
-            session.close()
+            self.session.close()
 
     def _execute_single_strategy(self, strategy: StInstance) -> StrategyExecutionResult:
         """执行单个策略"""
