@@ -76,7 +76,6 @@ class TradingScheduler:
             )
             self.logger.info("15-minute strategy task scheduled successfully")
 
-            #
             task_5sec = PeriodicStrategyTask("strategy", "5SEC")
             self.scheduler.add_job(
                 task_5sec.execute,
@@ -107,7 +106,7 @@ class TradingScheduler:
             self.logger.info("Trading scheduler started successfully.")
 
             # 启动监控
-            self.monitor.start_monitoring(print_interval=5)  # 每30秒打印一次状态
+            self.monitor.start_monitoring(print_interval=60)  # 每30秒打印一次状态
 
             # 立即打印一次当前状态
             self.monitor.print_jobs_status()

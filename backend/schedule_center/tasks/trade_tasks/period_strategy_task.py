@@ -48,6 +48,7 @@ class PeriodicStrategyTask(BaseTask):
     def execute(self) -> TaskResult:
         try:
             self.logger.info(f"开始执行{self.interval}周期策略...")
+            print(f"开始执行{self.interval}策略...")
 
             # 1. 获取符合条件的策略列表
             strategies = self._get_active_strategies()
