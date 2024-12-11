@@ -17,7 +17,7 @@ class TaskResult:
     def __init__(self, success: bool, message: str, data: Optional[dict] = None):
         self.success = success
         self.message = message
-        self.data = data or {}
+        self.data = bool
         self.execution_time: float = 0
         self.retries: int = 0
         self.timestamp = datetime.now()

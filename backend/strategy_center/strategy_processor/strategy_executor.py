@@ -28,13 +28,11 @@ class StrategyExecutor:
         instance_list = self._get_strategy_instances()
         for instance in instance_list:
             print("Processing strategy for {}".format(instance.trade_pair))
+            self._process_strategy(instance)
 
         if not instance_list:
             logging.info("No strategy instances found")
             return
-
-        for instance in instance_list:
-            self._process_strategy(instance)
 
     def _process_strategy(self, st_instance: 'StInstance'):
         """处理单个策略实例"""
