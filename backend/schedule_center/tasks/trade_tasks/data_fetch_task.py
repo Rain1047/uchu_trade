@@ -1,7 +1,3 @@
-from typing import Dict, Any, List, Optional
-import pandas as pd
-from datetime import datetime, timedelta
-
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
@@ -20,10 +16,8 @@ class TradeDataFetchTask(BaseTask):
 
     def execute(self) -> TaskResult:
         try:
-            data_len = 0
             self.logger.info("开始获取交易数据...")
 
-            # TODO: 实现获取交易数据的具体逻辑
             # trade_data = self.fetch_trade_data()
             data_collector = KlineDataCollector()
             res = data_collector.batch_collect_data()
@@ -49,3 +43,9 @@ class TradeDataFetchTask(BaseTask):
                 success=False,
                 message=f"获取交易数据失败: {str(e)}"
             )
+
+
+if __name__ == '__main__':
+    task = TradeDataFetchTask()
+    result = task.execute()
+    print(result.to_dict())
