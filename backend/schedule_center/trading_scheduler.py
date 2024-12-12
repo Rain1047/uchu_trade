@@ -54,8 +54,8 @@ class TradingScheduler:
                 task_4h.execute,
                 CronTrigger(
                     hour='8-23/4',  # 从8点开始，每4小时一次
-                    minute=2,
-                    second=0
+                    minute=0,
+                    second=10
                 ),
                 id='strategy_4h',
                 name='4-Hour Strategy'
@@ -63,7 +63,7 @@ class TradingScheduler:
             self.logger.info("4-hour strategy task scheduled successfully")
 
             # 15分钟任务
-            task_15min = PeriodicStrategyTask("strategy", "15MIN")
+            task_15min = PeriodicStrategyTask("strategy", "15min")
             self.scheduler.add_job(
                 task_15min.execute,
                 CronTrigger(
@@ -76,7 +76,7 @@ class TradingScheduler:
             )
             self.logger.info("15-minute strategy task scheduled successfully")
 
-            task_5sec = PeriodicStrategyTask("strategy", "5SEC")
+            task_5sec = PeriodicStrategyTask("strategy", "5sec")
             self.scheduler.add_job(
                 task_5sec.execute,
                 CronTrigger(

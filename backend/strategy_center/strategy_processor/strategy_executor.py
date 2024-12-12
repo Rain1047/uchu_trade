@@ -1,6 +1,3 @@
-from typing import Optional, Dict, Type
-import logging
-import pandas as pd
 from backend.object_center.object_dao.order_instance import OrderInstance
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
@@ -11,6 +8,7 @@ from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.okx_service.trade_swap import TradeSwapManager
 from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
+from backend.data_center.kline_data.kline_data_collector import *
 
 
 class StrategyExecutor:
@@ -20,6 +18,7 @@ class StrategyExecutor:
         self.okx_api = OKXAPIWrapper(env)
         self.trade_api = self.okx_api.trade_api
         self.trade_swap_manager = TradeSwapManager()
+        self.data_collector = KlineDataCollector()
         _setup_logging()
 
     def main_task(self):
@@ -41,7 +40,8 @@ class StrategyExecutor:
             # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
             # 获取df
-            df = pd.DataFrame
+            file_abspath = self.data_collector.get_abspath(symbol='BTC', interval=EnumTimeFrame.in_4_hour.value)
+            df = pd.read_csv(f"{file_abspath}")
             if st_instance.entry_st_code:
                 entry_strategy = registry.get_strategy(st_instance.entry_st_code)
                 entry_result = entry_strategy(df, st_instance)
