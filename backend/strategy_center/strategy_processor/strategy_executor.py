@@ -19,19 +19,20 @@ class StrategyExecutor:
         self.trade_api = self.okx_api.trade_api
         self.trade_swap_manager = TradeSwapManager()
         self.data_collector = KlineDataCollector()
+        self.session = DatabaseUtils.get_db_session()
         _setup_logging()
 
     def main_task(self):
         """执行主要任务"""
-        logging.info("Strategy executor starting...")
+        print("Strategy executor start.")
         instance_list = self._get_strategy_instances()
+        print("Strategy instances: {}".format(instance_list))
+        if not instance_list:
+            print("No strategy instances found")
+            return
         for instance in instance_list:
             print("Processing strategy for {}".format(instance.trade_pair))
             self._process_strategy(instance)
-
-        if not instance_list:
-            logging.info("No strategy instances found")
-            return
 
     def _process_strategy(self, st_instance: 'StInstance'):
         """处理单个策略实例"""
@@ -40,7 +41,7 @@ class StrategyExecutor:
             # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
             # 获取df
-            file_abspath = self.data_collector.get_abspath(symbol='BTC', interval=EnumTimeFrame.in_4_hour.value)
+            file_abspath = self.data_collector.get_abspath(symbol='BTC', interval=EnumTimeFrame.in_4_hour)
             df = pd.read_csv(f"{file_abspath}")
             if st_instance.entry_st_code:
                 entry_strategy = registry.get_strategy(st_instance.entry_st_code)
@@ -81,8 +82,7 @@ class StrategyExecutor:
 
     def _get_strategy_instances(self) -> list:
         """获取策略实例列表"""
-        session = DatabaseUtils.get_db_session()
-        return session.query(StInstance).filter(
+        return self.session.query(StInstance).filter(
             StInstance.switch == 0,
             StInstance.is_del == 0,
             StInstance.time_frame == self.tf
