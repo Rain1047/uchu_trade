@@ -96,16 +96,15 @@ def dbb_entry_long_strategy_live(df: DataFrame, stIns: StInstance) -> StrategyEx
             position = str(
                 stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['sma20']),
                                              2) * 10)
-            print(f"{stIns.trade_pair} position is: {position}")
-
             # 获取单个产品行情信息
             res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
-            print(f"{stIns.trade_pair} sz is: {res.sz}")
             res.signal = True
             res.side = EnumSide.BUY.value
             res.exit_price = str(df.iloc[-2]['sma20'])
+            print(f"dbb_entry_long_strategy_live#execute result: {stIns.trade_pair} position is: {position}")
             return res
         else:
+            print("dbb_entry_long_strategy_live#execute result: no signal")
             res.signal = False
             return res
 

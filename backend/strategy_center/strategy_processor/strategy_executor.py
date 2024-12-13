@@ -11,6 +11,8 @@ from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy imp
 from backend.data_center.kline_data.kline_data_collector import *
 
 
+
+
 class StrategyExecutor:
     def __init__(self, env: str = EnumTradeEnv.MARKET.value, time_frame: Optional[str] = None):
         self.env = env
@@ -37,28 +39,28 @@ class StrategyExecutor:
     def _process_strategy(self, st_instance: 'StInstance'):
         """处理单个策略实例"""
         try:
-            print(f"Processing strategy for {st_instance.trade_pair}")
-            # 使用注册中心获取并执行策略，执行入场策略
-            entry_result = None
-            # 获取df
-            symbol = st_instance.trade_pair.split('-')[0]
-            interval = EnumTimeFrame.get_enum_by_value(st_instance.time_frame)
-            file_abspath = self.data_collector.get_abspath(symbol=symbol, interval=interval)
-            print(f"File path: {file_abspath}")
-            df = pd.read_csv(f"{file_abspath}")
-            if st_instance.entry_st_code:
-                entry_strategy = registry.get_strategy(st_instance.entry_st_code)
-                entry_result = entry_strategy(df, st_instance)
-                logging.info(f"Entry strategy result: {entry_result.signal if entry_result else None}")
-            if entry_result is None:
+            print(f"process_strategy@processing strategy for {st_instance.trade_pair}")
+            # 执行入场策略
+            df = self._get_data_frame(st_instance)
+            entry_result = self._execute_entry_strategy(df, st_instance)
+            if not entry_result:
+                print(f"process_strategy@entry result {st_instance.trade_pair} failed.")
                 return
             # 执行过滤策略
             filter_result = None
             if st_instance.filter_st_code:
-                filter_strategy = registry.get_strategy(st_instance.filter_st_code)
-                filter_result = filter_strategy(df, st_instance)
-                # TODO: 过滤策略结果处理,和入场策略结果合并
-                logging.info(f"Filter strategy result: {filter_result.signal if filter_result else None}")
+                filter_strategy_list = st_instance.filter_st_code.split(',')
+                if len(filter_strategy_list) > 1:
+                    for filter_strategy_code in filter_strategy_list:
+                        filter_strategy = registry.get_strategy(filter_strategy_code)
+                        filter_result = filter_strategy(df, st_instance)
+                        # TODO: 过滤策略结果处理,和入场策略结果合并
+                        print(f"process_strategy@filter result for {st_instance.name} is: ")
+                else:
+                    print(f"process_strategy@filter result {st_instance.trade_pair} failed.")
+                    return
+
+            entry_result.symbol = st_instance.trade_pair
 
             # 检查交易信号
             trade_signal = _check_trading_signals(entry_result, filter_result)
@@ -69,7 +71,20 @@ class StrategyExecutor:
             self._execute_trade(entry_result)
 
         except Exception as e:
-            logging.error(f"Error processing strategy: {e}", exc_info=True)
+            print(f"Error processing strategy: {e}")
+
+    def _execute_entry_strategy(self, df: DataFrame, st_instance) -> 'StrategyExecuteResult' | None:
+        entry_result = None
+        if st_instance.entry_st_code:
+            entry_strategy = registry.get_strategy(st_instance.entry_st_code)
+            entry_result = entry_strategy(df, st_instance)
+            if entry_result is None or not entry_result.signal:
+                print(f"process_strategy@entry result {st_instance.trade_pair} failed.")
+                return None
+            else:
+                print(f"process_strategy@entry result for {st_instance.name} is: "
+                      f"{entry_result.signal if entry_result else None}")
+                return entry_result
 
     def _execute_trade(self, result: 'StrategyExecuteResult'):
         """执行交易操作"""
@@ -81,7 +96,7 @@ class StrategyExecutor:
             elif result.side == EnumSide.SELL:
                 trade_result = self.trade_swap_manager.place_order(result)
         except Exception as e:
-            logging.error(f"Trade execution error: {e}", exc_info=True)
+            logging.error(f"process_strategy@e_execute_trade error: {e}", exc_info=True)
 
     def _get_strategy_instances(self) -> list:
         """获取策略实例列表"""
@@ -117,6 +132,15 @@ class StrategyExecutor:
             slTriggerPx=str(result.exit_price),
             slOrdPx="-1"
         )
+
+    def _get_data_frame(self, st_instance) -> DataFrame:
+        # 获取df
+        symbol = st_instance.trade_pair.split('-')[0]
+        interval = EnumTimeFrame.get_enum_by_value(st_instance.time_frame)
+        file_abspath = self.data_collector.get_abspath(symbol=symbol, interval=interval)
+        print(f"process_strategy@target file path: {file_abspath}")
+        df = pd.read_csv(f"{file_abspath}")
+        return df
 
 
 def _handle_trade_result(trade_result: dict):
