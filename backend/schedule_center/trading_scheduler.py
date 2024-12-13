@@ -80,7 +80,7 @@ class TradingScheduler:
             self.scheduler.add_job(
                 task_5sec.execute,
                 CronTrigger(
-                    hour='8-23',
+                    hour='0-23',
                     minute='0-59',
                     second='5,10,15,20,25,30,35,40,45,50,55'
                 ),
@@ -97,7 +97,7 @@ class TradingScheduler:
         try:
             self.logger.info("Starting trading scheduler...")
             # 设置早上八点的定时任务
-            self.setup_morning_tasks()
+            # self.setup_morning_tasks()
             # 设置周期执行的调度任务
             self.setup_periodic_tasks()
 

@@ -37,11 +37,14 @@ class StrategyExecutor:
     def _process_strategy(self, st_instance: 'StInstance'):
         """处理单个策略实例"""
         try:
-            logging.info(f"Processing strategy for {st_instance.trade_pair}")
+            print(f"Processing strategy for {st_instance.trade_pair}")
             # 使用注册中心获取并执行策略，执行入场策略
             entry_result = None
             # 获取df
-            file_abspath = self.data_collector.get_abspath(symbol='BTC', interval=EnumTimeFrame.in_4_hour)
+            symbol = st_instance.trade_pair.split('-')[0]
+            interval = EnumTimeFrame.get_enum_by_value(st_instance.time_frame)
+            file_abspath = self.data_collector.get_abspath(symbol=symbol, interval=interval)
+            print(f"File path: {file_abspath}")
             df = pd.read_csv(f"{file_abspath}")
             if st_instance.entry_st_code:
                 entry_strategy = registry.get_strategy(st_instance.entry_st_code)
@@ -152,7 +155,3 @@ def _check_trading_signals(entry_result: Optional['StrategyExecuteResult'],
 
     return False
 
-
-if __name__ == '__main__':
-    executor_m4h = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.H4_U.value)
-    executor_m4h.main_task()

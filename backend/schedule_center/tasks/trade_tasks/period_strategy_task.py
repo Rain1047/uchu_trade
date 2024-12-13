@@ -63,7 +63,7 @@ class PeriodicStrategyTask(BaseTask):
             return TaskResult(
                 success=True,
                 message=f"{self.interval} strategies executed",
-                data= True
+                data={}
             )
 
         except Exception as e:
