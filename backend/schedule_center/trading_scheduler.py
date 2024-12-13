@@ -82,7 +82,9 @@ class TradingScheduler:
                 CronTrigger(
                     hour='0-23',
                     minute='0-59',
-                    second='5,10,15,20,25,30,35,40,45,50,55'
+                    # second='5,10,15,20,25,30,35,40,45,50,55',
+                    second='0,10,20,30,40,50'
+
                 ),
                 id='strategy_5sec',
                 name='5-Sec Strategy'
