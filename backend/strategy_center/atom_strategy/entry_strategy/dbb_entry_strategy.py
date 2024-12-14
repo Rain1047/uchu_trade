@@ -25,7 +25,7 @@ tv = KlineDataCollector()
 
 
 @registry.register(name="dbb_entry_long_strategy", desc="布林带入场策略", side="long", type="entry")
-def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
+def dbb_entry_long_strategy(df: pd.DataFrame, stIns: Optional[StrategyInstance]):
     if stIns is None:
         return dbb_entry_long_strategy_backtest(df)
     else:
@@ -33,7 +33,7 @@ def dbb_entry_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
 
 
 # @registry.register(name="dbb_entry_long_strategy_backtest", desc="布林带入场策略", side="long")
-def dbb_entry_long_strategy_backtest(df: DataFrame):
+def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
     df['entry_price'] = 0
@@ -98,8 +98,10 @@ def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StInstance) -> Strateg
             res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
             res.signal = True
             res.side = EnumSide.BUY.value
-            res.posSide = EnumPosSide.LONG.value
+            res.pos_side = EnumPosSide.LONG.value
             res.exit_price = str(df.iloc[-2]['sma20'])
+            res.interval = stIns.time_frame
+            res.st_inst_id = stIns.id
             print(f"dbb_entry_long_strategy_live#execute result: {stIns.trade_pair} position is: {position}")
             return res
         else:

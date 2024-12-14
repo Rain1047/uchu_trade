@@ -8,7 +8,7 @@ class StrategyExecuteResult:
     # 买入方向
     side: Optional[str] = None
     # 持仓方向
-    posSide: Optional[str] = None
+    pos_side: Optional[str] = None
     # 买入信号
     signal: Optional[bool] = False
     # 买入价格
@@ -25,6 +25,10 @@ class StrategyExecuteResult:
     sz_usdt: Optional[str] = ''
     # 交易实例id
     st_inst_id: int
+    # 交易间隔
+    interval: Optional[str] = ''
+    # 策略实例id
+
 
 
 
