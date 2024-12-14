@@ -9,6 +9,7 @@ from backend.service.okx_service.trade_swap import TradeSwapManager
 from backend.utils.utils import FormatUtils, DatabaseUtils, CheckUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 from backend.data_center.kline_data.kline_data_collector import *
+import pandas as pd
 
 
 
@@ -129,7 +130,7 @@ class StrategyExecutor:
         return df
 
     @staticmethod
-    def _execute_filter_strategy(df: DataFrame, st_instance: 'StInstance'):
+    def _execute_filter_strategy(df: , st_instance: 'StInstance'):
         filter_result = True
         if st_instance.filter_st_code:
             filter_strategy_list = st_instance.filter_st_code.split(',')
