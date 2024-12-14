@@ -33,6 +33,9 @@ class AlgoOrderRecord(Base):
     interval = Column(String(16))  # 交易策略间隔
 
     # 订单结果参数
+    fill_sz = Column(String(64))
+    fill_px = Column(String(64))
+    avg_px = Column(String(64))
     lever = Column(String(16))  # 杠杆
     pnl = Column(String(32))  # 盈亏
     state = Column(String(16))
@@ -59,6 +62,9 @@ class AlgoOrderRecord(Base):
             'sz': self.sz,
             'interval': self.interval,
             'lever': self.lever,
+            'fill_sz': self.fill_sz,
+            'fill_px': self.fill_px,
+            'avg_px': self.avg_px,
             'pnl': self.pnl,
             'state': self.state,
             'create_time': self.create_time,

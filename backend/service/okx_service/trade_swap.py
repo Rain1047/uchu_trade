@@ -159,22 +159,23 @@ class TradeSwapManager:
         return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
 
 
-def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_result: dict):
+def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
     try:
         algo_order_record = AlgoOrderRecord()
 
         # 从返回结果中提取第一个订单数据（data[0]）
-        order_data = trade_result['data'][0]
-        algo_order_record.cl_ord_id = order_data['clOrdId']
-        algo_order_record.ord_id = order_data['ordId']
-        algo_order_record.s_code = order_data['sCode']
-        algo_order_record.s_msg = order_data['sMsg']
-        algo_order_record.ts = order_data['ts']
-        algo_order_record.tag = order_data['tag']
-        algo_order_record.attach_algo_cl_ord_id = trade_result['attachAlgoClOrdId']
+        post_order_data = place_order_result['data'][0]
+        algo_order_record.cl_ord_id = post_order_data['clOrdId']
+        algo_order_record.ord_id = post_order_data['ordId']
+        algo_order_record.s_code = post_order_data['sCode']
+        algo_order_record.s_msg = post_order_data['sMsg']
+        algo_order_record.ts = post_order_data['ts']
+
+        algo_order_record.tag = post_order_data['tag']
+        algo_order_record.attach_algo_cl_ord_id = place_order_result['attachAlgoClOrdId']
 
         # 封装StrategyExecuteResult
-        algo_order_record.symbol = trade_result['symbol']
+        algo_order_record.symbol = place_order_result['symbol']
         algo_order_record.side = st_execute_result.side
         algo_order_record.pos_side = st_execute_result.pos_side
         algo_order_record.sz = st_execute_result.sz
@@ -182,6 +183,17 @@ def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_resul
         algo_order_record.interval = st_execute_result.interval
 
         # 订单结果参数
+        # 调用get_order方法
+        get_order_result = TradeSwapManager().get_order(
+            instId=algo_order_record.symbol,
+            ordId=algo_order_record.ord_id,
+            clOrdId=algo_order_record.cl_ord_id
+        )
+        get_order_data = get_order_result['data'][0]
+
+        algo_order_record.fill_px = get_order_data['fillPx']
+        algo_order_record.fill_sz = get_order_data['fillSz']
+        algo_order_record.avg_px = get_order_data['avgPx']
         algo_order_record.pnl = '0'
         algo_order_record.state = EnumState.LIVE.value
         algo_order_record.lever = '5'
