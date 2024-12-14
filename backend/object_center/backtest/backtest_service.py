@@ -14,7 +14,7 @@ class BacktestService:
 
     @staticmethod
     def list_strategy_by_symbol(symbol: str) -> list:
-        return StInstance.list_by_trade_pair(trade_pair=symbol)
+        return StrategyInstance.list_by_trade_pair(trade_pair=symbol)
 
     #
     # {'success': True, 'data': [

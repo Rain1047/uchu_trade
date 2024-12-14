@@ -11,7 +11,7 @@ session = DatabaseUtils.get_db_session()
 
 
 # 定义 ORM 模型类
-class StInstance(Base):
+class StrategyInstance(Base):
     __tablename__ = 'st_instance'
     id = Column(Integer, primary_key=True, autoincrement=True, comment='策略实例ID')
     name = Column(String(255), nullable=False, comment='策略实例名称')
@@ -93,27 +93,27 @@ class StInstance(Base):
             return False
 
     @classmethod
-    def get_all_active(cls) -> List['StInstance']:
+    def get_all_active(cls) -> List['StrategyInstance']:
         """Get all non-deleted strategy instances"""
         return DatabaseUtils.get_db_session().query(cls).filter_by(is_del=0).all()
 
     @classmethod
-    def get_st_instance_by_id(cls, id: int) -> 'StInstance':
-        strategy = session.query(StInstance).filter(
-            StInstance.id == id,
-            StInstance.is_del == 0
+    def get_st_instance_by_id(cls, id: int) -> 'StrategyInstance':
+        strategy = session.query(StrategyInstance).filter(
+            StrategyInstance.id == id,
+            StrategyInstance.is_del == 0
         ).first()
         """Get strategy instance by ID"""
         return DatabaseUtils.get_db_session().query(cls).filter_by(id=id, is_del=0).first()
 
 
-def get_st_instance_by_id(id: int) -> StInstance:
-    strategy = session.query(StInstance).filter(
-        StInstance.id == id,
-        StInstance.is_del == 0
+def get_st_instance_by_id(id: int) -> StrategyInstance:
+    strategy = session.query(StrategyInstance).filter(
+        StrategyInstance.id == id,
+        StrategyInstance.is_del == 0
     ).first()
     """Get strategy instance by ID"""
-    return DatabaseUtils.get_db_session().query(StInstance).filter_by(id=id, is_del=0).first()
+    return DatabaseUtils.get_db_session().query(StrategyInstance).filter_by(id=id, is_del=0).first()
 
 
 if __name__ == '__main__':
@@ -123,11 +123,11 @@ if __name__ == '__main__':
     # st = get_st_instance_by_id(id=8)
     # print(st.name)
 
-    st = StInstance.get_st_instance_by_id(id=8)
+    st = StrategyInstance.get_st_instance_by_id(id=8)
     print(st.name)
 
     # # 创建一条记录
-    # new_instance = StInstance(
+    # new_instance = StrategyInstance(
     #     name='比特币双布林带策略',
     #     trade_pair='BTC-USDT',
     #     position=1000,
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     #
     # # 将记录添加到会话并提交
     # # 查询所有订单实例
-    # st_instance_list = session.query(StInstance).all()
+    # st_instance_list = session.query(StrategyInstance).all()
     # for st_instance in st_instance_list:
     #     print(st_instance.id, st_instance.trade_pair)
     #

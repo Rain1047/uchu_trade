@@ -8,7 +8,7 @@ from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.object_center.object_dao.backtest_record import BacktestRecord
 from backend.object_center.object_dao.backtest_result import BacktestResult
-from backend.object_center.object_dao.st_instance import StInstance
+from backend.object_center.object_dao.st_instance import StrategyInstance
 
 
 class BacktestSystem:
@@ -115,7 +115,7 @@ class BacktestSystem:
             records_df.to_excel(writer, sheet_name='Trade Records', index=False)
             stats_df.to_excel(writer, sheet_name='Summary', index=False)
 
-    def run(self, df: pd.DataFrame, st: StInstance, plot: bool = False) -> dict:
+    def run(self, df: pd.DataFrame, st: StrategyInstance, plot: bool = False) -> dict:
         """运行回测"""
         self.prepare_data(df)
         results = self.cerebro.run()
@@ -166,7 +166,7 @@ def _print_results(results: BacktestResults) -> None:
         print(f'平均亏损: ${results.avg_loss:.2f}')
 
 
-def record_backtest_results(backtest_results: BacktestResults, results, st: StInstance, key: str):
+def record_backtest_results(backtest_results: BacktestResults, results, st: StrategyInstance, key: str):
     # 插入回测结果表
     result_data = {
         'strategy_id': st.id,
