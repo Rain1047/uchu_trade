@@ -4,7 +4,7 @@ from datetime import datetime
 from backend.object_center.enum_obj import EnumTradeEnv, EnumTimeFrame
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 from backend.strategy_center.strategy_processor.strategy_executor import StrategyExecutor
-from backend.utils import DatabaseUtils
+from backend._utils import DatabaseUtils
 
 
 class StrategyExecutionResult:

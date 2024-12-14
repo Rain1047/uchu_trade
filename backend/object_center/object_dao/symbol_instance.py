@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import Column, String, Integer, select
 from sqlalchemy.orm import declarative_base
 
-from backend.utils import DatabaseUtils
+from backend._utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

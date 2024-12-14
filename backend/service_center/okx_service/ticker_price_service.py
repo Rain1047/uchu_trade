@@ -1,6 +1,6 @@
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.object_center.enum_obj import EnumTimeFrame
-from backend.utils import CheckUtils, DateUtils, FormatUtils
+from backend._utils import CheckUtils, DateUtils, FormatUtils
 import yfinance as yf
 
 okx = OKXAPIWrapper()

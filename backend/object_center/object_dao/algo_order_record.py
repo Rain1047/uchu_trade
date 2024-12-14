@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-from backend.utils import DatabaseUtils
+from backend._utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

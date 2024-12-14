@@ -2,7 +2,7 @@
 
 import okx.Account as Account
 from typing import Dict, Optional
-from backend.decorator.decorator import add_docstring
+from backend._decorators import add_docstring
 
 
 class AccountAPIWrapper:
