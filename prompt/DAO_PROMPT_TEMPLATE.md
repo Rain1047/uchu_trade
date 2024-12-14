@@ -16,6 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base的python对象，使用�
         注意这里是dict[list]:
         return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
     delete_by_id()方法，返回布尔
+    update_selective_by_id() 方法，返回布尔
 
 在这个页面上增加“运行回测”的按钮，按钮的位置在策略的输入框之后，回测记录之前。回测需要加一个loading判断是否执行完成。完成后自动取
 
