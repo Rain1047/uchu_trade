@@ -1,9 +1,7 @@
 import os
 import sys
 from typing import Optional
-
-from pandas import DataFrame
-
+import pandas as pd
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.ticker_price_collector import TickerPriceCollector
 from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumPosSide
@@ -82,7 +80,7 @@ def dbb_entry_long_strategy_backtest(df: DataFrame):
 
 
 # @registry.register(name="dbb_entry_long_strategy_live", desc="布林带入场策略", side="long")
-def dbb_entry_long_strategy_live(df: DataFrame, stIns: StInstance) -> StrategyExecuteResult:
+def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StInstance) -> StrategyExecuteResult:
     res = StrategyExecuteResult()
     if not df.empty:
         df['signal'] = 'no_sig'
