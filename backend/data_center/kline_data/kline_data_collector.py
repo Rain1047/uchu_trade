@@ -9,7 +9,7 @@ from tvDatafeed import TvDatafeed, Interval
 from backend.object_center.enum_obj import EnumTimeFrame
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center.object_dao.symbol_instance import query_all_symbol_instance, SymbolInstance
-from backend.utils.utils import ConfigUtils
+from backend.utils import ConfigUtils
 
 
 class KlineDataCollector:

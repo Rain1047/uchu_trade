@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, JSON
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

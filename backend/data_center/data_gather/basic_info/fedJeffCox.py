@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
 from backend.object_center.object_dao.fn_instance import FnInstance
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 
 def get_jeff_cox_list():

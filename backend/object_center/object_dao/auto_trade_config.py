@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Any
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 Base = declarative_base()
 

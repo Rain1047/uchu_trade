@@ -1,9 +1,9 @@
 from typing import List
 
-from sqlalchemy import Column, Integer, String, Float, select, update
+from sqlalchemy import Column, Integer, String, select, update
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 # 创建基类
 Base = declarative_base()
