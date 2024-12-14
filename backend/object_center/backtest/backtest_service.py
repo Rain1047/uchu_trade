@@ -1,8 +1,8 @@
 from backend.backtest_center.backtest_main import *
 from backend.backtest_center.models.backtest_result import BacktestResults
-from backend.object_center.object_dao.backtest_record import BacktestRecord
-from backend.object_center.object_dao.backtest_result import BacktestResult
-from backend.object_center.object_dao.symbol_instance import SymbolInstance
+from backend.object_center._object_dao.backtest_record import BacktestRecord
+from backend.object_center._object_dao.backtest_result import BacktestResult
+from backend.object_center._object_dao.symbol_instance import SymbolInstance
 
 
 class BacktestService:
@@ -14,7 +14,7 @@ class BacktestService:
 
     @staticmethod
     def list_strategy_by_symbol(symbol: str) -> list:
-        return StInstance.list_by_trade_pair(trade_pair=symbol)
+        return StrategyInstance.list_by_trade_pair(trade_pair=symbol)
 
     #
     # {'success': True, 'data': [

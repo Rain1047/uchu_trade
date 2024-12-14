@@ -2,15 +2,15 @@
 
 from typing import Optional
 
-from backend.decorator.decorator import singleton
-from backend.utils.utils import ConfigUtils
+from backend._decorators import singleton
+from backend._utils import ConfigUtils
 from backend.api_center.okx_api.account_api import AccountAPIWrapper
 from backend.api_center.okx_api.trade_api import TradeAPIWrapper
 from backend.api_center.okx_api.market_api import MarketAPIWrapper
 from backend.api_center.okx_api.public_data_api import PublicDataAPIWrapper
 from backend.api_center.okx_api.funding_api import FundingAPIWrapper
 from backend.api_center.okx_api.spread_api import SpreadAPIWrapper
-from backend.data_center.data_object.enum_obj import *
+from backend.object_center.enum_obj import *
 
 
 @singleton

@@ -2,17 +2,16 @@ import os
 import sys
 from typing import Optional
 import pandas as pd
-from backend.object_center.object_dao.st_instance import StInstance
-from backend.strategy_center.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumPosSide
-from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from backend.object_center._object_dao.st_instance import StrategyInstance
+from backend.service.okx_service.ticker_price_service import TickerPriceCollector
+from backend.object_center.enum_obj import EnumTradeType, EnumSide, EnumPosSide
+from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
@@ -80,7 +79,7 @@ def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
 
 
 # @registry.register(name="dbb_entry_long_strategy_live", desc="布林带入场策略", side="long")
-def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StInstance) -> StrategyExecuteResult:
+def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     res = StrategyExecuteResult()
     if not df.empty:
         df['signal'] = 'no_sig'

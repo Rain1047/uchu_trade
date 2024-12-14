@@ -2,8 +2,8 @@ import json
 from datetime import datetime
 
 from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
-from backend.utils.utils import DatabaseUtils
-from backend.object_center.object_dao.st_instance import StInstance
+from backend._utils import DatabaseUtils
+from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
 
 
@@ -15,7 +15,7 @@ class StrategyService:
             # 创建新的策略实例
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-            strategy = StInstance(
+            strategy = StrategyInstance(
                 name=request.name,
                 trade_pair=request.trade_pair,
                 time_frame=request.time_frame,
@@ -60,14 +60,14 @@ class StrategyService:
         session = DatabaseUtils.get_db_session()
         try:
             # 构建查询
-            query = session.query(StInstance).filter(StInstance.is_del == 0)
+            query = session.query(StrategyInstance).filter(StrategyInstance.is_del == 0)
 
             # 获取总数
             total_count = query.count()
 
             # 分页
             offset = (page_num - 1) * page_size
-            strategies = query.order_by(StInstance.gmt_create.desc()) \
+            strategies = query.order_by(StrategyInstance.gmt_create.desc()) \
                 .limit(page_size) \
                 .offset(offset) \
                 .all()
@@ -118,9 +118,9 @@ class StrategyService:
         session = DatabaseUtils.get_db_session()
         try:
             # 查找策略
-            strategy = session.query(StInstance).filter(
-                StInstance.id == strategy_id,
-                StInstance.is_del == 0
+            strategy = session.query(StrategyInstance).filter(
+                StrategyInstance.id == strategy_id,
+                StrategyInstance.is_del == 0
             ).first()
 
             if not strategy:
@@ -168,9 +168,9 @@ class StrategyService:
         session = DatabaseUtils.get_db_session()
         try:
             # 查找策略
-            strategy = session.query(StInstance).filter(
-                StInstance.id == strategy_id,
-                StInstance.is_del == 0
+            strategy = session.query(StrategyInstance).filter(
+                StrategyInstance.id == strategy_id,
+                StrategyInstance.is_del == 0
             ).first()
 
             if not strategy:
@@ -206,9 +206,9 @@ class StrategyService:
     def toggle_strategy_status(strategy_id: int, active: bool) -> dict:
         session = DatabaseUtils.get_db_session()
         try:
-            strategy = session.query(StInstance).filter(
-                StInstance.id == strategy_id,
-                StInstance.is_del == 0
+            strategy = session.query(StrategyInstance).filter(
+                StrategyInstance.id == strategy_id,
+                StrategyInstance.is_del == 0
             ).first()
 
             if not strategy:

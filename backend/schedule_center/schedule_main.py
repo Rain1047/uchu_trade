@@ -1,4 +1,4 @@
-# scheduler_center/main.py
+# scheduler_center/main_controller.py
 import logging.config
 from typing import Dict, Any
 import yaml

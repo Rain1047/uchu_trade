@@ -4,8 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
-from backend.object_center.object_dao.fn_instance import FnInstance
-from backend.utils.utils import DatabaseUtils
+from backend.object_center._object_dao.fn_instance import FnInstance
+from backend._utils import DatabaseUtils
 
 
 def get_jeff_cox_list():
@@ -56,7 +56,7 @@ def store_jeff_cox_detail():
                 print("Key Points结果为：{}".format(key_points))
                 # prompt = get_prompt(prompt="key")
                 # 在这里调用g4f
-                # key_point_analysis = call_g4f(res, prompt)
+                # key_point_analysis = call_g4f(result, prompt)
                 # print(key_point_analysis)
             else:
                 print("未找到文章的的Key Points。")
