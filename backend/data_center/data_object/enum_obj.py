@@ -15,6 +15,16 @@ class EnumState(Enum):
     MMP_CANCELED = 'mmp_canceled'
 
 
+class EnumStateAlgoOrder(Enum):
+    LIVE = 'live'
+    CANCELED = 'canceled'
+    PAUSE = 'pause'
+    PARTIALLY_EFFECTIVE = 'partially_effective'
+    EFFECTIVE = 'effective'
+    ORDER_FAILED = 'order_failed'
+    PARTIALLY_FAILED = 'partially_failed'
+
+
 class EnumTdMode(Enum):
     # 现货
     CASH = 'cash'  # 非保证金
