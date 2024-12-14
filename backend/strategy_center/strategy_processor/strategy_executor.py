@@ -15,8 +15,6 @@ from backend.data_center.kline_data.kline_data_collector import *
 import pandas as pd
 
 
-
-
 class StrategyExecutor:
     def __init__(self, env: str = EnumTradeEnv.MARKET.value, time_frame: Optional[str] = None):
         self.env = env
@@ -199,4 +197,3 @@ def _check_trading_signals(entry_result: Optional['StrategyExecuteResult']) -> b
         return True
 
     return False
-
