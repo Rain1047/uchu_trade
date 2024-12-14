@@ -3,7 +3,7 @@ from datetime import datetime
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center.object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
-from backend.object_center.request import PostOrderReq
+from backend.object_center.request.place_order_req import PostOrderReq
 from backend.object_center.result.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.okx_service.trade_swap import TradeSwapManager
