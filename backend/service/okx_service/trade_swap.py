@@ -12,6 +12,7 @@ from backend.data_center.data_object.enum_obj import (
 )
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
+from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
 from backend.utils.utils import SymbolFormatUtils
 
 
@@ -75,12 +76,16 @@ class TradeSwapManager:
         place_order_result = self.trade.place_order(
             instId=format_symbol,
             tdMode=EnumTdMode.ISOLATED.value,
-            # side=st_result.side,
-            posSide=st_result.posSide,
+            side=st_result.side,
+            posSide=st_result.pos_side,
             ordType=EnumOrdType.MARKET.value,
             sz=st_result.sz,
             attachAlgoOrds=attachAlgoOrds,
         )
+        place_order_result['attachAlgoClOrdId'] = attach_algo_cl_ordId
+        place_order_result['symbol'] = format_symbol
+        # TODO 委托的字段放到一张新的表吧，放到一张表里有点乱
+        # place_order_result['attachAlgoOrds'] = attachAlgoOrds
         print(place_order_result)
         return place_order_result
 
@@ -125,8 +130,8 @@ class TradeSwapManager:
     ) -> Dict[str, Any]:
         return self.trade.amend_order(
             instId=instId,
-            ordId=ordId,
-            clOrdId=clOrdId,
+            ordId=algoId,
+            clOrdId=algoClOrdId,
             newSz=newSz,
             newPx=newPx,
             newSlTriggerPx=newSlTriggerPx,
@@ -149,6 +154,39 @@ class TradeSwapManager:
         return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
 
 
+def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_result: dict):
+    try:
+        algo_order_record = AlgoOrderRecord()
+
+        # 从返回结果中提取第一个订单数据（data[0]）
+        order_data = trade_result['data'][0]
+        algo_order_record.cl_ord_id = order_data['clOrdId']
+        algo_order_record.ord_id = order_data['ordId']
+        algo_order_record.s_code = order_data['sCode']
+        algo_order_record.s_msg = order_data['sMsg']
+        algo_order_record.ts = order_data['ts']
+        algo_order_record.tag = order_data['tag']
+        algo_order_record.attach_algo_cl_ord_id = trade_result['attachAlgoClOrdId']
+
+        # 封装StrategyExecuteResult
+        algo_order_record.symbol = trade_result['symbol']
+        algo_order_record.side = st_execute_result.side
+        algo_order_record.pos_side = st_execute_result.pos_side
+        algo_order_record.sz = st_execute_result.sz
+        algo_order_record.st_inst_id = st_execute_result.st_inst_id
+        algo_order_record.interval = st_execute_result.interval
+
+        # 订单结果参数
+        algo_order_record.pnl = '0'
+        algo_order_record.lever = '5'
+        algo_order_record.create_time = datetime.now()
+        algo_order_record.ord_id = datetime.now()
+
+        AlgoOrderRecord.insert(algo_order_record.to_dict())
+    except Exception as e:
+        print(f"process_strategy@e_handle_trade_result error: {e}")
+
+
 if __name__ == '__main__':
     # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
@@ -158,18 +196,20 @@ if __name__ == '__main__':
     # attachAlgoClOrdId = f"attachAlgoClOrdId1208{current_time}"
     # clOrdId = f"clOrdId1208{current_time}"
     #
-    # st_result = StrategyExecuteResult()
-    # st_result.symbol = "ETH-USDT"
-    # # st_result.side = "buy"
-    # st_result.posSide = "long"
-    # st_result.sz = "1"
-    # st_result.st_inst_id = 1
-    # st_result.stop_loss_price = "3900"
-    # st_result.signal = True
-    #
-    # # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
-    #
-    # result = trade_swap_manager.place_order(st_result)
+    st_result = StrategyExecuteResult()
+    st_result.symbol = "ETH-USDT"
+    st_result.side = "buy"
+    st_result.pos_side = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3850"
+    st_result.signal = True
+
+    # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
+
+    result = trade_swap_manager.place_order(st_result)
+    _handle_trade_result(st_result, result)
+
     # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # print(result)
 
@@ -180,14 +220,14 @@ if __name__ == '__main__':
 
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='ETH1202412141503596587b6de')
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
+    # result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='ETH1202412141503596587b6de')
+    # print("通过algoClOrdId查看策略委托订单：")
+    # print(result)
     # # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
-    # # 4. 修改策略止损价
-    # # 只修改止损触发价，止盈传"", 取消止损，传"0"
+    # 4. 修改策略止损价
+    # 只修改止损触发价，止盈传"", 取消止损，传"0"
     # result = trade_swap_manager.amend_algo_order(
     #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
     #     newSlTriggerPx='3994.5', newSlOrdPx='-1',

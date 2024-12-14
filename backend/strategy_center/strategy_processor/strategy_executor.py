@@ -152,28 +152,36 @@ class StrategyExecutor:
 
 
 def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_result: dict):
-    algo_order_record = AlgoOrderRecord()
+    try:
+        algo_order_record = AlgoOrderRecord()
 
+        # 从返回结果中提取第一个订单数据（data[0]）
+        order_data = trade_result['data'][0]
+        algo_order_record.cl_ord_id = order_data['clOrdId'],
+        algo_order_record.ord_id = order_data['ordId']
+        algo_order_record.s_code = order_data['sCode']
+        algo_order_record.s_msg = order_data['sMsg']
+        algo_order_record.ts = order_data['ts']
+        algo_order_record.tag = order_data['tag']
+        algo_order_record.attach_algo_cl_ord_id = trade_result['attachAlgoClOrdId']
 
-    # 封装StrategyExecuteResult
-    algo_order_record.symbol = st_execute_result.symbol
-    algo_order_record.side = st_execute_result.side
-    algo_order_record.pos_side = st_execute_result.pos_side
-    algo_order_record.sz = st_execute_result.sz
-    algo_order_record.st_inst_id = st_execute_result.st_inst_id
-    algo_order_record.interval = st_execute_result.interval
+        # 封装StrategyExecuteResult
+        algo_order_record.symbol = order_data['symbol']
+        algo_order_record.side = st_execute_result.side
+        algo_order_record.pos_side = st_execute_result.pos_side
+        algo_order_record.sz = st_execute_result.sz
+        algo_order_record.st_inst_id = st_execute_result.st_inst_id
+        algo_order_record.interval = st_execute_result.interval
 
-    # 订单结果参数
-    algo_order_record.pnl = '0'
+        # 订单结果参数
+        algo_order_record.pnl = '0'
+        algo_order_record.lever = '5'
+        algo_order_record.create_time = datetime.now()
+        algo_order_record.ord_id = datetime.now()
 
-    algo_order_record.create_time = datetime.now()
-    algo_order_record.ord_id = datetime.now()
-
-    """处理交易结果"""
-    order_instance = FormatUtils.dict2dao(OrderInstance, trade_result)
-    if CheckUtils.is_not_empty(order_instance):
-        DatabaseUtils.save(order_instance)
-        logging.info(f"Order saved successfully: {order_instance.order_id}")
+        AlgoOrderRecord.insert(algo_order_record.to_dict())
+    except Exception as e:
+        print(f"process_strategy@e_handle_trade_result error: {e}")
 
 
 def _setup_logging():
