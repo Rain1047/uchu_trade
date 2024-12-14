@@ -13,7 +13,7 @@ from backend.data_center.data_object.enum_obj import (
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center.object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
+from backend.object_center.object_dao.attach_algo_orders_record import AlgoOrdersRecord
 from backend.utils.utils import SymbolFormatUtils
 
 
@@ -200,8 +200,8 @@ def _save_trade_result(st_execute_result: 'StrategyExecuteResult', place_order_r
         algo_order_record.lever = '5'
         algo_order_record.create_time = datetime.now()
         algo_order_record.ord_id = datetime.now()
-
-        AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(get_order_result)
+        attach_algo_orders = get_order_result['data'][0].get('attachAlgoOrds', [])
+        AlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
         AlgoOrderRecord.insert(algo_order_record.to_dict())
     except Exception as e:
         print(f"process_strategy@e_handle_trade_result error: {e}")
@@ -241,9 +241,11 @@ if __name__ == '__main__':
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
     result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(result)
+    attach_algo_orders = result['data']
+    save_result = AlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
     print("通过algoClOrdId查看策略委托订单：")
     print(result)
+    print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
