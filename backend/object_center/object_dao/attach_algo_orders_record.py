@@ -8,16 +8,16 @@ Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
-class AttachAlgoOrdersRecord(Base):
-    __tablename__ = 'attach_algo_orders_record'
+class AlgoOrdersRecord(Base):
+    __tablename__ = 'algo_orders_record'
 
     # 主键
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # 基本字段
     amend_px_on_trigger_type = Column(String(16))  # amendPxOnTriggerType
-    attach_algo_cl_ord_id = Column(String(32))  # attachAlgoClOrdId
-    attach_algo_id = Column(String(32))  # attachAlgoId
+    algo_cl_ord_id = Column(String(32))  # attachAlgoClOrdId
+    algo_id = Column(String(32))  # attachAlgoId
     fail_code = Column(String(32))  # failCode
     fail_reason = Column(String(256))  # failReason
     sz = Column(String(32))  # sz
@@ -42,8 +42,8 @@ class AttachAlgoOrdersRecord(Base):
         return {
             'id': self.id,
             'amend_px_on_trigger_type': self.amend_px_on_trigger_type,
-            'attach_algo_cl_ord_id': self.attach_algo_cl_ord_id,
-            'attach_algo_id': self.attach_algo_id,
+            'algo_cl_ord_id': self.algo_cl_ord_id,
+            'algo_id': self.algo_id,
             'fail_code': self.fail_code,
             'fail_reason': self.fail_reason,
             'sl_ord_px': self.sl_ord_px,
@@ -105,18 +105,15 @@ class AttachAlgoOrdersRecord(Base):
             session.close()
 
     @classmethod
-    def save_attach_algo_orders_from_response(cls, response_data: dict) -> bool:
+    def save_attach_algo_orders_from_response(cls, attach_algo_orders: list) -> bool:
         try:
-            # 从响应数据中提取 attachAlgoOrds
-            attach_algo_orders = response_data['data'][0].get('attachAlgoOrds', [])
-
             # 遍历并保存每个订单
             for order in attach_algo_orders:
                 # 构建数据字典，字段名从驼峰转为下划线
                 record_data = {
                     'amend_px_on_trigger_type': order.get('amendPxOnTriggerType', '0'),
-                    'attach_algo_cl_ord_id': order.get('attachAlgoClOrdId', ''),
-                    'attach_algo_id': order.get('attachAlgoId', ''),
+                    'algo_cl_ord_is': order.get('algoClOrdId', ''),
+                    'algo_id': order.get('algoId', ''),
                     'fail_code': order.get('failCode', ''),
                     'fail_reason': order.get('failReason', ''),
                     'sl_ord_px': order.get('slOrdPx', ''),
@@ -131,7 +128,7 @@ class AttachAlgoOrdersRecord(Base):
                 }
 
                 # 保存到数据库
-                success = AttachAlgoOrdersRecord.insert(record_data)
+                success = AlgoOrdersRecord.insert(record_data)
                 if not success:
                     print(f"Failed to save attach algo order: {order}")
                     return False
