@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 from tvDatafeed import TvDatafeed, Interval
 
-from backend.data_center.data_object.enum_obj import EnumTimeFrame
+from backend.object_center.enum_obj import EnumTimeFrame
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center.object_dao.symbol_instance import query_all_symbol_instance, SymbolInstance
 from backend.utils.utils import ConfigUtils

@@ -1,5 +1,5 @@
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
-from backend.data_center.data_object.enum_obj import EnumTimeFrame
+from backend.object_center.enum_obj import EnumTimeFrame
 from backend.utils.utils import *
 
 okx = OKXAPIWrapper()

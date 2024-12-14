@@ -1,6 +1,6 @@
 import pandas as pd
 from backend.backtest_center.backtest_core.backtest_system import BacktestSystem
-from backend.data_center.data_object.enum_obj import EnumTimeFrame, get_interval_by_value
+from backend.object_center.enum_obj import get_interval_by_value
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
