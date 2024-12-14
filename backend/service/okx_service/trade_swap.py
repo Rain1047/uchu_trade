@@ -8,7 +8,7 @@ from backend.data_center.data_object.enum_obj import (
     EnumAlgoOrdType,
     EnumTradeEnv,
     EnumTdMode,
-    EnumOrdType
+    EnumOrdType, EnumState
 )
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
@@ -59,7 +59,12 @@ class TradeSwapManager:
     @staticmethod
     def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:
         current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        return st_result.symbol.split('-')[0] + st_result.st_inst_id.__str__() + current_time + str(uuid.uuid4())[:8]
+        return (
+                current_time +
+                st_result.symbol.split('-')[0] + "stInsId" +
+                # 使用 zfill 方法将数字字符串填充为4位
+                str(st_result.st_inst_id).zfill(4) +
+                str(uuid.uuid4())[:8])
 
     def place_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
 
@@ -178,6 +183,7 @@ def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_resul
 
         # 订单结果参数
         algo_order_record.pnl = '0'
+        algo_order_record.state = EnumState.LIVE.value
         algo_order_record.lever = '5'
         algo_order_record.create_time = datetime.now()
         algo_order_record.ord_id = datetime.now()
