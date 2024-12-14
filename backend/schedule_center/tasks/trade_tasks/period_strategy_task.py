@@ -42,7 +42,14 @@ class PeriodicStrategyTask(BaseTask):
         self.interval = interval
         self.logger = logging.getLogger(f"strategy.{interval}")
         self.session = DatabaseUtils.get_db_session()
-        self.strategy_executor_4h = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.H4_U.value)
+        self.strategy_executor_4h = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.in_4_hour.value)
+        self.strategy_executor_15min = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.in_15_minute.value)
+        self.strategy_executor_5sec = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.in_4_hour.value)
+        self.strategy_executor_map = {
+            "4H": self.strategy_executor_4h,
+            "15min": self.strategy_executor_15min,
+            "5sec": self.strategy_executor_5sec
+        }
 
     def execute(self) -> TaskResult:
         try:
@@ -50,12 +57,13 @@ class PeriodicStrategyTask(BaseTask):
             print(f"PeriodicStrategyTask execute {self.interval} task start.")
 
             # 2. 执行策略
-            self.strategy_executor_4h.main_task()
+            executor = self.strategy_executor_map.get(self.interval)
+            executor.main_task()
 
             return TaskResult(
                 success=True,
                 message=f"{self.interval} strategies executed",
-                data= True
+                data={}
             )
 
         except Exception as e:

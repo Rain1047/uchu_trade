@@ -78,6 +78,14 @@ class EnumTimeFrame(Enum):
     in_weekly = "1W"
     in_monthly = "1M"
 
+    @classmethod
+    def get_enum_by_value(cls, value: str) -> 'EnumTimeFrame':
+        """Get enum member by its value"""
+        for member in cls:
+            if member.value == value:
+                return member
+        raise ValueError(f"'{value}' is not a valid {cls.__name__} value")
+
 
 def get_interval_by_value(value: str) -> EnumTimeFrame:
     for interval in EnumTimeFrame:

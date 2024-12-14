@@ -1,9 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Float, Text, Index
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from sqlalchemy.orm import declarative_base
 
-# 创建基类
 Base = declarative_base()
 
 
