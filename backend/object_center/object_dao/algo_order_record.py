@@ -59,8 +59,8 @@ class AlgoOrderRecord(Base):
             'interval': self.interval,
             'lever': self.lever,
             'pnl': self.pnl,
-            'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
-            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
+            'create_time': self.create_time,
+            'update_time': self.update_time
         }
 
     @classmethod
