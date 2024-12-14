@@ -7,6 +7,8 @@ class StrategyExecuteResult:
     symbol: str
     # 买入方向
     side: Optional[str] = None
+    # 持仓方向
+    posSide: Optional[str] = None
     # 买入信号
     signal: Optional[bool] = False
     # 买入价格

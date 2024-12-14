@@ -58,7 +58,7 @@ class TradeSwapManager:
     @staticmethod
     def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:
         current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        return st_result.symbol + "_" + st_result.st_inst_id.__str__() + "_" + current_time + "_" + str(uuid.uuid4())[:8]
+        return st_result.symbol.split('-')[0] + st_result.st_inst_id.__str__() + current_time + str(uuid.uuid4())[:8]
 
     def place_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
 
@@ -74,7 +74,8 @@ class TradeSwapManager:
         place_order_result = self.trade.place_order(
             instId=format_symbol,
             tdMode=EnumTdMode.ISOLATED.value,
-            side=st_result.side,
+            # side=st_result.side,
+            posSide=st_result.posSide,
             ordType=EnumOrdType.MARKET.value,
             sz=st_result.sz,
             attachAlgoOrds=attachAlgoOrds,
@@ -155,52 +156,56 @@ if __name__ == '__main__':
     current_time = datetime.now().strftime("%H%M")
     attachAlgoClOrdId = f"attachAlgoClOrdId1208{current_time}"
     clOrdId = f"clOrdId1208{current_time}"
-    st_result = StrategyExecuteResult()
 
-    # attachAlgoClOrdId = "attachAlgoClOrdId12082142"
-    # clOrdId = "clOrdId12082142"
-    print(f"clOrdId: {clOrdId}, attachAlgoClOrdId: {attachAlgoClOrdId}")
+    st_result = StrategyExecuteResult()
+    st_result.symbol = "ETH-USDT"
+    # st_result.side = "buy"
+    st_result.posSide = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3900"
+    st_result.signal = True
+
     # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
 
     result = trade_swap_manager.place_order(st_result)
     ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    print(f"ordId: {ordId}")  #
     print(result)
+
+    # # 2. 获取订单 get_order clOrdId -> 查看过程和结果
+    # result = trade_swap_manager.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId=clOrdId)
+    # print("通过clOrdId查看订单：")
+    # print(result)
     # #
-    # 2. 获取订单 get_order clOrdId -> 查看过程和结果
-    result = trade_swap_manager.get_order(instId='ETH-USDT-SWAP', ordId='', clOrdId=clOrdId)
-    print("通过clOrdId查看订单：")
-    print(result)
+    # # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
+    # # 委托订单待生效-live  委托订单已生效-effective
+    # result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId=attachAlgoClOrdId)
+    # print("通过algoClOrdId查看策略委托订单：")
+    # print(result)
+    # # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
+    # # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
-    # # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId=attachAlgoClOrdId)
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
-    # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
-    # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
-
-    # 4. 修改策略止损价
-    # 只修改止损触发价，止盈传"", 取消止损，传"0"
-    result = trade_swap_manager.amend_algo_order(
-        instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
-        newSlTriggerPx='3994.5', newSlOrdPx='-1',
-    )
-    print(result)
-
-    # 5. 匹配历史订单
-    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
-                                                   before='2052302587604230144')
-    print("获取历史订单记录（近七天）, 查看ordId后的记录：")
-
-    orders_history_list = result.get('data')
-    # 查找特定的 attachAlgoClOrdId
-    target_attach_id = "attachAlgoClOrdId12082149"
-    result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
-
-    if result:
-        print(f"找到匹配的订单: {result}")
-    else:
-        print("未找到匹配的订单")
-
-    print(result)
+    # # 4. 修改策略止损价
+    # # 只修改止损触发价，止盈传"", 取消止损，传"0"
+    # result = trade_swap_manager.amend_algo_order(
+    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
+    #     newSlTriggerPx='3994.5', newSlOrdPx='-1',
+    # )
+    # print(result)
+    #
+    # # 5. 匹配历史订单
+    # result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
+    #                                                before='2052302587604230144')
+    # print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+    #
+    # orders_history_list = result.get('data')
+    # # 查找特定的 attachAlgoClOrdId
+    # target_attach_id = "attachAlgoClOrdId12082149"
+    # result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
+    #
+    # if result:
+    #     print(f"找到匹配的订单: {result}")
+    # else:
+    #     print("未找到匹配的订单")
+    #
+    # print(result)
