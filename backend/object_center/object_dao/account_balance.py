@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend.utils import DatabaseUtils
+from backend._utils import DatabaseUtils
 
 Base = declarative_base()
 

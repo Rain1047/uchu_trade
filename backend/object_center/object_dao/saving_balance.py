@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend.decorator.decorator import add_docstring
+from backend._decorators import add_docstring
 
 Base = declarative_base()
 

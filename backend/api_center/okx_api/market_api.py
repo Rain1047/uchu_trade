@@ -2,7 +2,7 @@
 
 import okx.MarketData as Market
 from typing import Dict
-from backend.decorator.decorator import add_docstring
+from backend._decorators import add_docstring
 
 
 class MarketAPIWrapper:

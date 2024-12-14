@@ -1,4 +1,4 @@
-from backend.utils import ConfigUtils
+from backend._utils import ConfigUtils
 import anthropic
 
 config = ConfigUtils.get_config()
