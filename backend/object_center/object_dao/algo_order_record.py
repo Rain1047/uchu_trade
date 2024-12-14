@@ -35,6 +35,7 @@ class AlgoOrderRecord(Base):
     # 订单结果参数
     lever = Column(String(16))  # 杠杆
     pnl = Column(String(32))  # 盈亏
+    state = Column(String(16))
 
     # 通用字段
     create_time = Column(DateTime, default=datetime.now)
@@ -59,6 +60,7 @@ class AlgoOrderRecord(Base):
             'interval': self.interval,
             'lever': self.lever,
             'pnl': self.pnl,
+            'state': self.state,
             'create_time': self.create_time,
             'update_time': self.update_time
         }

@@ -1,11 +1,18 @@
 from enum import Enum
-from tvDatafeed import Interval
 
 
 class EnumSide(Enum):
     BUY = 'buy'  # 买
     SELL = 'sell'  # 卖
     ALL = 'all'  # 买卖都可
+
+
+class EnumState(Enum):
+    CANCELED = 'canceled'
+    LIVE = 'live'
+    FILLED = 'filled'
+    PARTIALLY_FILLED = 'partially_filled'
+    MMP_CANCELED = 'mmp_canceled'
 
 
 class EnumTdMode(Enum):
