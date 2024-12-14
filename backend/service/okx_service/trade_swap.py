@@ -13,7 +13,7 @@ from backend.data_center.data_object.enum_obj import (
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center.object_dao.attach_algo_orders_record import AlgoOrdersRecord
+from backend.object_center.object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend.utils.utils import SymbolFormatUtils
 
 
@@ -201,7 +201,7 @@ def _save_trade_result(st_execute_result: 'StrategyExecuteResult', place_order_r
         algo_order_record.create_time = datetime.now()
         algo_order_record.ord_id = datetime.now()
         attach_algo_orders = get_order_result['data'][0].get('attachAlgoOrds', [])
-        AlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
+        AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
         AlgoOrderRecord.insert(algo_order_record.to_dict())
     except Exception as e:
         print(f"process_strategy@e_handle_trade_result error: {e}")
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     # 委托订单待生效-live  委托订单已生效-effective
     result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
     attach_algo_orders = result['data']
-    save_result = AlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
+    save_result = AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
     print("通过algoClOrdId查看策略委托订单：")
     print(result)
     print(f"save_result:{save_result}")
