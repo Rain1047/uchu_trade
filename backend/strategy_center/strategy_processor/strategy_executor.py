@@ -77,12 +77,12 @@ class StrategyExecutor:
     def _execute_trade(self, result: 'StrategyExecuteResult'):
         """执行交易操作"""
         try:
-            # order_request = self._create_order_request(result, strategy)
+            trade_result = None
             if result.side == EnumSide.BUY:
                 trade_result = self.trade_swap_manager.place_order(result)
-                _handle_trade_result(result, trade_result)
             elif result.side == EnumSide.SELL:
                 trade_result = self.trade_swap_manager.place_order(result)
+            _handle_trade_result(result, trade_result)
         except Exception as e:
             logging.error(f"process_strategy@e_execute_trade error: {e}", exc_info=True)
 
