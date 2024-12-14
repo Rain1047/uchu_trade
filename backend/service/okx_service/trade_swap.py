@@ -1,6 +1,7 @@
 from logging import error
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import uuid
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.data_center.data_object.enum_obj import (
@@ -11,6 +12,7 @@ from backend.data_center.data_object.enum_obj import (
 )
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
+from backend.utils.utils import SymbolFormatUtils
 
 
 class TradeSwapManager:
@@ -53,19 +55,24 @@ class TradeSwapManager:
             error(f"获取算法订单列表失败: {str(e)}")
             return []
 
+    @staticmethod
+    def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        return st_result.symbol + "_" + st_result.st_inst_id.__str__() + "_" + current_time + "_" + str(uuid.uuid4())[:8]
+
     def place_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
+
+        attach_algo_cl_ordId = self.get_attach_algo_cl_ordId(st_result)
         attachAlgoOrds = [
             {
-                'attachAlgoClOrdId': attachAlgoClOrdId,  # 需要唯一
+                'attachAlgoClOrdId': attach_algo_cl_ordId,
                 'slTriggerPx': st_result.stop_loss_price,
                 'slOrdPx': "-1",
-                # 'tpTriggerPx': "4005",
-                # 'tpOrdPx': "-1"
             }
         ]
-
+        format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
         place_order_result = self.trade.place_order(
-            instId=st_result.symbol,
+            instId=format_symbol,
             tdMode=EnumTdMode.ISOLATED.value,
             side=st_result.side,
             ordType=EnumOrdType.MARKET.value,
