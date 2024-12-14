@@ -10,7 +10,7 @@ from backend.object_center.enum_obj import (
     EnumTdMode,
     EnumOrdType, EnumState
 )
-from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from backend.object_center.result.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center.object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord

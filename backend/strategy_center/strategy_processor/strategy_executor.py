@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center.object_dao.st_instance import StInstance
-from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
+from backend.object_center.object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
-from backend.data_center.data_object.req.place_order.place_order_req import PostOrderReq
-from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
+from backend.object_center.request import PostOrderReq
+from backend.object_center.result.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.okx_service.trade_swap import TradeSwapManager
 from backend.utils.utils import DatabaseUtils
@@ -37,7 +36,7 @@ class StrategyExecutor:
             print("Processing strategy for {}".format(instance.trade_pair))
             self._process_strategy(instance)
 
-    def _process_strategy(self, st_instance: 'StInstance'):
+    def _process_strategy(self, st_instance: 'StrategyInstance'):
         """处理单个策略实例"""
         try:
             print(f"process_strategy@processing strategy for {st_instance.trade_pair}")
@@ -64,7 +63,7 @@ class StrategyExecutor:
             print(f"Error processing strategy: {e}")
 
     @staticmethod
-    def _execute_entry_strategy(df: DataFrame, st_instance) -> 'StrategyExecuteResult' | None:
+    def _execute_entry_strategy(df: DataFrame, st_instance: 'StrategyInstance') -> 'StrategyExecuteResult' | None:
         entry_strategy = registry.get_strategy(st_instance.entry_st_code)
         entry_result = entry_strategy(df, st_instance)
         print(f"process_strategy@entry result for {st_instance.name} is: "
@@ -85,14 +84,14 @@ class StrategyExecutor:
 
     def _get_strategy_instances(self) -> list:
         """获取策略实例列表"""
-        return self.session.query(StInstance).filter(
-            StInstance.switch == 0,
-            StInstance.is_del == 0,
-            StInstance.time_frame == self.tf
+        return self.session.query(StrategyInstance).filter(
+            StrategyInstance.switch == 0,
+            StrategyInstance.is_del == 0,
+            StrategyInstance.time_frame == self.tf
         ).all()
 
     @staticmethod
-    def _convert_to_dto(st_instance: 'StInstance') -> 'StrategyInstance':
+    def _convert_to_dto(st_instance: 'StrategyInstance') -> 'StrategyInstance':
         """将DAO转换为DTO"""
         return StrategyInstance(
             tradePair=st_instance.trade_pair,
@@ -128,7 +127,7 @@ class StrategyExecutor:
         return df
 
     @staticmethod
-    def _execute_filter_strategy(df: pd.DataFrame, st_instance: 'StInstance'):
+    def _execute_filter_strategy(df: pd.DataFrame, st_instance: 'StrategyInstance'):
         filter_result = True
         if st_instance.filter_st_code:
             filter_strategy_list = st_instance.filter_st_code.split(',')

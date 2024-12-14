@@ -1,8 +1,7 @@
 from typing import Optional
 import pandas as pd
 from pandas import DataFrame
-from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
-from backend.object_center.object_dao.st_instance import StInstance
+from backend.object_center.object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 
@@ -18,7 +17,7 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
 
 
 # @registry.register(name="dbb_exit_strategy_for_live", desc="布林带做多止损策略", side="long")
-def dbb_exit_strategy_for_live(df: DataFrame, stIns: StInstance):
+def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
     """
     Live trading implementation of the exit strategy.
     Currently returns the backtest implementation.

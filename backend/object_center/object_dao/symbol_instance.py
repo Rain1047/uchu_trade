@@ -62,8 +62,8 @@ if __name__ == '__main__':
     # print(result.symbol, result.interval)
 
     # resList: List[SymbolInstance] = query_all_symbol_instance()
-    # for res in resList:
-    #     print(res.symbol)
+    # for result in resList:
+    #     print(result.symbol)
     # print(f"total count:{len(resList)}")
 
     result = SymbolInstance.query_all()
