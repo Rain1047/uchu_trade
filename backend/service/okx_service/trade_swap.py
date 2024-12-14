@@ -228,7 +228,7 @@ if __name__ == '__main__':
     # # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
     #
     # result = trade_swap_manager.place_order(st_result)
-    _save_trade_result(st_result, result)
+    # _save_trade_result(st_result, result)
 
     # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # print(result)
@@ -241,6 +241,7 @@ if __name__ == '__main__':
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
     result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
+    AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(result)
     print("通过algoClOrdId查看策略委托订单：")
     print(result)
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
