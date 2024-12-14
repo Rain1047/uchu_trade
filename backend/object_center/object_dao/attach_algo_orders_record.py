@@ -8,8 +8,8 @@ Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
-class AlgoOrdersRecord(Base):
-    __tablename__ = 'algo_orders_record'
+class AttachAlgoOrdersRecord(Base):
+    __tablename__ = 'attach_algo_orders_record'
 
     # 主键
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -128,7 +128,7 @@ class AlgoOrdersRecord(Base):
                 }
 
                 # 保存到数据库
-                success = AlgoOrdersRecord.insert(record_data)
+                success = AttachAlgoOrdersRecord.insert(record_data)
                 if not success:
                     print(f"Failed to save attach algo order: {order}")
                     return False
