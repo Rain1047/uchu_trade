@@ -3,7 +3,7 @@ import sys
 from typing import Optional
 import pandas as pd
 from backend.object_center.object_dao.st_instance import StrategyInstance
-from backend.service.okx_service.ticker_price_service import TickerPriceService
+from backend.service.okx_service.ticker_price_service import TickerPriceCollector
 from backend.object_center.enum_obj import EnumTradeType, EnumSide, EnumPosSide
 from backend.object_center.result.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
@@ -19,7 +19,7 @@ from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
 okx = OKXAPIWrapper()
-price_collector = TickerPriceService()
+price_collector = TickerPriceCollector()
 tv = KlineDataCollector()
 
 
