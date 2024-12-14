@@ -1,4 +1,5 @@
 # This file contains all the OKX error codes and success code.
+# TODO 后续可以用于重试
 
 SUCCESS_CODE = '0'
 # OKX ERROR CODES

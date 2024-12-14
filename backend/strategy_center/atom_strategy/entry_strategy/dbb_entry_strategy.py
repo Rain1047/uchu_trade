@@ -4,7 +4,7 @@ from typing import Optional
 import pandas as pd
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.strategy_center.ticker_price_collector import TickerPriceCollector
-from backend.data_center.data_object.enum_obj import EnumTradeType, EnumSide, EnumPosSide
+from backend.object_center.enum_obj import EnumTradeType, EnumSide, EnumPosSide
 from backend.data_center.data_object.res.strategy_execute_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.strategy_registry import registry

@@ -3,7 +3,7 @@
 import okx.PublicData as PublicData
 from typing import Optional
 
-from backend.data_center.data_object.enum_obj import EnumUnit
+from backend.object_center.enum_obj import EnumUnit
 from backend.decorator.decorator import add_docstring
 
 

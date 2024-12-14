@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
-from backend.data_center.data_object.enum_obj import (
+from backend.object_center.enum_obj import (
     EnumAlgoOrdType,
     EnumTradeEnv,
     EnumTdMode,

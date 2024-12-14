@@ -2,7 +2,7 @@
 import okx.Trade as Trade
 from typing import Optional, Dict
 from backend.decorator.decorator import add_docstring
-from backend.data_center.data_object.enum_obj import *
+from backend.object_center.enum_obj import *
 
 
 class TradeAPIWrapper:

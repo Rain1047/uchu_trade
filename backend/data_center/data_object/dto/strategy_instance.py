@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import select
 
-from backend.data_center.data_object.enum_obj import EnumTradeEnv
+from backend.object_center.enum_obj import EnumTradeEnv
 
 
 # 策略实例
