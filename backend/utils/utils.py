@@ -16,6 +16,21 @@ import time
 import random
 
 
+class SymbolFormatUtils:
+
+    @staticmethod
+    def get_base_symbol(instId: str) -> str:
+        return instId.split("-")[0]
+
+    @staticmethod
+    def get_usdt(instId: str) -> str:
+        return instId.split("-")[0] + "-USDT"
+
+    @staticmethod
+    def get_swap_usdt(instId: str):
+        return instId.split("-")[0] + "-USDT-SWAP"
+
+
 class PriceUtils:
     @staticmethod
     def get_past30day_ticker_price(instId: str):

@@ -46,45 +46,31 @@ class StrategyExecutor:
             if not entry_result:
                 print(f"process_strategy@entry result {st_instance.trade_pair} failed.")
                 return
+
             # 执行过滤策略
-            filter_result = None
-            if st_instance.filter_st_code:
-                filter_strategy_list = st_instance.filter_st_code.split(',')
-                if len(filter_strategy_list) > 1:
-                    for filter_strategy_code in filter_strategy_list:
-                        filter_strategy = registry.get_strategy(filter_strategy_code)
-                        filter_result = filter_strategy(df, st_instance)
-                        # TODO: 过滤策略结果处理,和入场策略结果合并
-                        print(f"process_strategy@filter result for {st_instance.name} is: ")
-                else:
-                    print(f"process_strategy@filter result {st_instance.trade_pair} failed.")
-                    return
+            filter_result = self._execute_filter_strategy(df, st_instance)
+            entry_result.signal = filter_result
 
             entry_result.symbol = st_instance.trade_pair
+            entry_result.st_inst_id = st_instance.id
 
-            # 检查交易信号
-            trade_signal = _check_trading_signals(entry_result, filter_result)
-            if not trade_signal:
-                logging.info(f"No valid trading signal for {st_instance.trade_pair}")
+
+            print(f"process_strategy@entry_result {entry_result.signal} for {st_instance.trade_pair}")
+
+            if not entry_result.signal:
                 return
             # 下单
             self._execute_trade(entry_result)
-
         except Exception as e:
             print(f"Error processing strategy: {e}")
 
-    def _execute_entry_strategy(self, df: DataFrame, st_instance) -> 'StrategyExecuteResult' | None:
-        entry_result = None
-        if st_instance.entry_st_code:
-            entry_strategy = registry.get_strategy(st_instance.entry_st_code)
-            entry_result = entry_strategy(df, st_instance)
-            if entry_result is None or not entry_result.signal:
-                print(f"process_strategy@entry result {st_instance.trade_pair} failed.")
-                return None
-            else:
-                print(f"process_strategy@entry result for {st_instance.name} is: "
-                      f"{entry_result.signal if entry_result else None}")
-                return entry_result
+    @staticmethod
+    def _execute_entry_strategy(df: DataFrame, st_instance) -> 'StrategyExecuteResult' | None:
+        entry_strategy = registry.get_strategy(st_instance.entry_st_code)
+        entry_result = entry_strategy(df, st_instance)
+        print(f"process_strategy@entry result for {st_instance.name} is: "
+              f"{entry_result.signal if entry_result else None}")
+        return entry_result
 
     def _execute_trade(self, result: 'StrategyExecuteResult'):
         """执行交易操作"""
@@ -142,6 +128,26 @@ class StrategyExecutor:
         df = pd.read_csv(f"{file_abspath}")
         return df
 
+    @staticmethod
+    def _execute_filter_strategy(df: DataFrame, st_instance: 'StInstance'):
+        filter_result = True
+        if st_instance.filter_st_code:
+            filter_strategy_list = st_instance.filter_st_code.split(',')
+            if len(filter_strategy_list) > 1:
+                for filter_strategy_code in filter_strategy_list:
+                    filter_strategy = registry.get_strategy(filter_strategy_code)
+                    current_filter_result = filter_strategy(df, st_instance)
+                    # 如果任何一个过滤策略返回False，将filter_result设为False
+                    if not current_filter_result:
+                        filter_result = False
+                        break
+                    print(f"process_strategy@filter result for {st_instance.name} is: {current_filter_result}")
+            else:
+                print(f"process_strategy@filter result {st_instance.trade_pair} failed.")
+                return False
+        else:
+            return filter_result
+
 
 def _handle_trade_result(trade_result: dict):
     """处理交易结果"""
@@ -158,23 +164,11 @@ def _setup_logging():
     )
 
 
-def _check_trading_signals(entry_result: Optional['StrategyExecuteResult'],
-                           filter_result: Optional['StrategyExecuteResult']) -> bool:
-    """
-    检查交易信号是否有效
-
-    Args:
-        entry_result: 入场策略结果
-        filter_result: 过滤策略结果
-
-    Returns:
-        bool: 是否应该执行交易
-    """
-    # 如果配置了入场策略但结果为None，不交易
-    if entry_result is None or filter_result is None:
+def _check_trading_signals(entry_result: Optional['StrategyExecuteResult']) -> bool:
+    if entry_result is None:
         return False
 
-    if filter_result.signal and entry_result.signal:
+    if entry_result.signal:
         return True
 
     return False
