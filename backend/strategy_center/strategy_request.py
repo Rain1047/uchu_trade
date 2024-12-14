@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from backend.object_center.enum_obj import *
 
 
-class PostOrderReq(BaseModel):
+class PlaceOrderRequest(BaseModel):
     """
     下单请求参数
     """

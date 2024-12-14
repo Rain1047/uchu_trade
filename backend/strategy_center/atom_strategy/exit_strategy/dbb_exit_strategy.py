@@ -1,7 +1,7 @@
 from typing import Optional
 import pandas as pd
 from pandas import DataFrame
-from backend.object_center.object_dao.st_instance import StrategyInstance
+from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 
 

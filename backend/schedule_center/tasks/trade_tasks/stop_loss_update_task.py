@@ -1,7 +1,7 @@
 from typing import Dict, Any, List
 
-from backend.object_center.object_dao.account_balance import AccountBalance
-from backend.object_center.object_dao.auto_trade_config import AutoTradeConfig
+from backend.object_center._object_dao.account_balance import AccountBalance
+from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
 from backend.object_center.enum_obj import EnumAutoTradeConfigType
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
