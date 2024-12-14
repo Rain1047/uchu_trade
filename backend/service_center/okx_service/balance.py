@@ -2,8 +2,8 @@ import logging
 
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend._constants import okx_constants
-from backend.object_center.object_dao.account_balance import AccountBalance
-from backend.object_center.object_dao.auto_trade_config import AutoTradeConfig
+from backend.object_center._object_dao.account_balance import AccountBalance
+from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
 
 logger = logging.getLogger(__name__)
 okx = OKXAPIWrapper()

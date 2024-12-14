@@ -6,9 +6,9 @@ import pandas as pd
 from backend.backtest_center.strategy_for_backtest import StrategyForBacktest
 from backend.backtest_center.data_feeds.signal_data import SignalData
 from backend.backtest_center.models.backtest_result import BacktestResults
-from backend.object_center.object_dao.backtest_record import BacktestRecord
-from backend.object_center.object_dao.backtest_result import BacktestResult
-from backend.object_center.object_dao.st_instance import StrategyInstance
+from backend.object_center._object_dao.backtest_record import BacktestRecord
+from backend.object_center._object_dao.backtest_result import BacktestResult
+from backend.object_center._object_dao.st_instance import StrategyInstance
 
 
 class BacktestSystem:
