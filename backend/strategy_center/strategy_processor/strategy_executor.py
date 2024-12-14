@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center.object_dao.order_instance import OrderInstance
 from backend.object_center.object_dao.st_instance import StInstance
 from backend.data_center.data_object.dto.strategy_instance import StrategyInstance
@@ -54,8 +57,6 @@ class StrategyExecutor:
 
             entry_result.symbol = st_instance.trade_pair
             entry_result.st_inst_id = st_instance.id
-
-
             print(f"process_strategy@entry_result {entry_result.signal} for {st_instance.trade_pair}")
 
             if not entry_result.signal:
@@ -79,7 +80,7 @@ class StrategyExecutor:
             # order_request = self._create_order_request(result, strategy)
             if result.side == EnumSide.BUY:
                 trade_result = self.trade_swap_manager.place_order(result)
-                _handle_trade_result(trade_result)
+                _handle_trade_result(result, trade_result)
             elif result.side == EnumSide.SELL:
                 trade_result = self.trade_swap_manager.place_order(result)
         except Exception as e:
@@ -130,7 +131,7 @@ class StrategyExecutor:
         return df
 
     @staticmethod
-    def _execute_filter_strategy(df: , st_instance: 'StInstance'):
+    def _execute_filter_strategy(df: pd.DataFrame, st_instance: 'StInstance'):
         filter_result = True
         if st_instance.filter_st_code:
             filter_strategy_list = st_instance.filter_st_code.split(',')
@@ -150,7 +151,24 @@ class StrategyExecutor:
             return filter_result
 
 
-def _handle_trade_result(trade_result: dict):
+def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_result: dict):
+    algo_order_record = AlgoOrderRecord()
+
+
+    # 封装StrategyExecuteResult
+    algo_order_record.symbol = st_execute_result.symbol
+    algo_order_record.side = st_execute_result.side
+    algo_order_record.pos_side = st_execute_result.pos_side
+    algo_order_record.sz = st_execute_result.sz
+    algo_order_record.st_inst_id = st_execute_result.st_inst_id
+    algo_order_record.interval = st_execute_result.interval
+
+    # 订单结果参数
+    algo_order_record.pnl = '0'
+
+    algo_order_record.create_time = datetime.now()
+    algo_order_record.ord_id = datetime.now()
+
     """处理交易结果"""
     order_instance = FormatUtils.dict2dao(OrderInstance, trade_result)
     if CheckUtils.is_not_empty(order_instance):
