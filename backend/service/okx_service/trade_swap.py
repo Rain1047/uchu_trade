@@ -14,7 +14,7 @@ from backend.object_center.result.strategy_execute_result import StrategyExecute
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.object_center.object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center.object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
-from backend.utils.utils import SymbolFormatUtils
+from backend.utils import SymbolFormatUtils
 
 
 class TradeSwapManager:

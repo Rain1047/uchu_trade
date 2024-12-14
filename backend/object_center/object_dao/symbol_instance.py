@@ -3,9 +3,8 @@ from typing import List
 
 from sqlalchemy import Column, String, Integer, select
 from sqlalchemy.orm import declarative_base
-from tvDatafeed import Interval
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

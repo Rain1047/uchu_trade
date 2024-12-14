@@ -7,7 +7,7 @@ from backend.object_center.request import PostOrderReq
 from backend.object_center.result.strategy_execute_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.service.okx_service.trade_swap import TradeSwapManager
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 from backend.data_center.kline_data.kline_data_collector import *
 import pandas as pd

@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import select, delete
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

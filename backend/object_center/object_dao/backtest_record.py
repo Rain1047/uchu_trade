@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, delete, select, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend.utils.utils import DatabaseUtils
+from backend.utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

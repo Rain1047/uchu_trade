@@ -12,7 +12,7 @@ import requests
 
 from backend.decorator.decorator import add_docstring
 from backend.object_center.enum_obj import *
-from backend.utils.utils import ConfigUtils
+from backend.utils import ConfigUtils
 
 
 class FundingAPIWrapper:

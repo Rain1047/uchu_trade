@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, or_
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend.object_center.trade.trade_request import UpdateNoteRequest
-from backend.utils.utils import DatabaseUtils, FormatUtils
+from backend.utils import DatabaseUtils, FormatUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

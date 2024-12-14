@@ -1,11 +1,12 @@
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.object_center.enum_obj import EnumTimeFrame
-from backend.utils.utils import *
+from backend.utils import CheckUtils, DateUtils, FormatUtils
+import yfinance as yf
 
 okx = OKXAPIWrapper()
 
 
-class TickerPriceCollector:
+class TickerPriceService:
     def __init__(self, start_date=None, end_date=None, time_frame=None):
         self.start_date = start_date if start_date is not None else DateUtils.past_time2string(30)
         self.end_date = end_date if start_date is not None else DateUtils.current_time2string()
@@ -58,8 +59,8 @@ class TickerPriceCollector:
 
 if __name__ == '__main__':
     # Example usage for BTC
-    collector = TickerPriceCollector()
-    print(TickerPriceCollector.get_current_ticker_price("ETH-USDT"))
+    collector = TickerPriceService()
+    print(TickerPriceService.get_current_ticker_price("ETH-USDT"))
 
     # current_btc_price = btc_collector.get_current_ticker_price()
     # print(current_btc_price)

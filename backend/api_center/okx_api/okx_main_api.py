@@ -3,7 +3,7 @@
 from typing import Optional
 
 from backend.decorator.decorator import singleton
-from backend.utils.utils import ConfigUtils
+from backend.utils import ConfigUtils
 from backend.api_center.okx_api.account_api import AccountAPIWrapper
 from backend.api_center.okx_api.trade_api import TradeAPIWrapper
 from backend.api_center.okx_api.market_api import MarketAPIWrapper

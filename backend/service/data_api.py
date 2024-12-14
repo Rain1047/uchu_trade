@@ -1,7 +1,7 @@
 from sqlalchemy import or_
 
 from backend.service.res.res_utils import StdPageResult
-from backend.utils.utils import *
+from backend.utils import DatabaseUtils, FormatUtils
 
 
 class DataAPIWrapper:
