@@ -2,7 +2,7 @@ from typing import Optional
 from backend.object_center.object_dao.fills_history import FillsHistory
 from backend.object_center.trade.trade_request import TradePageRequest, UpdateNoteRequest
 from backend.service.data_api import *
-from backend.constant.okx_code import *
+from backend._constants import *
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 
 # 设置日志
