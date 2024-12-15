@@ -1,6 +1,8 @@
+import pandas as pd
+
 from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
 from backend.object_center.enum_obj import EnumTimeFrame
-from backend._utils import CheckUtils, DateUtils, FormatUtils
+from backend._utils import CheckUtils, DateUtils, FormatUtils, SymbolFormatUtils
 import yfinance as yf
 
 okx = OKXAPIWrapper()
@@ -18,7 +20,7 @@ class TickerPriceCollector:
             ticker_history = ticker_data.history(start=self.start_date, end=self.end_date)
         else:
             print("get past 30 day ticker price")
-            ticker_history = self.get_past30day_ticker_price()
+            ticker_history = self.get_past30day_ticker_price(instId=instId)
         return ticker_history
 
     @staticmethod
@@ -30,11 +32,9 @@ class TickerPriceCollector:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        # # 获取单个产品行情信息
-        if instId.endswith("-USDT"):
-            return okx.market.get_ticker(instId=instId)['data'][0]['last']
-        else:
-            return okx.market.get_ticker(instId=instId+"-USDT")['data'][0]['last']
+        instId = SymbolFormatUtils.get_usdt(instId)
+        # 获取单个产品行情信息
+        return okx.market.get_ticker(instId=instId)['data'][0]['last']
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
