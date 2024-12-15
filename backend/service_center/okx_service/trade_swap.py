@@ -211,53 +211,26 @@ class TradeSwapManager:
         except Exception as e:
             print(f"process_strategy@e_handle_trade_result error: {e}")
 
-    @staticmethod
-    def find_kline_index_by_time(df: pd.DataFrame, target_time):
-        """
-        Find the index of the corresponding kline period for a given timestamp
-
-        Args:
-            df: DataFrame with datetime index
-            target_time: timestamp to look up (str or datetime)
-
-        Returns:
-            int: index of the corresponding kline period
-        """
-        # Convert target_time to datetime if it's string
-        if isinstance(target_time, str):
-            target_time = pd.to_datetime(target_time)
-
-        # Convert datetime column to datetime type if it's not already
-        if df['datetime'].dtype != 'datetime64[ns]':
-            df['datetime'] = pd.to_datetime(df['datetime'])
-
-        # Get the datetime that's less than or equal to target_time
-        mask = df['datetime'] <= target_time
-        if not mask.any():
-            return None  # Target time is before any kline period
-
-        return df[mask].index[-1]
-
 
 if __name__ == '__main__':
     # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
-    st_result = StrategyExecuteResult()
-    st_result.symbol = "ETH-USDT"
-    format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
-    st_result.symbol = format_symbol
-    st_result.side = "buy"
-    st_result.pos_side = "long"
-    st_result.sz = "1"
-    st_result.st_inst_id = 1
-    st_result.stop_loss_price = "3860"
-    st_result.signal = True
-    trade_result = trade_swap_manager.place_order(st_result)
-
-    trade_swap_manager.save_place_algo_order_result(
-        st_execute_result=st_result, place_order_result=trade_result)
+    # st_result = StrategyExecuteResult()
+    # st_result.symbol = "ETH-USDT"
+    # format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    # st_result.symbol = format_symbol
+    # st_result.side = "buy"
+    # st_result.pos_side = "long"
+    # st_result.sz = "1"
+    # st_result.st_inst_id = 1
+    # st_result.stop_loss_price = "3860"
+    # st_result.signal = True
+    # trade_result = trade_swap_manager.place_order(st_result)
+    #
+    # trade_swap_manager.save_place_algo_order_result(
+    #     st_execute_result=st_result, place_order_result=trade_result)
 
     # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # print(result)

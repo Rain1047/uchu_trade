@@ -47,7 +47,7 @@ class OKXAPIWrapper:
         return self.account
 
     @property
-    def strade_api(self):
+    def trade_api(self):
         return self.trade
 
     @property
