@@ -3,6 +3,7 @@ import pandas as pd
 from pandas import DataFrame
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
+from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 
 @registry.register(name="dbb_exit_long_strategy", desc="布林带做多止损策略", side="long", type="exit")
@@ -16,17 +17,13 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
     return dbb_exit_strategy_for_live(df, stIns)
 
 
-# @registry.register(name="dbb_exit_strategy_for_live", desc="布林带做多止损策略", side="long")
-def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance):
+def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     """
     Live trading implementation of the exit strategy.
-    Currently returns the backtest implementation.
-    TODO: Implement live trading specific logic
     """
     return dbb_exit_strategy_for_backtest(df)
 
 
-# @registry.register(name="dbb_exit_strategy_for_backtest", desc="布林带做多止损策略", side="long")
 def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
     """
     Backtest implementation of the exit strategy.
