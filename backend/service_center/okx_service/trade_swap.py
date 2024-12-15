@@ -197,7 +197,7 @@ class TradeSwapManager:
             algo_order_record.lever = '5'
             algo_order_record.create_time = datetime.now()
             algo_order_record.update_time = datetime.now()
-            AlgoOrderRecord.insert(algo_order_record.to_dict())
+            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
             print(get_order_data)
 
             # 委托止盈止损，调用get_algo_order方法
@@ -214,23 +214,20 @@ if __name__ == '__main__':
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
-    # # current_time = datetime.now().strftime("%H%M")
-    # # attachAlgoClOrdId = f"attachAlgoClOrdId1208{current_time}"
-    # # clOrdId = f"clOrdId1208{current_time}"
-    # #
-    # st_result = StrategyExecuteResult()
-    # st_result.symbol = "ETH-USDT"
-    # st_result.side = "buy"
-    # st_result.pos_side = "long"
-    # st_result.sz = "1"
-    # st_result.st_inst_id = 1
-    # st_result.stop_loss_price = "3850"
-    # st_result.signal = True
-    #
-    # # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
-    #
-    # result = trade_swap_manager.place_order(st_result)
-    # _save_trade_result(st_result, result)
+    st_result = StrategyExecuteResult()
+    st_result.symbol = "ETH-USDT"
+    format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    st_result.symbol = format_symbol
+    st_result.side = "buy"
+    st_result.pos_side = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3860"
+    st_result.signal = True
+    trade_result = trade_swap_manager.place_order(st_result)
+
+    trade_swap_manager.save_place_algo_order_result(
+        st_execute_result=st_result, place_order_result=trade_result)
 
     # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # print(result)
@@ -242,12 +239,12 @@ if __name__ == '__main__':
 
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    attach_algo_orders = result['data']
-    save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
-    print(f"save_result:{save_result}")
+    # result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
+    # attach_algo_orders = result['data']
+    # save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+    # print("通过algoClOrdId查看策略委托订单：")
+    # print(result)
+    # print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #

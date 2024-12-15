@@ -56,9 +56,11 @@ class PeriodicStrategyTask(BaseTask):
             self.logger.info(f"PeriodicStrategyTask#execute, {self.interval} task start.")
             print(f"PeriodicStrategyTask execute {self.interval} task start.")
 
-            # 2. 执行策略
+            # 1. 策略执行器
             executor = self.strategy_executor_map.get(self.interval)
             executor.main_task()
+
+            # 2. 策略修改器
 
             return TaskResult(
                 success=True,
