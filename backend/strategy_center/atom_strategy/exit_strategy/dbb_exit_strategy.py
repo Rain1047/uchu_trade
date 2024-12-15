@@ -1,27 +1,35 @@
 from typing import Optional
 import pandas as pd
 from pandas import DataFrame
+
+from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 
 @registry.register(name="dbb_exit_long_strategy", desc="布林带做多止损策略", side="long", type="exit")
-def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance]):
+def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], algoOrdRecord: Optional[AlgoOrderRecord]):
     """
     Main entry point for the exit strategy.
     Handles both backtest and live trading modes.
     """
     if stIns is None:
         return dbb_exit_strategy_for_backtest(df)
-    return dbb_exit_strategy_for_live(df, stIns)
+    return dbb_exit_strategy_for_live(df=df, algoOrdRecord=algoOrdRecord)
 
 
-def dbb_exit_strategy_for_live(df: DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
+def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[AlgoOrderRecord]) -> StrategyExecuteResult:
     """
     Live trading implementation of the exit strategy.
     """
-    return dbb_exit_strategy_for_backtest(df)
+    ord_create_time = algoOrdRecord.create_time
+    ord_create_time = pd.to_datetime(ord_create_time)
+
+
+
+    strategy_execute_result = StrategyExecuteResult()
+    return strategy_execute_result
 
 
 def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
