@@ -159,7 +159,7 @@ class AlgoOrderRecord(Base):
             session.close()
 
     @classmethod
-    def get_by_id(cls, record_id: int) -> dict:
+    def get_by_id(cls, record_id: int):
         try:
             record = session.query(cls).filter(cls.id == record_id).first()
             return record if record else None

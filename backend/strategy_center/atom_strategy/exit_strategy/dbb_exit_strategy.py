@@ -50,6 +50,7 @@ def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[AlgoOrderR
     if exceeded_upper_band2:
         # Set stop loss and exit price to the latest upper_band1
         exit_price = df.iloc[-1]['upper_band1']
+        print("Exit price:", exit_price)
     else:
         exit_price = df.iloc[-1]['sma20']
     strategy_execute_result.stop_loss_price = exit_price
@@ -98,6 +99,6 @@ if __name__ == '__main__':
     st_inst = StrategyInstance.get_st_instance_by_id(id=10)
     algo_ord = AlgoOrderRecord.get_by_id(record_id=4)
     df = strategy_modifier.get_data_frame(st_inst)
-    strategy_execute_result = dbb_exit_strategy_for_live(df, algo_ord['create_time'])
+    strategy_execute_result = dbb_exit_strategy_for_live(df, algo_ord)
 
-    print(strategy_execute_result)
+    print(strategy_execute_result.to_dict())

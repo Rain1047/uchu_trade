@@ -4,7 +4,7 @@ from typing import Optional
 
 class StrategyExecuteResult:
     # 交易对
-    symbol: str
+    symbol: Optional[str] = ''
     # 买入方向
     side: Optional[str] = None
     # 持仓方向
@@ -24,7 +24,7 @@ class StrategyExecuteResult:
     # USDT仓位
     sz_usdt: Optional[str] = ''
     # 交易实例id
-    st_inst_id: int
+    st_inst_id: Optional[int] = None
     # 交易间隔
     interval: Optional[str] = ''
 
