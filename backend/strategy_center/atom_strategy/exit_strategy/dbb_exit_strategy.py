@@ -5,6 +5,8 @@ from pandas import DataFrame
 from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
+from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
+from backend.strategy_center.strategy_processor.strategy_modifier import StrategyModifier
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 
@@ -22,13 +24,37 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], alg
 def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[AlgoOrderRecord]) -> StrategyExecuteResult:
     """
     Live trading implementation of the exit strategy.
+    Args:
+        df: DataFrame containing price and indicator data
+        algoOrdRecord: The algorithm order record containing order information
+    Returns:
+        StrategyExecuteResult: Contains exit strategy decisions
     """
-    ord_create_time = algoOrdRecord.create_time
-    ord_create_time = pd.to_datetime(ord_create_time)
-
-
-
     strategy_execute_result = StrategyExecuteResult()
+
+    # Convert order creation time to datetime if needed
+    ord_create_time = pd.to_datetime(algoOrdRecord.create_time)
+
+    # Find the index in DataFrame corresponding to order creation time
+    start_index = StrategyUtils.find_kline_index_by_time(df, ord_create_time)
+    if start_index is None:
+        return strategy_execute_result
+
+    # Get the latest index
+    end_index = df.index[-1]
+
+    # Check if any close price exceeded upper_band2 between order creation and now
+    slice_df = df.loc[start_index:end_index]
+    exceeded_upper_band2 = (slice_df['close'] > slice_df['upper_band2']).any()
+
+    if exceeded_upper_band2:
+        # Set stop loss and exit price to the latest upper_band1
+        exit_price = df.iloc[-1]['upper_band1']
+    else:
+        exit_price = df.iloc[-1]['sma20']
+    strategy_execute_result.stop_loss_price = exit_price
+    strategy_execute_result.exit_price = exit_price
+
     return strategy_execute_result
 
 
@@ -64,3 +90,14 @@ def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
             df.loc[df.index[i], 'sell_sig'] = 1 if current_close < current_sell_price else 0
 
     return df
+
+
+if __name__ == '__main__':
+    strategy_modifier = StrategyModifier()
+    # strategy_modifier.main_task()
+    st_inst = StrategyInstance.get_st_instance_by_id(id=10)
+    algo_ord = AlgoOrderRecord.get_by_id(record_id=4)
+    df = strategy_modifier.get_data_frame(st_inst)
+    strategy_execute_result = dbb_exit_strategy_for_live(df, algo_ord['create_time'])
+
+    print(strategy_execute_result)
