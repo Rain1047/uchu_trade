@@ -1,6 +1,6 @@
 import pandas as pd
 
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center.enum_obj import EnumTimeFrame
 from backend._utils import CheckUtils, DateUtils, FormatUtils, SymbolFormatUtils
 import yfinance as yf

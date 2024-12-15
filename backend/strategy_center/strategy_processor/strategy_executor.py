@@ -3,7 +3,7 @@ from datetime import datetime
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
 from backend.strategy_center.strategy_result import StrategyExecuteResult
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend._utils import DatabaseUtils
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry

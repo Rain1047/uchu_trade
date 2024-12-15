@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from backend._utils import DatabaseUtils
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance

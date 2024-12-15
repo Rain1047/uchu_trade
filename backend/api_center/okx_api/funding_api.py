@@ -48,7 +48,7 @@ class FundingAPIWrapper:
 
         # 生成签名
         config = ConfigUtils.get_config()
-        secret = config['secretkey']  # 替换为你的密钥
+        secret = config['okx_secret_key']  # 替换为你的密钥
         body = json.dumps({
             'ccy': ccy,
             'amt': amt,
@@ -61,7 +61,7 @@ class FundingAPIWrapper:
 
         headers = {
             'Content-Type': 'application/json',
-            'OK-ACCESS-KEY': config['apikey'],  # 替换为你的访问密钥
+            'OK-ACCESS-KEY': config['okx_api_key'],  # 替换为你的访问密钥
             'OK-ACCESS-SIGN': signature,
             'OK-ACCESS-PASSPHRASE': config['passphrase'],  # 替换为你的访问密码
             'OK-ACCESS-TIMESTAMP': timestamp,
