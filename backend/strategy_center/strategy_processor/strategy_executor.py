@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
 from backend.strategy_center.strategy_result import StrategyExecuteResult
