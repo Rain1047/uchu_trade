@@ -72,14 +72,87 @@ class AlgoOrderRecord(Base):
         }
 
     @classmethod
+    def save_or_update_algo_order_record(cls, data: dict) -> bool:
+        """
+        Insert or update a single record based on ord_id.
+        Args:
+            data (dict): Record data including ord_id
+        Returns:
+            bool: Success or failure
+        """
+        try:
+            # 获取ord_id进行查询
+            ord_id = data.get('ord_id')
+
+            if not ord_id:
+                print("Error: ord_id is required for upsert operation")
+                return False
+
+            # 查找是否存在记录
+            existing_record = session.query(cls).filter(
+                cls.ord_id == ord_id
+            ).first()
+
+            if existing_record:
+                # 如果记录存在，更新记录
+                try:
+                    # 更新现有记录的属性
+                    for key, value in data.items():
+                        setattr(existing_record, key, value)
+                    print(f"Updating existing record for ord_id: {ord_id}")
+
+                except Exception as e:
+                    print(f"Error updating record: {e}")
+                    session.rollback()
+                    return False
+
+            else:
+                # 如果记录不存在，创建新记录
+                try:
+                    new_record = cls(**data)
+                    session.add(new_record)
+                    print(f"Creating new record for ord_id: {ord_id}")
+
+                except Exception as e:
+                    print(f"Error creating new record: {e}")
+                    session.rollback()
+                    return False
+
+            # 提交事务
+            session.commit()
+            return True
+
+        except Exception as e:
+            print(f"Upsert error: {e}")
+            session.rollback()
+            return False
+        finally:
+            # 不要关闭session，因为使用的是单例模式
+            pass
+
+    @classmethod
     def insert(cls, data: dict) -> bool:
         try:
             record = cls(**data)
             session.add(record)
             session.commit()
+            print(f"Creating new algo order record for: {data['cl_ord_id']}")
             return True
         except Exception as e:
             print(f"Insert error: {e}")
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    @classmethod
+    def update_selective_by_id(cls, record_id: int, update_data: dict) -> bool:
+        try:
+            result = session.query(cls).filter(cls.id == record_id).update(update_data)
+            session.commit()
+            return bool(result)
+        except Exception as e:
+            print(f"Update error: {e}")
             session.rollback()
             return False
         finally:
@@ -114,16 +187,5 @@ class AlgoOrderRecord(Base):
         finally:
             session.close()
 
-    @classmethod
-    def update_selective_by_id(cls, record_id: int, update_data: dict) -> bool:
-        try:
-            result = session.query(cls).filter(cls.id == record_id).update(update_data)
-            session.commit()
-            return bool(result)
-        except Exception as e:
-            print(f"Update error: {e}")
-            session.rollback()
-            return False
-        finally:
-            session.close()
+
 

@@ -26,48 +26,51 @@ class StrategyExecutor:
         _setup_logging()
 
     def main_task(self):
-        """执行主要任务"""
-        print("Strategy executor start.")
+        """根据策略配置判断是否下单并且执行"""
+        print(f"StrategyExecutor@main_task, algo order executor start.")
         instance_list = self._get_strategy_instances()
-        print("Strategy instances: {}".format(instance_list))
+        print("StrategyExecutor@strategy instances: {}".format(instance_list))
         if not instance_list:
-            print("No strategy instances found")
+            print("StrategyExecutor@main_task, no strategy instances found.")
             return
         for instance in instance_list:
-            print("Processing strategy for {}".format(instance.trade_pair))
+            print("StrategyExecutor@main_task, processing strategy for {}".format(instance.trade_pair))
             self._process_strategy(instance)
 
     def _process_strategy(self, st_instance: 'StrategyInstance'):
         """处理单个策略实例"""
         try:
-            print(f"process_strategy@processing strategy for {st_instance.trade_pair}")
-            # 执行入场策略
+            print(f"StrategyExecutor@_process_strategy, processing strategy for {st_instance.trade_pair}")
+            # 1.入场策略
             df = self._get_data_frame(st_instance)
             entry_result = self._execute_entry_strategy(df, st_instance)
             if not entry_result:
-                print(f"process_strategy@entry result {st_instance.trade_pair} failed.")
+                print(f"StrategyExecutor@_process_strategy entry result {st_instance.trade_pair} failed.")
                 return
 
-            # 执行过滤策略
+            # 2.过滤策略
             filter_result = self._execute_filter_strategy(df, st_instance)
             entry_result.signal = filter_result
 
             entry_result.symbol = st_instance.trade_pair
             entry_result.st_inst_id = st_instance.id
-            print(f"process_strategy@entry_result {entry_result.signal} for {st_instance.trade_pair}")
+            print(f"StrategyExecutor@_process_strategy, filter result is {entry_result.signal} for {st_instance.trade_pair}")
 
             if not entry_result.signal:
                 return
-            # 下单
-            self._execute_trade(entry_result)
+            # 3.下单
+            trade_result = self._execute_trade(entry_result)
+            # 4.保存交易记录
+            self.trade_swap_manager.save_place_algo_order_result(
+                st_execute_result=entry_result, place_order_result=trade_result)
         except Exception as e:
-            print(f"Error processing strategy: {e}")
+            print(f"StrategyExecutor@_process_strategy Error processing strategy: {e}")
 
     @staticmethod
     def _execute_entry_strategy(df: DataFrame, st_instance: 'StrategyInstance') -> 'StrategyExecuteResult' | None:
         entry_strategy = registry.get_strategy(st_instance.entry_st_code)
         entry_result = entry_strategy(df, st_instance)
-        print(f"process_strategy@entry result for {st_instance.name} is: "
+        print(f"StrategyExecutor@_execute_entry_strategy result for {st_instance.name} is: "
               f"{entry_result.signal if entry_result else None}")
         return entry_result
 
@@ -75,14 +78,10 @@ class StrategyExecutor:
         """执行交易操作"""
         try:
             trade_result = None
-            if result.side == EnumSide.BUY:
-                trade_result = self.trade_swap_manager.place_order(result)
-            elif result.side == EnumSide.SELL:
-                trade_result = self.trade_swap_manager.place_order(result)
-            self.trade_swap_manager.save_place_algo_order_result(
-                st_execute_result=result, place_order_result=trade_result)
+            trade_result = self.trade_swap_manager.place_order(result)
+            return trade_result
         except Exception as e:
-            logging.error(f"process_strategy@e_execute_trade error: {e}", exc_info=True)
+            logging.error(f"StrategyExecutor@_execute_trade, error: {e}", exc_info=True)
 
     def _get_strategy_instances(self) -> list:
         """获取策略实例列表"""
@@ -124,7 +123,7 @@ class StrategyExecutor:
         symbol = st_instance.trade_pair.split('-')[0]
         interval = EnumTimeFrame.get_enum_by_value(st_instance.time_frame)
         file_abspath = self.data_collector.get_abspath(symbol=symbol, interval=interval)
-        print(f"process_strategy@target file path: {file_abspath}")
+        print(f"StrategyExecutor@_get_data_frame, target file path: {file_abspath}")
         df = pd.read_csv(f"{file_abspath}")
         return df
 
@@ -141,10 +140,11 @@ class StrategyExecutor:
                     if not current_filter_result:
                         filter_result = False
                         break
-                    print(f"process_strategy@filter result for {st_instance.name} is: {current_filter_result}")
             else:
-                print(f"process_strategy@filter result {st_instance.trade_pair} failed.")
-                return False
+                filter_result = False
+            print(f"StrategyExecutor@_execute_filter_strategy , "
+                  f"filter result for {st_instance.name} is: {filter_result}")
+            return filter_result
         else:
             return filter_result
 
