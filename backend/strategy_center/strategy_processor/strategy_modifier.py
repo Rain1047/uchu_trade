@@ -9,6 +9,7 @@ from backend._utils import DatabaseUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
+from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
@@ -29,18 +30,23 @@ class StrategyModifier:
 
     def main_task(self):
         print("StrategyModifier@main_task, starting strategy modifier.")
-        algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.LIVE.value)
-        for algo_order_record in algo_order_record_list:
-            print("StrategyModifier@main_task, processing algo order record: {}".format(algo_order_record))
-            # 通过ord_id 查询订单状态
-            # 如果仍然为 live，
-            get_order_result = self.trade_api.get_order(instId=algo_order_record.st_inst_id, ordId=algo_order_record.ord_id)
+        live_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.LIVE.value)
+        self.update_live_algo_record(live_algo_order_record_list)
+        filled_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.FILLED.value)
+        self.update_filled_algo_record(filled_algo_order_record_list)
+
+    def update_live_algo_record(self, live_algo_order_record_list: list):
+        for algo_order_record in live_algo_order_record_list:
+            print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
+            get_order_result = self.trade_api.get_order(instId=algo_order_record.symbol,
+                                                        ordId=algo_order_record.ord_id)
+            print(get_order_result)
             order_state = get_order_result['data'][0]['state']
             if order_state == EnumState.LIVE.value:
                 print("StrategyModifier@main_task, order is still live.")
                 # 根据st_inst_id获取止损的策略code
                 st_inst = StrategyInstance.get_st_instance_by_id(id=algo_order_record.st_inst_id)
-                df = self._get_data_frame(st_inst)
+                df = self.get_data_frame(st_inst)
                 exit_st_code = st_inst.exit_st_code
                 exit_strategy = registry.get_strategy(exit_st_code)
                 exit_result = exit_strategy(df, st_inst)
@@ -71,6 +77,12 @@ class StrategyModifier:
                 AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
                 print(get_order_data)
 
+                attach_algo_order_result = self.trade_swap_manager.get_algo_order(
+                    algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
+                attach_algo_orders = attach_algo_order_result['data']
+                save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+                print(f"StrategyModifier@update_live_algo_record save_result:{save_result}")
+
     def get_data_frame(self, st_instance) -> DataFrame:
         # 获取df
         symbol = st_instance.trade_pair.split('-')[0]
@@ -80,6 +92,14 @@ class StrategyModifier:
         df = pd.read_csv(f"{file_abspath}")
         return df
 
+    def update_filled_algo_record(self, filled_algo_order_record_list: list):
+        for algo_order_record in filled_algo_order_record_list:
+            print(f"StrategyModifier@main_task, processing filled algo order record: {algo_order_record.to_dict()}")
+            attach_algo_order_result = self.trade_swap_manager.get_algo_order(
+                algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
+            attach_algo_orders = attach_algo_order_result['data']
+            save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+            print(f"StrategyModifier@update_filled_algo_record save_result:{save_result}")
 
 def _setup_logging():
     logging.basicConfig(
@@ -90,9 +110,10 @@ def _setup_logging():
 
 if __name__ == '__main__':
     strategy_modifier = StrategyModifier()
-    # strategy_modifier.main_task()
-    st_inst = StrategyInstance.get_st_instance_by_id(id=10)
-    df = strategy_modifier.get_data_frame(st_inst)
-    dt = pd.to_datetime("2024-12-15 11:14:22.595278")
-    index = StrategyUtils.find_kline_index_by_time(df, dt)
-    print(df.iloc[index])
+    strategy_modifier.main_task()
+
+    # st_inst = StrategyInstance.get_st_instance_by_id(id=10)
+    # df = strategy_modifier.get_data_frame(st_inst)
+    # dt = pd.to_datetime("2024-12-15 11:14:22.595278")
+    # index = StrategyUtils.find_kline_index_by_time(df, dt)
+    # print(df.iloc[index])
