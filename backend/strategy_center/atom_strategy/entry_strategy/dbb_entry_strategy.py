@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)

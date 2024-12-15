@@ -3,7 +3,7 @@ from backend.object_center._object_dao.fills_history import FillsHistory
 from backend.object_center.trade.trade_request import TradePageRequest, UpdateNoteRequest
 from backend.service.data_api import *
 from backend._constants import *
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)

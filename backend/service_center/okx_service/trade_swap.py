@@ -5,7 +5,7 @@ import uuid
 
 import pandas as pd
 
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend.object_center.enum_obj import (

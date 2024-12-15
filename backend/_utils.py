@@ -41,7 +41,7 @@ class PriceUtils:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.api_center.okx_api.okx_main import OKXAPIWrapper
         okx = OKXAPIWrapper()
         # # 获取单个产品行情信息
         if instId.endswith("-USDT"):
@@ -51,7 +51,7 @@ class PriceUtils:
 
     @staticmethod
     def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+        from backend.api_center.okx_api.okx_main import OKXAPIWrapper
         okx = OKXAPIWrapper()
         result = okx.market.get_candlesticks(
             instId=instId,
@@ -115,7 +115,7 @@ class ConfigUtils:
     # def get_headers(request_url: str, method_type: Optional[str] = MethodType.GET.value):
     #     timestamp = DateUtils.get_current_timestamp()
     #     config = ConfigUtils.get_config()
-    #     secret = config['secretkey']  # 替换为你的密钥
+    #     secret = config['okx_secret_key']  # 替换为你的密钥
     #     body = json.dumps({
     #         'ccy': ccy,
     #         'amt': amt,

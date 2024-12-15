@@ -22,8 +22,10 @@ class OKXAPIWrapper:
         self.env = env if env is not None else EnumTradeEnv.DEMO.value
         self._load_config()
 
-        self.apikey = self.config['apikey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['apikey']
-        self.secretkey = self.config['secretkey_demo'] if self.env == EnumTradeEnv.DEMO.value else self.config['secretkey']
+        self.apikey = self.config['okx_api_key_demo'] \
+            if self.env == EnumTradeEnv.DEMO.value else self.config['okx_api_key']
+        self.secretkey = self.config['okx_secret_key_demo'] \
+            if self.env == EnumTradeEnv.DEMO.value else self.config['okx_secret_key']  # okx_secret_key
         self.passphrase = self.config['passphrase']
         self.flag = "1" if self.env == EnumTradeEnv.DEMO.value else "0"
 
@@ -45,7 +47,7 @@ class OKXAPIWrapper:
         return self.account
 
     @property
-    def trade_api(self):
+    def strade_api(self):
         return self.trade
 
     @property
