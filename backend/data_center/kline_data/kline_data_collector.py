@@ -18,6 +18,7 @@ class KlineDataCollector:
         self._load_config()
         self.tv = TvDatafeed(self.config['tradingview_account'],
                              self.config['tradingview_password'])
+        # self.yf =
         self.logger = logging.getLogger(__name__)
         # 设置数据保存目录
         self.data_dir = os.path.join(
