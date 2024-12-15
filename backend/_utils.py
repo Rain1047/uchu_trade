@@ -99,7 +99,7 @@ class ConfigUtils:
         script_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Navigate to the correct config file path
-        config_file_path = os.path.join(script_dir, '../../config.json')
+        config_file_path = os.path.join(script_dir, '../config.json')
 
         # Check if the config file exists
         if not os.path.exists(config_file_path):
@@ -153,20 +153,25 @@ class DatabaseUtils:
     @staticmethod
     def get_engine():
         project_root = DatabaseUtils.get_project_root()
-        db_absolute_path = project_root / 'data_center' / 'trade_db.db'
+        db_absolute_path = project_root / 'backend' / 'data_center' / 'trade_db.db'
         return create_engine(f'sqlite:///{db_absolute_path}')
 
     @classmethod
     def _setup(cls):
-        # 获取项目根目录的绝对路径
-        project_root = cls.get_project_root()
-        # 构建数据库文件的绝对路径
-        db_absolute_path = project_root / 'data_center' / 'trade_db.db'
-        # 创建数据库连接引擎
-        cls._engine = create_engine(f'sqlite:///{db_absolute_path}')
-        # 创建会话类
-        cls._Session = sessionmaker(bind=cls._engine)
-        logging.info("Database setup complete.")
+        try:
+            # 获取项目根目录的绝对路径
+            project_root = cls.get_project_root()
+            # 构建数据库文件的绝对路径
+            db_absolute_path = project_root / 'backend' / 'data_center' / 'trade_db.db'
+            print(db_absolute_path)
+            # 创建数据库连接引擎
+            cls._engine = create_engine(f'sqlite:///{db_absolute_path}')
+            # 创建会话类
+            cls._Session = sessionmaker(bind=cls._engine)
+            logging.info("Database setup complete.")
+        except Exception as e:
+            print(f"Error during database setup: {e}")
+            pass
 
     @staticmethod
     def get_db_session():
@@ -314,7 +319,9 @@ if __name__ == "__main__":
 
     # print(ConfigUtils.get_config())
 
-    print(DateUtils.milliseconds())
+    print(DatabaseUtils.get_db_session())
+
+    # print(DateUtils.milliseconds())
     # 1720927861614
     # 1723355565508
     # print(UuidUtils.generate_32_digit_numeric_id())
