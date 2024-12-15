@@ -28,3 +28,5 @@ class StrategyUtils:
             return None  # Target time is before any kline period
 
         return df[mask].index[-1]
+
+
