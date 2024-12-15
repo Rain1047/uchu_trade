@@ -176,11 +176,12 @@ class TradeSwapManager:
 
             # 封装StrategyExecuteResult
             algo_order_record.symbol = place_order_result['symbol']
-            algo_order_record.side = st_execute_result.side
-            algo_order_record.pos_side = st_execute_result.pos_side
-            algo_order_record.sz = st_execute_result.sz
-            algo_order_record.st_inst_id = st_execute_result.st_inst_id
-            algo_order_record.interval = st_execute_result.interval
+            if st_execute_result is not None:
+                algo_order_record.side = st_execute_result.side
+                algo_order_record.pos_side = st_execute_result.pos_side
+                algo_order_record.sz = st_execute_result.sz
+                algo_order_record.st_inst_id = st_execute_result.st_inst_id
+                algo_order_record.interval = st_execute_result.interval
 
             # 订单结果参数，调用get_order方法
             get_order_result = TradeSwapManager().get_order(
