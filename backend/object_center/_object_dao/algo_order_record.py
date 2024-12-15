@@ -178,7 +178,7 @@ class AlgoOrderRecord(Base):
     def list_by_state(cls, state: str) -> list:
         try:
             results = session.query(cls).filter(cls.state == state).all()
-            return [result.to_dict() for result in results] if results else []
+            return [result for result in results] if results else []
         finally:
             session.close()
 
