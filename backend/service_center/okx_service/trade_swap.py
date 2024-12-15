@@ -3,7 +3,11 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import uuid
 
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+import pandas as pd
+
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
+from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
+from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend.object_center.enum_obj import (
     EnumAlgoOrdType,
     EnumTradeEnv,
@@ -12,8 +16,6 @@ from backend.object_center.enum_obj import (
 )
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend._utils import SymbolFormatUtils
 
 
@@ -158,53 +160,56 @@ class TradeSwapManager:
     def get_orders_history(self, instType: Optional[str], instId: Optional[str], before: Optional[str]):
         return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
 
+    @staticmethod
+    def save_place_algo_order_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
+        try:
+            algo_order_record = AlgoOrderRecord()
 
-def _save_trade_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
-    try:
-        algo_order_record = AlgoOrderRecord()
+            # 从返回结果中提取第一个订单数据（data[0]）
+            post_order_data = place_order_result['data'][0]
+            algo_order_record.cl_ord_id = post_order_data['clOrdId']
+            algo_order_record.ord_id = post_order_data['ordId']
+            algo_order_record.s_code = post_order_data['sCode']
+            algo_order_record.s_msg = post_order_data['sMsg']
+            algo_order_record.ts = post_order_data['ts']
 
-        # 从返回结果中提取第一个订单数据（data[0]）
-        post_order_data = place_order_result['data'][0]
-        algo_order_record.cl_ord_id = post_order_data['clOrdId']
-        algo_order_record.ord_id = post_order_data['ordId']
-        algo_order_record.s_code = post_order_data['sCode']
-        algo_order_record.s_msg = post_order_data['sMsg']
-        algo_order_record.ts = post_order_data['ts']
+            algo_order_record.tag = post_order_data['tag']
+            algo_order_record.attach_algo_cl_ord_id = place_order_result['attachAlgoClOrdId']
 
-        algo_order_record.tag = post_order_data['tag']
-        algo_order_record.attach_algo_cl_ord_id = place_order_result['attachAlgoClOrdId']
+            # 封装StrategyExecuteResult
+            algo_order_record.symbol = place_order_result['symbol']
+            if st_execute_result is not None:
+                algo_order_record.side = st_execute_result.side
+                algo_order_record.pos_side = st_execute_result.pos_side
+                algo_order_record.sz = st_execute_result.sz
+                algo_order_record.st_inst_id = st_execute_result.st_inst_id
+                algo_order_record.interval = st_execute_result.interval
 
-        # 封装StrategyExecuteResult
-        algo_order_record.symbol = place_order_result['symbol']
-        algo_order_record.side = st_execute_result.side
-        algo_order_record.pos_side = st_execute_result.pos_side
-        algo_order_record.sz = st_execute_result.sz
-        algo_order_record.st_inst_id = st_execute_result.st_inst_id
-        algo_order_record.interval = st_execute_result.interval
+            # 订单结果参数，调用get_order方法
+            get_order_result = TradeSwapManager().get_order(
+                instId=algo_order_record.symbol,
+                ordId=algo_order_record.ord_id,
+                clOrdId=algo_order_record.cl_ord_id
+            )
+            get_order_data = get_order_result['data'][0]
+            algo_order_record.fill_px = get_order_data['fillPx']
+            algo_order_record.fill_sz = get_order_data['fillSz']
+            algo_order_record.avg_px = get_order_data['avgPx']
+            algo_order_record.pnl = '0'
+            algo_order_record.state = EnumState.LIVE.value
+            algo_order_record.lever = '5'
+            algo_order_record.create_time = datetime.now()
+            algo_order_record.update_time = datetime.now()
+            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+            print(get_order_data)
 
-        # 订单结果参数
-        # 调用get_order方法
-        get_order_result = TradeSwapManager().get_order(
-            instId=algo_order_record.symbol,
-            ordId=algo_order_record.ord_id,
-            clOrdId=algo_order_record.cl_ord_id
-        )
-        get_order_data = get_order_result['data'][0]
-        print(get_order_data)
-
-        algo_order_record.fill_px = get_order_data['fillPx']
-        algo_order_record.fill_sz = get_order_data['fillSz']
-        algo_order_record.avg_px = get_order_data['avgPx']
-        algo_order_record.pnl = '0'
-        algo_order_record.state = EnumState.LIVE.value
-        algo_order_record.lever = '5'
-        algo_order_record.create_time = datetime.now()
-        algo_order_record.ord_id = datetime.now()
-        attach_algo_orders = get_order_result['data'][0].get('attachAlgoOrds', [])
-        AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
-        AlgoOrderRecord.insert(algo_order_record.to_dict())
-    except Exception as e:
-        print(f"process_strategy@e_handle_trade_result error: {e}")
+            # 委托止盈止损，调用get_algo_order方法
+            attach_algo_order_result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId=place_order_result[
+                'attachAlgoClOrdId'])
+            attach_algo_orders = attach_algo_order_result['data']
+            AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+        except Exception as e:
+            print(f"process_strategy@e_handle_trade_result error: {e}")
 
 
 if __name__ == '__main__':
@@ -212,23 +217,20 @@ if __name__ == '__main__':
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
-    # # current_time = datetime.now().strftime("%H%M")
-    # # attachAlgoClOrdId = f"attachAlgoClOrdId1208{current_time}"
-    # # clOrdId = f"clOrdId1208{current_time}"
-    # #
     # st_result = StrategyExecuteResult()
     # st_result.symbol = "ETH-USDT"
+    # format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    # st_result.symbol = format_symbol
     # st_result.side = "buy"
     # st_result.pos_side = "long"
     # st_result.sz = "1"
     # st_result.st_inst_id = 1
-    # st_result.stop_loss_price = "3850"
+    # st_result.stop_loss_price = "3860"
     # st_result.signal = True
+    # trade_result = trade_swap_manager.place_order(st_result)
     #
-    # # # last_price = market.get_ticker(instId=instId)['data'][0]['last']
-    #
-    # result = trade_swap_manager.place_order(st_result)
-    # _save_trade_result(st_result, result)
+    # trade_swap_manager.save_place_algo_order_result(
+    #     st_execute_result=st_result, place_order_result=trade_result)
 
     # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
     # print(result)
@@ -240,12 +242,12 @@ if __name__ == '__main__':
 
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    attach_algo_orders = result['data']
-    save_result = AttachAlgoOrdersRecord.save_attach_algo_orders_from_response(attach_algo_orders)
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
-    print(f"save_result:{save_result}")
+    # result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
+    # attach_algo_orders = result['data']
+    # save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+    # print("通过algoClOrdId查看策略委托订单：")
+    # print(result)
+    # print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #

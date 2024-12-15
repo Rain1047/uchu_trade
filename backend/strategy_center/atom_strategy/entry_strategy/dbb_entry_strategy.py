@@ -3,8 +3,8 @@ import sys
 from typing import Optional
 import pandas as pd
 from backend.object_center._object_dao.st_instance import StrategyInstance
-from backend.service.okx_service.ticker_price_service import TickerPriceCollector
 from backend.object_center.enum_obj import EnumTradeType, EnumSide, EnumPosSide
+from backend.service_center.okx_service.ticker_price_service import TickerPriceCollector
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
 from backend.strategy_center.atom_strategy.strategy_registry import registry
@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import okx.PublicData as PublicData
 import okx.MarketData as MarketData
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
@@ -36,19 +36,13 @@ def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
     df['entry_price'] = 0
-
-    # Create shifted columns
     df['prev_open_1'] = df['open'].shift(1)
-    # df['prev_open_2'] = df['open'].shift(2)
     df['prev_upper_band1_1'] = df['upper_band1'].shift(1)
-    # df['prev_upper_band1_2'] = df['upper_band1'].shift(2)
-
     # Create conditions for current row
     current_condition = (
             (df['open'] < df['upper_band1'])  # 条件1
             & (df['close'] > df['upper_band1'])  # 条件2
             & (df['prev_open_1'] < df['prev_upper_band1_1'])  # 条件3
-        # & (df['prev_open_2'] < df['prev_upper_band1_2'])  # 条件4
     )
 
     # 添加调试信息
@@ -59,17 +53,6 @@ def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     # Set buy signals
     df.loc[current_condition, 'entry_sig'] = 1
     df.loc[current_condition, 'entry_price'] = df.loc[current_condition, 'close']
-
-    # 验证信号
-    problematic_signals = df[df['entry_sig'] == 1]
-    # if len(problematic_signals) > 0:
-    #     print("\nSignal Verification:")
-    #     for idx in problematic_signals.index:
-    #         print(f"\nTime: {problematic_signals.loc[idx, 'datetime']}")
-    #         print(f"Condition 1 (current open < upper_band1): {problematic_signals.loc[idx, 'debug_condition1']}")
-    #         print(f"Condition 2 (current close > upper_band1): {problematic_signals.loc[idx, 'debug_condition2']}")
-    #         print(f"Condition 3 (prev open < prev upper_band1): {problematic_signals.loc[idx, 'debug_condition3']}")
-
     # Clean up temporary columns
     df.drop(['prev_open_1', 'prev_upper_band1_1',
              'debug_condition1', 'debug_condition2',

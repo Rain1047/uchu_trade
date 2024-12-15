@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 
 import pandas as pd
 
-from backend.api_center.okx_api.okx_main_api import OKXAPIWrapper
+from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
 from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
 from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode

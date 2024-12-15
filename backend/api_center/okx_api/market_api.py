@@ -1,8 +1,10 @@
 # market_api_wrapper.py
 
 import okx.MarketData as Market
-from typing import Dict
+from typing import Dict, Optional
 from backend._decorators import add_docstring
+from backend._utils import FormatUtils
+import pandas as pd
 
 
 class MarketAPIWrapper:

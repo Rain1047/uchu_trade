@@ -38,7 +38,7 @@ class AlgoOrderRecord(Base):
     avg_px = Column(String(64))
     lever = Column(String(16))  # 杠杆
     pnl = Column(String(32))  # 盈亏
-    state = Column(String(16))
+    state = Column(String(16))  # 状态
 
     # 通用字段
     create_time = Column(DateTime, default=datetime.now)
@@ -72,43 +72,74 @@ class AlgoOrderRecord(Base):
         }
 
     @classmethod
+    def save_or_update_algo_order_record(cls, data: dict) -> bool:
+        """
+        Insert or update a single record based on ord_id.
+        Args:
+            data (dict): Record data including ord_id
+        Returns:
+            bool: Success or failure
+        """
+        try:
+            # 获取ord_id进行查询
+            ord_id = data.get('ord_id')
+
+            if not ord_id:
+                print("Error: ord_id is required for upsert operation")
+                return False
+
+            # 查找是否存在记录
+            existing_record = session.query(cls).filter(
+                cls.ord_id == ord_id
+            ).first()
+
+            if existing_record:
+                # 如果记录存在，更新记录
+                try:
+                    # 更新现有记录的属性
+                    for key, value in data.items():
+                        setattr(existing_record, key, value)
+                    print(f"Updating existing record for ord_id: {ord_id}")
+
+                except Exception as e:
+                    print(f"Error updating record: {e}")
+                    session.rollback()
+                    return False
+
+            else:
+                # 如果记录不存在，创建新记录
+                try:
+                    new_record = cls(**data)
+                    session.add(new_record)
+                    print(f"Creating new record for ord_id: {ord_id}")
+
+                except Exception as e:
+                    print(f"Error creating new record: {e}")
+                    session.rollback()
+                    return False
+
+            # 提交事务
+            session.commit()
+            return True
+
+        except Exception as e:
+            print(f"Upsert error: {e}")
+            session.rollback()
+            return False
+        finally:
+            # 不要关闭session，因为使用的是单例模式
+            pass
+
+    @classmethod
     def insert(cls, data: dict) -> bool:
         try:
             record = cls(**data)
             session.add(record)
             session.commit()
+            print(f"Creating new algo order record for: {data['cl_ord_id']}")
             return True
         except Exception as e:
             print(f"Insert error: {e}")
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-    @classmethod
-    def get_by_id(cls, record_id: int) -> dict:
-        try:
-            record = session.query(cls).filter(cls.id == record_id).first()
-            return record.to_dict() if record else None
-        finally:
-            session.close()
-
-    @classmethod
-    def list_by_st_inst_id(cls, st_inst_id: int) -> dict:
-        try:
-            results = session.query(cls).filter(cls.st_inst_id == st_inst_id).all()
-            return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
-        finally:
-            session.close()
-
-    @classmethod
-    def delete_by_id(cls, record_id: int) -> bool:
-        try:
-            result = session.query(cls).filter(cls.id == record_id).delete()
-            session.commit()
-            return bool(result)
-        except Exception as e:
-            print(f"Delete error: {e}")
             session.rollback()
             return False
         finally:
@@ -126,4 +157,43 @@ class AlgoOrderRecord(Base):
             return False
         finally:
             session.close()
+
+    @classmethod
+    def get_by_id(cls, record_id: int):
+        try:
+            record = session.query(cls).filter(cls.id == record_id).first()
+            return record if record else None
+        finally:
+            session.close()
+
+    @classmethod
+    def list_by_st_inst_id(cls, st_inst_id: int) -> dict:
+        try:
+            results = session.query(cls).filter(cls.st_inst_id == st_inst_id).all()
+            return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
+        finally:
+            session.close()
+
+    @classmethod
+    def list_by_state(cls, state: str) -> list:
+        try:
+            results = session.query(cls).filter(cls.state == state).all()
+            return [result.to_dict() for result in results] if results else []
+        finally:
+            session.close()
+
+    @classmethod
+    def delete_by_id(cls, record_id: int) -> bool:
+        try:
+            result = session.query(cls).filter(cls.id == record_id).delete()
+            session.commit()
+            return bool(result)
+        except Exception as e:
+            print(f"Delete error: {e}")
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+
 
