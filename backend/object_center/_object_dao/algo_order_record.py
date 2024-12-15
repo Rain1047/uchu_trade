@@ -38,7 +38,7 @@ class AlgoOrderRecord(Base):
     avg_px = Column(String(64))
     lever = Column(String(16))  # 杠杆
     pnl = Column(String(32))  # 盈亏
-    state = Column(String(16))
+    state = Column(String(16))  # 状态
 
     # 通用字段
     create_time = Column(DateTime, default=datetime.now)
@@ -171,6 +171,14 @@ class AlgoOrderRecord(Base):
         try:
             results = session.query(cls).filter(cls.st_inst_id == st_inst_id).all()
             return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
+        finally:
+            session.close()
+
+    @classmethod
+    def list_by_state(cls, state: str) -> list:
+        try:
+            results = session.query(cls).filter(cls.state == state).all()
+            return [result.to_dict() for result in results] if results else []
         finally:
             session.close()
 
