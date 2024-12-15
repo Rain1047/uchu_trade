@@ -79,7 +79,8 @@ class StrategyExecutor:
                 trade_result = self.trade_swap_manager.place_order(result)
             elif result.side == EnumSide.SELL:
                 trade_result = self.trade_swap_manager.place_order(result)
-            _handle_trade_result(result, trade_result)
+            self.trade_swap_manager.save_place_algo_order_result(
+                st_execute_result=result, place_order_result=trade_result)
         except Exception as e:
             logging.error(f"process_strategy@e_execute_trade error: {e}", exc_info=True)
 
@@ -146,39 +147,6 @@ class StrategyExecutor:
                 return False
         else:
             return filter_result
-
-
-def _handle_trade_result(st_execute_result: 'StrategyExecuteResult', trade_result: dict):
-    try:
-        algo_order_record = AlgoOrderRecord()
-
-        # 从返回结果中提取第一个订单数据（data[0]）
-        order_data = trade_result['data'][0]
-        algo_order_record.cl_ord_id = order_data['clOrdId'],
-        algo_order_record.ord_id = order_data['ordId']
-        algo_order_record.s_code = order_data['sCode']
-        algo_order_record.s_msg = order_data['sMsg']
-        algo_order_record.ts = order_data['ts']
-        algo_order_record.tag = order_data['tag']
-        algo_order_record.attach_algo_cl_ord_id = trade_result['attachAlgoClOrdId']
-
-        # 封装StrategyExecuteResult
-        algo_order_record.symbol = order_data['symbol']
-        algo_order_record.side = st_execute_result.side
-        algo_order_record.pos_side = st_execute_result.pos_side
-        algo_order_record.sz = st_execute_result.sz
-        algo_order_record.st_inst_id = st_execute_result.st_inst_id
-        algo_order_record.interval = st_execute_result.interval
-
-        # 订单结果参数
-        algo_order_record.pnl = '0'
-        algo_order_record.lever = '5'
-        algo_order_record.create_time = datetime.now()
-        algo_order_record.ord_id = datetime.now()
-
-        AlgoOrderRecord.insert(algo_order_record.to_dict())
-    except Exception as e:
-        print(f"process_strategy@e_handle_trade_result error: {e}")
 
 
 def _setup_logging():

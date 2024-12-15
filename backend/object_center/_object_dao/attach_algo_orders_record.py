@@ -105,6 +105,63 @@ class AttachAlgoOrdersRecord(Base):
             session.close()
 
     @classmethod
+    def save_or_update_attach_algo_orders(cls, attach_algo_orders: list) -> bool:
+        try:
+            # 遍历并处理每个订单
+            for order in attach_algo_orders:
+                algo_cl_ord_id = order.get('algoClOrdId', '')
+
+                # 构建数据字典
+                record_data = {
+                    'amend_px_on_trigger_type': order.get('amendPxOnTriggerType', '0'),
+                    'algo_cl_ord_id': algo_cl_ord_id,
+                    'algo_id': order.get('algoId', ''),
+                    'fail_code': order.get('failCode', ''),
+                    'fail_reason': order.get('failReason', ''),
+                    'sl_ord_px': order.get('slOrdPx', ''),
+                    'sl_trigger_px': order.get('slTriggerPx', ''),
+                    'sl_trigger_px_type': order.get('slTriggerPxType', ''),
+                    'sz': order.get('sz', ''),
+                    'state': order.get('state', ''),
+                    'tp_ord_kind': order.get('tpOrdKind', ''),
+                    'tp_ord_px': order.get('tpOrdPx', ''),
+                    'tp_trigger_px': order.get('tpTriggerPx', ''),
+                    'tp_trigger_px_type': order.get('tpTriggerPxType', '')
+                }
+
+                # 查找是否存在相同 algo_cl_ord_id 的记录
+                existing_record = session.query(cls).filter(
+                    cls.algo_cl_ord_id == algo_cl_ord_id
+                ).first()
+
+                try:
+                    if existing_record:
+                        # 如果记录存在，更新记录
+                        record_data['update_time'] = datetime.now()
+                        for key, value in record_data.items():
+                            setattr(existing_record, key, value)
+                        print(f"Updating existing record for algo_cl_ord_id: {algo_cl_ord_id}")
+                    else:
+                        # 如果记录不存在，创建新记录
+                        new_record = cls(**record_data)
+                        session.add(new_record)
+                        print(f"Creating new record for algo_cl_ord_id: {algo_cl_ord_id}")
+
+                    session.commit()
+
+                except Exception as e:
+                    print(f"Error processing order {algo_cl_ord_id}: {e}")
+                    session.rollback()
+                    return False
+
+            return True
+
+        except Exception as e:
+            print(f"Save or update attach algo orders error: {e}")
+            session.rollback()
+            return False
+
+    @classmethod
     def save_attach_algo_orders_from_response(cls, attach_algo_orders: list) -> bool:
         try:
             # 遍历并保存每个订单
@@ -112,7 +169,7 @@ class AttachAlgoOrdersRecord(Base):
                 # 构建数据字典，字段名从驼峰转为下划线
                 record_data = {
                     'amend_px_on_trigger_type': order.get('amendPxOnTriggerType', '0'),
-                    'algo_cl_ord_is': order.get('algoClOrdId', ''),
+                    'algo_cl_ord_id': order.get('algoClOrdId', ''),
                     'algo_id': order.get('algoId', ''),
                     'fail_code': order.get('failCode', ''),
                     'fail_reason': order.get('failReason', ''),
@@ -151,3 +208,4 @@ class AttachAlgoOrdersRecord(Base):
             return False
         finally:
             session.close()
+
