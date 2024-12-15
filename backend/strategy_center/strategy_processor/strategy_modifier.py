@@ -44,6 +44,7 @@ class StrategyModifier:
             order_state = get_order_result['data'][0]['state']
             if order_state == EnumState.LIVE.value:
                 print("StrategyModifier@main_task, order is still live.")
+                # TODO 计算新的止损价格然后设置止损，需要将原来的请求删除，并插入新的
                 # 根据st_inst_id获取止损的策略code
                 st_inst = StrategyInstance.get_st_instance_by_id(id=algo_order_record.st_inst_id)
                 df = self.get_data_frame(st_inst)
