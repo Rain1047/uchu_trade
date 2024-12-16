@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -98,9 +100,11 @@ class AlgoOrderRecord(Base):
             if existing_record:
                 # 如果记录存在，更新记录
                 try:
-                    # 更新现有记录的属性
-                    for key, value in data.items():
-                        setattr(existing_record, key, value)
+                    # 排除不应更新的字段
+                    update_data = {k: v for k, v in data.items()
+                                   if k not in ('id', 'create_time', 'update_time')}
+                    # 直接使用 update 方法而不是 setattr
+                    session.query(cls).filter(cls.ord_id == ord_id).update(update_data)
                     print(f"Updating existing record for ord_id: {ord_id}")
 
                 except Exception as e:
@@ -111,6 +115,19 @@ class AlgoOrderRecord(Base):
             else:
                 # 如果记录不存在，创建新记录
                 try:
+                    # 确保数字字段为正确类型
+                    if 'sz' in data:
+                        try:
+                            data['sz'] = float(data['sz'])
+                        except (ValueError, TypeError):
+                            data['sz'] = 0.0
+
+                    # 确保字符串字段为字符串类型
+                    str_fields = ['fill_sz', 'fill_px', 'avg_px', 'lever', 'pnl', 'source']
+                    for field in str_fields:
+                        if field in data:
+                            data[field] = str(data[field])
+
                     new_record = cls(**data)
                     session.add(new_record)
                     print(f"Creating new record for ord_id: {ord_id}")
@@ -177,12 +194,33 @@ class AlgoOrderRecord(Base):
             session.close()
 
     @classmethod
-    def list_by_state(cls, state: str) -> list:
+    def list_by_condition(cls, state: Optional[str], source: Optional[str]) -> list:
+        """
+        List records by state and source
+        Args:
+            state: Order state to filter by
+            source: Order source to filter by
+        Returns:
+            list: List of matching records
+        """
         try:
-            results = session.query(cls).filter(cls.state == state).all()
+            # 构建查询
+            query = session.query(cls)
+
+            # 添加过滤条件
+            if state:
+                query = query.filter(cls.state == state)
+            if source:
+                query = query.filter(cls.source == source)
+            # 执行查询
+            results = query.all()
             return [result for result in results] if results else []
+        except Exception as e:
+            print(f"Error querying records by state: {e}")
+            return []
         finally:
-            session.close()
+            # 使用单例模式，不关闭session
+            pass
 
     @classmethod
     def delete_by_id(cls, record_id: int) -> bool:

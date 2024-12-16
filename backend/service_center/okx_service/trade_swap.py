@@ -232,8 +232,8 @@ class TradeSwapManager:
             algo_order_record.symbol = source_algo_order_record.symbol
             algo_order_record.pos_side = source_algo_order_record.pos_side
             algo_order_record.side = source_algo_order_record.side
-            algo_order_record.sz = source_algo_order_record.sz
-            algo_order_record.st_inst_id = source_algo_order_record.st_inst_id
+            algo_order_record.sz = float(source_algo_order_record.sz)
+            algo_order_record.st_inst_id = int(source_algo_order_record.st_inst_id)
             algo_order_record.interval = source_algo_order_record.interval
             AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
             return True

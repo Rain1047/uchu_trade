@@ -30,11 +30,11 @@ class StrategyModifier:
 
     def main_task(self):
         print("StrategyModifier@main_task, starting strategy modifier.")
-        live_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.LIVE.value)
-        self.update_live_algo_record(live_algo_order_record_list)
+        live_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.LIVE.value, source='6')
+        # self.update_live_algo_record(live_algo_order_record_list)
 
         # 测试用：
-        filled_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.FILLED.value)
+        filled_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.FILLED.value, source='6')
         self.update_filled_algo_record(filled_algo_order_record_list)
 
     def update_live_algo_record(self, live_algo_order_record_list: list):
@@ -53,6 +53,7 @@ class StrategyModifier:
 
     def update_filled_algo_record(self, filled_algo_order_record_list: list):
         for algo_order_record in filled_algo_order_record_list:
+            # print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
             orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
                                                                                instId=algo_order_record.symbol,
                                                                                before=algo_order_record.ord_id)
