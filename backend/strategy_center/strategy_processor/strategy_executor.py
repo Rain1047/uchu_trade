@@ -60,7 +60,7 @@ class StrategyExecutor:
             # 3.下单
             trade_result = self._execute_trade(entry_result)
             # 4.保存交易记录
-            self.trade_swap_manager.save_place_algo_order_result(
+            self.trade_swap_manager.save_execute_algo_order_result(
                 st_execute_result=entry_result, place_order_result=trade_result)
         except Exception as e:
             print(f"StrategyExecutor@_process_strategy Error processing strategy: {e}")

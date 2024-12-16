@@ -51,6 +51,17 @@ class StrategyModifier:
             if order_state == EnumState.FILLED.value:
                 self.handle_filled_order(algo_order_record, get_order_data)
 
+    def update_filled_algo_record(self, filled_algo_order_record_list: list):
+        for algo_order_record in filled_algo_order_record_list:
+            orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
+                                                                               instId=algo_order_record.symbol,
+                                                                               before=algo_order_record.ord_id)
+            # 查找特定的 attachAlgoClOrdId
+            target_attach_id = algo_order_record.attach_algo_cl_ord_id
+            result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
+            self.trade_swap_manager.save_modified_algo_order(algo_order_record, result)
+            print(f"find result: {result}")
+
     def handle_live_order(self, algo_order_record, get_order_data):
         print("StrategyModifier@main_task, order is still live.")
         # TODO 计算新的止损价格然后设置止损，需要将原来的请求删除，并插入新的
@@ -107,23 +118,6 @@ class StrategyModifier:
         print(f"StrategyExecutor@_get_data_frame, target file path: {file_abspath}")
         df = pd.read_csv(f"{file_abspath}")
         return df
-
-    def update_filled_algo_record(self, filled_algo_order_record_list: list):
-        for algo_order_record in filled_algo_order_record_list:
-            get_order_result = self.trade_api.get_order(instId=algo_order_record.symbol,
-                                                        ordId=algo_order_record.ord_id)
-            get_order_data = get_order_result['data'][0]
-            print(f"StrategyModifier@main_task, processing filled algo order record: {algo_order_record.to_dict()}")
-
-            orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
-                                                                               instId=algo_order_record.symbol,
-                                                                               before=get_order_data['ordId'])
-            print(f"获取历史订单记录（近七天）, 查看ordId后的记录:{orders_history_result}")
-            orders_history_list = orders_history_result.get('data')
-            # 查找特定的 attachAlgoClOrdId
-            target_attach_id = algo_order_record.attach_algo_cl_ord_id
-            result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
-            print(f"find result: {result}")
 
 
 def _setup_logging():
