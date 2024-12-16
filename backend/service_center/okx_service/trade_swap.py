@@ -8,6 +8,7 @@ import pandas as pd
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
+from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import (
     EnumAlgoOrdType,
     EnumTradeEnv,
@@ -161,11 +162,9 @@ class TradeSwapManager:
         return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
 
     @staticmethod
-    def save_place_algo_order_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
+    def save_execute_algo_order_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
         try:
             algo_order_record = AlgoOrderRecord()
-
-            # 从返回结果中提取第一个订单数据（data[0]）
             post_order_data = place_order_result['data'][0]
             algo_order_record.cl_ord_id = post_order_data['clOrdId']
             algo_order_record.ord_id = post_order_data['ordId']
@@ -195,13 +194,13 @@ class TradeSwapManager:
             algo_order_record.fill_px = get_order_data['fillPx']
             algo_order_record.fill_sz = get_order_data['fillSz']
             algo_order_record.avg_px = get_order_data['avgPx']
-            algo_order_record.pnl = '0'
-            algo_order_record.state = EnumState.LIVE.value
-            algo_order_record.lever = '5'
+            algo_order_record.pnl = get_order_data['pnl']
+            algo_order_record.state = get_order_data['state']
+            algo_order_record.lever = get_order_data['lever']
+            algo_order_record.source = get_order_data['source']
             algo_order_record.create_time = datetime.now()
             algo_order_record.update_time = datetime.now()
             AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
-            print(get_order_data)
 
             # 委托止盈止损，调用get_algo_order方法
             attach_algo_order_result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId=place_order_result[
@@ -210,6 +209,37 @@ class TradeSwapManager:
             AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
         except Exception as e:
             print(f"process_strategy@e_handle_trade_result error: {e}")
+
+    @staticmethod
+    def save_modified_algo_order(source_algo_order_record: 'AlgoOrderRecord', latest_order_data: dict) -> bool:
+        try:
+            algo_order_record = AlgoOrderRecord()
+            algo_order_record.cl_ord_id = latest_order_data['clOrdId']
+            algo_order_record.ord_id = latest_order_data['ordId']
+            algo_order_record.tag = latest_order_data['tag']
+            algo_order_record.attach_algo_cl_ord_id = latest_order_data['attachAlgoClOrdId']
+            algo_order_record.fill_px = latest_order_data['fillPx']
+            algo_order_record.fill_sz = latest_order_data['fillSz']
+            algo_order_record.avg_px = latest_order_data['avgPx']
+            algo_order_record.pnl = latest_order_data['pnl']
+            algo_order_record.state = latest_order_data['state']
+            algo_order_record.lever = latest_order_data['lever']
+            algo_order_record.source = latest_order_data['source']
+            algo_order_record.create_time = datetime.now()
+            algo_order_record.update_time = datetime.now()
+
+            algo_order_record.attach_algo_cl_ord_id = source_algo_order_record.attach_algo_cl_ord_id
+            algo_order_record.symbol = source_algo_order_record.symbol
+            algo_order_record.pos_side = source_algo_order_record.pos_side
+            algo_order_record.side = source_algo_order_record.side
+            algo_order_record.sz = float(source_algo_order_record.sz)
+            algo_order_record.st_inst_id = int(source_algo_order_record.st_inst_id)
+            algo_order_record.interval = source_algo_order_record.interval
+            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+            return True
+        except Exception as e:
+            print(f"process_strategy@e_handle_trade_result error: {e}")
+            return False
 
 
 if __name__ == '__main__':
@@ -242,12 +272,12 @@ if __name__ == '__main__':
 
     # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
     # 委托订单待生效-live  委托订单已生效-effective
-    # result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    # attach_algo_orders = result['data']
-    # save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-    # print("通过algoClOrdId查看策略委托订单：")
-    # print(result)
-    # print(f"save_result:{save_result}")
+    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
+    attach_algo_orders = result['data']
+    save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+    print("通过algoClOrdId查看策略委托订单：")
+    print(result)
+    print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
@@ -260,18 +290,18 @@ if __name__ == '__main__':
     # print(result)
     #
     # # 5. 匹配历史订单
-    # result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
-    #                                                before='2052302587604230144')
-    # print("获取历史订单记录（近七天）, 查看ordId后的记录：")
-    #
+    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
+                                                   before='2052302587604230144')
+    print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+
     # orders_history_list = result.get('data')
-    # # 查找特定的 attachAlgoClOrdId
-    # target_attach_id = "attachAlgoClOrdId12082149"
-    # result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
+    # 查找特定的 attachAlgoClOrdId
+    target_attach_id = "attachAlgoClOrdId12082149"
+    result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
     #
-    # if result:
-    #     print(f"找到匹配的订单: {result}")
-    # else:
-    #     print("未找到匹配的订单")
-    #
-    # print(result)
+    if result:
+        print(f"找到匹配的订单: {result}")
+    else:
+        print("未找到匹配的订单")
+
+    print(result)

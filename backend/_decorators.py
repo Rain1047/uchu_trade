@@ -7,12 +7,11 @@ def add_docstring(docstring: str):
 
 
 def singleton(cls):
-    instances = {}
+    _instances = {}
 
     def get_instance(*args, **kwargs):
-        env = kwargs.get('env', 'MARKET')
-        if env not in instances:
-            instances[env] = cls(*args, **kwargs)
-        return instances[env]
+        if cls not in _instances:
+            _instances[cls] = cls(*args, **kwargs)
+        return _instances[cls]
 
     return get_instance

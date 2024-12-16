@@ -126,7 +126,7 @@ class AttachAlgoOrdersRecord(Base):
                     'tp_ord_kind': order.get('tpOrdKind', ''),
                     'tp_ord_px': order.get('tpOrdPx', ''),
                     'tp_trigger_px': order.get('tpTriggerPx', ''),
-                    'tp_trigger_px_type': order.get('tpTriggerPxType', '')
+                    'tp_trigger_px_type': order.get('tpTriggerPxType', ''),
                 }
 
                 # 查找是否存在相同 algo_cl_ord_id 的记录
