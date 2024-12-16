@@ -211,15 +211,11 @@ class TradeSwapManager:
             print(f"process_strategy@e_handle_trade_result error: {e}")
 
     @staticmethod
-    def save_modified_algo_order(source_algo_order_record: 'AlgoOrderRecord', latest_order_result: dict):
+    def save_modified_algo_order(source_algo_order_record: 'AlgoOrderRecord', latest_order_data: dict) -> bool:
         try:
-            latest_order_data = latest_order_result['data'][0]
             algo_order_record = AlgoOrderRecord()
             algo_order_record.cl_ord_id = latest_order_data['clOrdId']
             algo_order_record.ord_id = latest_order_data['ordId']
-            algo_order_record.s_code = latest_order_data['sCode']
-            algo_order_record.s_msg = latest_order_data['sMsg']
-            algo_order_record.ts = latest_order_data['ts']
             algo_order_record.tag = latest_order_data['tag']
             algo_order_record.attach_algo_cl_ord_id = latest_order_data['attachAlgoClOrdId']
             algo_order_record.fill_px = latest_order_data['fillPx']
@@ -232,13 +228,18 @@ class TradeSwapManager:
             algo_order_record.create_time = datetime.now()
             algo_order_record.update_time = datetime.now()
 
+            algo_order_record.attach_algo_cl_ord_id = source_algo_order_record.attach_algo_cl_ord_id
+            algo_order_record.symbol = source_algo_order_record.symbol
+            algo_order_record.pos_side = source_algo_order_record.pos_side
             algo_order_record.side = source_algo_order_record.side
             algo_order_record.sz = source_algo_order_record.sz
             algo_order_record.st_inst_id = source_algo_order_record.st_inst_id
             algo_order_record.interval = source_algo_order_record.interval
             AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+            return True
         except Exception as e:
             print(f"process_strategy@e_handle_trade_result error: {e}")
+            return False
 
 
 if __name__ == '__main__':
