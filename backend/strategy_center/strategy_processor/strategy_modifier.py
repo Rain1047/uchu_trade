@@ -59,8 +59,9 @@ class StrategyModifier:
             # 查找特定的 attachAlgoClOrdId
             target_attach_id = algo_order_record.attach_algo_cl_ord_id
             result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
-            self.trade_swap_manager.save_modified_algo_order(algo_order_record, result)
-            print(f"find result: {result}")
+            print(f"update_filled_algo_record@find result: {result}")
+            save_result = self.trade_swap_manager.save_modified_algo_order(algo_order_record, result)
+            print(f"update_filled_algo_record@save result: {save_result}")
 
     def handle_live_order(self, algo_order_record, get_order_data):
         print("StrategyModifier@main_task, order is still live.")
