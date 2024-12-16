@@ -260,18 +260,18 @@ if __name__ == '__main__':
     # print(result)
     #
     # # 5. 匹配历史订单
-    # result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
-    #                                                before='2052302587604230144')
-    # print("获取历史订单记录（近七天）, 查看ordId后的记录：")
-    #
+    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
+                                                   before='2052302587604230144')
+    print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+
     # orders_history_list = result.get('data')
-    # # 查找特定的 attachAlgoClOrdId
-    # target_attach_id = "attachAlgoClOrdId12082149"
-    # result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
+    # 查找特定的 attachAlgoClOrdId
+    target_attach_id = "attachAlgoClOrdId12082149"
+    result = trade_swap_manager.find_order_by_attach_algo_id(result, target_attach_id)
     #
-    # if result:
-    #     print(f"找到匹配的订单: {result}")
-    # else:
-    #     print("未找到匹配的订单")
-    #
-    # print(result)
+    if result:
+        print(f"找到匹配的订单: {result}")
+    else:
+        print("未找到匹配的订单")
+
+    print(result)

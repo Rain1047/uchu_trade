@@ -32,6 +32,8 @@ class StrategyModifier:
         print("StrategyModifier@main_task, starting strategy modifier.")
         live_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.LIVE.value)
         self.update_live_algo_record(live_algo_order_record_list)
+
+        # 测试用：
         filled_algo_order_record_list = AlgoOrderRecord.list_by_state(state=EnumState.FILLED.value)
         self.update_filled_algo_record(filled_algo_order_record_list)
 
@@ -39,50 +41,63 @@ class StrategyModifier:
         for algo_order_record in live_algo_order_record_list:
             print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
             get_order_result = self.trade_api.get_order(instId=algo_order_record.symbol,
-                                                        ordId=algo_order_record.ord_id)
+                                                        ordId=algo_order_record.ord_id,
+                                                        clOrdId=algo_order_record.cl_ord_id)
             print(get_order_result)
-            order_state = get_order_result['data'][0]['state']
+            get_order_data = get_order_result['data'][0]
+            order_state = get_order_data['state']
             if order_state == EnumState.LIVE.value:
-                print("StrategyModifier@main_task, order is still live.")
-                # TODO 计算新的止损价格然后设置止损，需要将原来的请求删除，并插入新的
-                # 根据st_inst_id获取止损的策略code
-                st_inst = StrategyInstance.get_st_instance_by_id(id=algo_order_record.st_inst_id)
-                df = self.get_data_frame(st_inst)
-                exit_st_code = st_inst.exit_st_code
-                exit_strategy = registry.get_strategy(exit_st_code)
-                exit_result = exit_strategy(df, st_inst)
-
-                # amend_algo_order_result = self.trade_swap_manager.amend_algo_order(
-                #     instId=algo_order_record.symbol,
-                #     algoId=algo_order_record.attach_algo_cl_ord_id,
-                #     newSz=algo_order_record.fill_sz,
-                #     newPx=algo_order_record.fill_px
-                # )
-
+                self.handle_live_order(algo_order_record, get_order_data)
             if order_state == EnumState.FILLED.value:
-                print("StrategyModifier@main_task, order is filled.")
-                # 订单结果参数，调用get_order方法
-                get_order_result = self.trade_swap_manager.get_order(
-                    instId=algo_order_record.symbol,
-                    ordId=algo_order_record.ord_id,
-                    clOrdId=algo_order_record.cl_ord_id
-                )
-                get_order_data = get_order_result['data'][0]
-                algo_order_record.fill_px = get_order_data['fillPx']
-                algo_order_record.fill_sz = get_order_data['fillSz']
-                algo_order_record.avg_px = get_order_data['avgPx']
-                algo_order_record.pnl = get_order_data['pnl']
-                algo_order_record.state = get_order_data['state']
-                algo_order_record.lever = get_order_data['lever']
-                algo_order_record.update_time = datetime.now()
-                AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
-                print(get_order_data)
+                self.handle_filled_order(algo_order_record, get_order_data)
 
-                attach_algo_order_result = self.trade_swap_manager.get_algo_order(
-                    algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
-                attach_algo_orders = attach_algo_order_result['data']
-                save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-                print(f"StrategyModifier@update_live_algo_record save_result:{save_result}")
+    def handle_live_order(self, algo_order_record, get_order_data):
+        print("StrategyModifier@main_task, order is still live.")
+        # TODO 计算新的止损价格然后设置止损，需要将原来的请求删除，并插入新的
+        # 根据st_inst_id获取止损的策略code
+        st_inst = StrategyInstance.get_st_instance_by_id(id=algo_order_record.st_inst_id)
+        df = self.get_data_frame(st_inst)
+        exit_st_code = st_inst.exit_st_code
+        exit_strategy = registry.get_strategy(exit_st_code)
+        exit_result = exit_strategy(df, st_inst)
+
+        # amend_algo_order_result = self.trade_swap_manager.amend_algo_order(
+        #     instId=algo_order_record.symbol,
+        #     algoId=algo_order_record.attach_algo_cl_ord_id,
+        #     newSz=algo_order_record.fill_sz,
+        #     newPx=algo_order_record.fill_px
+        # )
+
+    def handle_filled_order(self, algo_order_record, get_order_data):
+        # 1. 更新订单结果参数，调用get_order方法
+        print("StrategyModifier@main_task, order is filled.")
+        algo_order_record.fill_px = get_order_data['fillPx']
+        algo_order_record.fill_sz = get_order_data['fillSz']
+        algo_order_record.avg_px = get_order_data['avgPx']
+        algo_order_record.pnl = get_order_data['pnl']
+        algo_order_record.state = get_order_data['state']
+        algo_order_record.lever = get_order_data['lever']
+        algo_order_record.source = get_order_data['source']
+        algo_order_record.update_time = datetime.now()
+        AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+        print(get_order_data)
+
+        attach_algo_order_result = self.trade_swap_manager.get_algo_order(
+            algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
+        attach_algo_orders = attach_algo_order_result['data']
+        save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+
+        orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
+                                                                           instId=algo_order_record.symbol,
+                                                                           before=get_order_data['ordId'])
+        print("获取历史订单记录（近七天）, 查看ordId后的记录：")
+        orders_history_list = orders_history_result.get('data')
+        # 查找特定的 attachAlgoClOrdId
+        target_attach_id = algo_order_record.attach_algo_cl_ord_id
+        result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
+        print(f"find result: {result}")
+
+        print(f"StrategyModifier@update_live_algo_record save_result:{save_result}")
 
     def get_data_frame(self, st_instance) -> DataFrame:
         # 获取df
@@ -95,12 +110,21 @@ class StrategyModifier:
 
     def update_filled_algo_record(self, filled_algo_order_record_list: list):
         for algo_order_record in filled_algo_order_record_list:
+            get_order_result = self.trade_api.get_order(instId=algo_order_record.symbol,
+                                                        ordId=algo_order_record.ord_id)
+            get_order_data = get_order_result['data'][0]
             print(f"StrategyModifier@main_task, processing filled algo order record: {algo_order_record.to_dict()}")
-            attach_algo_order_result = self.trade_swap_manager.get_algo_order(
-                algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
-            attach_algo_orders = attach_algo_order_result['data']
-            save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-            print(f"StrategyModifier@update_filled_algo_record save_result:{save_result}")
+
+            orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
+                                                                               instId=algo_order_record.symbol,
+                                                                               before=get_order_data['ordId'])
+            print(f"获取历史订单记录（近七天）, 查看ordId后的记录:{orders_history_result}")
+            orders_history_list = orders_history_result.get('data')
+            # 查找特定的 attachAlgoClOrdId
+            target_attach_id = algo_order_record.attach_algo_cl_ord_id
+            result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
+            print(f"find result: {result}")
+
 
 def _setup_logging():
     logging.basicConfig(

@@ -39,6 +39,7 @@ class AlgoOrderRecord(Base):
     lever = Column(String(16))  # 杠杆
     pnl = Column(String(32))  # 盈亏
     state = Column(String(16))  # 状态
+    source = Column(String(16))
 
     # 通用字段
     create_time = Column(DateTime, default=datetime.now)
@@ -58,6 +59,7 @@ class AlgoOrderRecord(Base):
             'st_inst_id': self.st_inst_id,
             'symbol': self.symbol,
             'side': self.side,
+            'source': self.source,
             'pos_side': self.pos_side,
             'sz': self.sz,
             'interval': self.interval,
