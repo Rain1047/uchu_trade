@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import logging
 
-from backend.service.okx_service.balance import list_account_balance
+from backend.service_center.okx_service.balance import list_account_balance
 
 # 创建路由器实例
 router = APIRouter()
