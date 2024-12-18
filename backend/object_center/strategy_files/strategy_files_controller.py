@@ -58,3 +58,21 @@ async def get_strategy_file_content(folder: str, filename: str):
         return {"content": content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/files/{folder}/{filename}")
+async def update_strategy_file_content(folder: str, filename: str, content: dict):
+    try:
+        print("save start.")
+        current_dir = os.getcwd()
+        file_path = os.path.join(current_dir, "strategy_center", "atom_strategy", folder, filename)
+
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content['content'])
+
+        return {"message": "File updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
