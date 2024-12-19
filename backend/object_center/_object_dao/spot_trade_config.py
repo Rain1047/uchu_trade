@@ -8,8 +8,8 @@ from backend._utils import DatabaseUtils
 Base = declarative_base()
 
 
-class AutoTradeConfig(Base):
-    __tablename__ = 'auto_trade_config'
+class SpotTradeConfig(Base):
+    __tablename__ = 'swap_trade_config'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     ccy = Column(String, comment='币种')
@@ -24,7 +24,7 @@ class AutoTradeConfig(Base):
     def list_all() -> List[Dict]:
         session = DatabaseUtils.get_db_session()
         try:
-            results = session.query(AutoTradeConfig).all()
+            results = session.query(SpotTradeConfig).all()
             return [
                 {
                     'id': config.id,
@@ -44,11 +44,11 @@ class AutoTradeConfig(Base):
     def list_by_ccy_and_type(ccy, type: Optional[str] = "") -> List[Dict[str, Any]]:
         session = DatabaseUtils.get_db_session()
         try:
-            filters = [AutoTradeConfig.ccy == ccy]
+            filters = [SpotTradeConfig.ccy == ccy]
             if type and type.strip():
-                filters.append(AutoTradeConfig.type == type)
+                filters.append(SpotTradeConfig.type == type)
 
-            results = session.query(AutoTradeConfig).filter(*filters).all()
+            results = session.query(SpotTradeConfig).filter(*filters).all()
             return [
                 {
                     'id': config.id,
@@ -71,13 +71,13 @@ class AutoTradeConfig(Base):
             if config_list and len(config_list) > 0:
                 ccy = config_list[0].get('ccy')
                 # 删除已存在配置
-                session.query(AutoTradeConfig).filter(
-                    AutoTradeConfig.ccy == ccy
+                session.query(SpotTradeConfig).filter(
+                    SpotTradeConfig.ccy == ccy
                 ).delete()
 
                 # 批量新增配置
                 for config in config_list:
-                    new_config = AutoTradeConfig(
+                    new_config = SpotTradeConfig(
                         ccy=config.get('ccy'),
                         type=config.get('type'),
                         signal=config.get('signal'),
@@ -93,3 +93,8 @@ class AutoTradeConfig(Base):
             raise e
         finally:
             session.close()
+
+
+if __name__ == '__main__':
+    swap = SpotTradeConfig()
+    print(swap.list_all())
