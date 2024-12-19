@@ -175,7 +175,7 @@ def test_limit_order(trade_pair: str, position: str):
     print(f"trade_pair: {trade_pair}, position: {position}, sz: {sz}")
     result = trade.place_order(
         instId=trade_pair,
-        sz=sz,  # 委托数量
+        sz="0.1",  # 委托数量 当instId为ETH时，1代表1个ETH
         side=EnumSide.BUY.value,
         tdMode=EnumTdMode.CASH.value,
         ordType=EnumOrdType.LIMIT.value,

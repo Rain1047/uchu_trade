@@ -32,7 +32,6 @@ class TickerPriceCollector:
 
     @staticmethod
     def get_current_ticker_price(instId: str):
-        instId = SymbolFormatUtils.get_usdt(instId)
         # 获取单个产品行情信息
         return okx.market.get_ticker(instId=instId)['data'][0]['last']
 
@@ -52,9 +51,13 @@ class TickerPriceCollector:
 
     def get_sz(self, instId: str, position: str) -> str:
         # 获取单个产品行情信息
+        instId = SymbolFormatUtils.get_swap_usdt(instId)
         last_price = self.get_current_ticker_price(instId)
-        return okx.public_data.get_convert_contract_coin(
-            instId=instId, px=last_price, sz=position)['data'][0]['sz']
+        result = okx.public_data.get_convert_contract_coin(
+            instId=instId, px=last_price, sz=position)
+        print(result)
+
+        return result['data'][0]['sz']
 
 
 if __name__ == '__main__':
