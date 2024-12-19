@@ -1,4 +1,4 @@
-// components/AutoTradeConfig.js
+// components/SpotTradeConfig.js
 import React, { useState } from 'react';
 import {
     Box,

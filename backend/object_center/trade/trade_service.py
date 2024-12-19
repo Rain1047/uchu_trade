@@ -55,3 +55,9 @@ class TradeService:
     def update_history_note(req: UpdateNoteRequest) -> bool:
         FillsHistory.update_note(req)
         return True
+
+
+if __name__ == '__main__':
+    result = okx.trade.get_trade_fills_history(instType="SPOT")
+    print(result)
+

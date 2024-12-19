@@ -3,7 +3,7 @@ import logging
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend._constants import okx_constants
 from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
+from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
 
 logger = logging.getLogger(__name__)
 okx = OKXAPIWrapper()
@@ -25,7 +25,7 @@ def list_account_balance():
     # 3. 通过币种获取自动交易配置
     for balance in balance_list:
         ccy = balance.get('ccy')
-        auto_config_list = AutoTradeConfig.list_by_ccy_and_type(ccy)
+        auto_config_list = SpotTradeConfig.list_by_ccy_and_type(ccy)
         balance['auto_config_list'] = list(auto_config_list) if auto_config_list else []
 
     print("Final balance list:", balance_list)
@@ -33,7 +33,7 @@ def list_account_balance():
 
 
 def list_balance_config(ccy):
-    print(AutoTradeConfig.list_by_ccy_and_type(ccy))
+    print(SpotTradeConfig.list_by_ccy_and_type(ccy))
 
 
 if __name__ == '__main__':

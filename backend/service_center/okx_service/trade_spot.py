@@ -5,9 +5,10 @@ import pandas as pd
 
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
-from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode
+from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
+from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumSide
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
+from backend.service_center.okx_service.ticker_price_service import TickerPriceCollector
 
 kline_reader = KlineDataReader()
 okx = OKXAPIWrapper()
@@ -64,7 +65,7 @@ def cancel_spot_unfinished_algo_order(algo_orders):
 # [调度主任务] 根据配置进行止盈止损、限价委托
 def place_algo_order_main_task():
     # 1. 获取configs
-    algo_order_configs = AutoTradeConfig().list_all()
+    algo_order_configs = SpotTradeConfig().list_all()
     limit_order_configs = []
     stop_loss_configs = []
     for config in algo_order_configs:
@@ -81,54 +82,107 @@ def place_algo_order_main_task():
 
 
 def place_spot_limit_order_by_config(limit_order_configs: List):
-    pass
+    for config in limit_order_configs:
+        ccy = config.get('ccy')
+        print(ccy)
+        balance = AccountBalance().list_by_ccy(config.get('ccy'))
+        eq = balance.get('eq')
+        interval = config.get('interval')
+        pct = config.get('percentage')
+        amount = config.get('amount')
+        # 通过sig和interval获取价格
+        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
+        kline_data = pd.read_csv(f"{file_abspath}")
+        target_index = config.get('signal').lower() + interval
+        target_price = kline_data.iloc[-1][target_index]
+        print(f"{eq},{pct}")
+        if pct is not None and str(pct).strip():
+            eq = str(round(float(eq) * int(pct) / 100, 6))
+            print(eq)
+        else:
+            eq = '0'
+
+        print(
+            {
+                'instId': f"{config.get('ccy')}-USDT",
+                'tdMode': EnumTdMode.CASH.value,
+                'side': "sell",
+                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
+                'sz': eq,
+                'slTriggerPx': str(target_price),  # 止损触发价格
+                'slOrdPx': '-1'
+            }
+        )
+        result = trade.place_algo_order(
+            instId=f"{config.get('ccy')}-USDT",
+            tdMode=EnumTdMode.CASH.value,
+            side="sell",
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
+            sz=eq,
+            slTriggerPx=str()
+        )
 
 
 def place_spot_stop_loss_by_config(stop_loss_configs: List):
     for config in stop_loss_configs:
-        if config.get('type') == 'stop_loss':
-            ccy = config.get('ccy')
-            print(ccy)
-            balance = AccountBalance().list_by_ccy(config.get('ccy'))
-            eq = balance.get('eq')
-            interval = config.get('interval')
-            pct = config.get('percentage')
-            amount = config.get('amount')
-            # 通过sig和interval获取价格
-            file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
-            kline_data = pd.read_csv(f"{file_abspath}")
-            target_index = config.get('signal').lower() + interval
-            target_price = kline_data.iloc[-1][target_index]
+        ccy = config.get('ccy')
+        print(ccy)
+        balance = AccountBalance().list_by_ccy(config.get('ccy'))
+        eq = balance.get('eq')
+        interval = config.get('interval')
+        pct = config.get('percentage')
+        amount = config.get('amount')
+        # 通过sig和interval获取价格
+        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
+        kline_data = pd.read_csv(f"{file_abspath}")
+        target_index = config.get('signal').lower() + interval
+        target_price = kline_data.iloc[-1][target_index]
 
-            print(f"{eq},{pct}")
-            if pct is not None and str(pct).strip():
-                eq = str(round(float(eq) * int(pct) / 100, 6))
-                print(eq)
-            else:
-                eq = '0'
-            print(
-                {
-                    'instId': f"{config.get('ccy')}-USDT",
-                    'tdMode': EnumTdMode.CASH.value,
-                    'side': "sell",
-                    'ordType': EnumAlgoOrdType.CONDITIONAL.value,
-                    'sz': eq,
-                    'slTriggerPx': str(target_price),  # 止损触发价格
-                    'slOrdPx': '-1'
-                }
-            )
-            result = trade.place_algo_order(
-                instId=f"{config.get('ccy')}-USDT",
-                tdMode=EnumTdMode.CASH.value,
-                side="sell",
-                ordType=EnumAlgoOrdType.CONDITIONAL.value,
-                sz=eq,
-                slTriggerPx=str(target_price),  # 止损触发价格
-                slOrdPx='-1'
-            )
-            print(result)
+        print(f"{eq},{pct}")
+        if pct is not None and str(pct).strip():
+            eq = str(round(float(eq) * int(pct) / 100, 6))
+            print(eq)
+        else:
+            eq = '0'
+        print(
+            {
+                'instId': f"{config.get('ccy')}-USDT",
+                'tdMode': EnumTdMode.CASH.value,
+                'side': "sell",
+                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
+                'sz': eq,
+                'slTriggerPx': str(target_price),  # 止损触发价格
+                'slOrdPx': '-1'
+            }
+        )
+        result = trade.place_algo_order(
+            instId=f"{config.get('ccy')}-USDT",
+            tdMode=EnumTdMode.CASH.value,
+            side="sell",
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
+            sz=eq,
+            slTriggerPx=str(target_price),  # 止损触发价格
+            slOrdPx='-1'
+        )
+        print(result)
+
+
+price_collector = TickerPriceCollector()
+
+
+def test_limit_order(trade_pair: str, position: str):
+    sz = price_collector.get_sz(instId=trade_pair, position=position)
+    print(f"trade_pair: {trade_pair}, position: {position}, sz: {sz}")
+    result = trade.place_order(
+        instId=trade_pair,
+        sz=sz,  # 委托数量
+        side=EnumSide.BUY.value,
+        tdMode=EnumTdMode.CASH.value,
+        ordType=EnumOrdType.LIMIT.value,
+        px=position  # 委托价格
+    )
+    print(result)
 
 
 if __name__ == '__main__':
-    pass
-
+    test_limit_order(trade_pair='ETH-USDT', position="1000")
