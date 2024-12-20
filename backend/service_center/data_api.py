@@ -1,6 +1,6 @@
 from sqlalchemy import or_
 
-from backend.service.res.res_utils import StdPageResult
+from backend.service_center.res.res_utils import StdPageResult
 from backend._utils import DatabaseUtils, FormatUtils
 
 

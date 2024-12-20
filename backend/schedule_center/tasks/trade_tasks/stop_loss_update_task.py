@@ -1,7 +1,7 @@
 from typing import Dict, Any, List
 
 from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.auto_trade_config import AutoTradeConfig
+from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
 from backend.object_center.enum_obj import EnumAutoTradeConfigType
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 
@@ -33,7 +33,7 @@ class StopLossUpdateTask(BaseTask):
             balance_list = AccountBalance.list_all()
             for balance in balance_list:
                 if balance.get('stop_loss_switch') == 'true':
-                    stop_loss_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
+                    stop_loss_configs = SpotTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
                                                                              EnumAutoTradeConfigType.STOP_LOSS.value)
                     # 执行止损更新
                     total_eq = balance.get('eq_usd')
@@ -41,12 +41,12 @@ class StopLossUpdateTask(BaseTask):
                     self.logger.info(f"成功更新{balance.get('ccy')} 的止损设置")
 
                 if balance.get('limit_order_switch') == 'true':
-                    limit_order_configs = AutoTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
+                    limit_order_configs = SpotTradeConfig.list_by_ccy_and_type(balance.get('ccy'),
                                                                                EnumAutoTradeConfigType.LIMIT_ORDER.value)
                 else:
                     continue
 
-            trade_configs = AutoTradeConfig.list_all()
+            trade_configs = SpotTradeConfig.list_all()
             if len(trade_configs) == 0:
                 self.logger.info(f"当前没有交易配置")
 

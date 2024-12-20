@@ -1,0 +1,29 @@
+.w-tc-editor {
+  & pre {
+    color: #f8f8f2 !important;
+  }
+
+  & .token.comment {
+    color: #6272a4 !important;
+  }
+
+  & .token.keyword {
+    color: #ff79c6 !important;
+  }
+
+  & .token.string {
+    color: #f1fa8c !important;
+  }
+
+  & .token.number {
+    color: #bd93f9 !important;
+  }
+
+  & .token.function {
+    color: #50fa7b !important;
+  }
+
+  & .token.operator {
+    color: #ff79c6 !important;
+  }
+}
