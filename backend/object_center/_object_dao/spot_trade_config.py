@@ -9,7 +9,7 @@ Base = declarative_base()
 
 
 class SpotTradeConfig(Base):
-    __tablename__ = 'swap_trade_config'
+    __tablename__ = 'spot_trade_config'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     ccy = Column(String, comment='币种')
@@ -17,7 +17,9 @@ class SpotTradeConfig(Base):
     signal = Column(String, comment='指标')
     interval = Column(String, comment='时间间隔')
     percentage = Column(String, comment='百分比')
-    amount = Column(String, comment='金额')
+    amount = Column(Integer, comment='金额')
+    switch = Column(String, comment='开关')
+    is_del = Column(String, comment='是否删除')
 
 
     @staticmethod
@@ -33,7 +35,9 @@ class SpotTradeConfig(Base):
                     'signal': config.signal,
                     'interval': config.interval,
                     'percentage': config.percentage,
-                    'amount': config.amount
+                    'amount': config.amount,
+                    'switch': config.switch,
+                    'is_del': config.is_del
                 }
                 for config in results
             ]
@@ -57,7 +61,9 @@ class SpotTradeConfig(Base):
                     'signal': config.signal,
                     'interval': config.interval,
                     'percentage': config.percentage,
-                    'amount': config.amount
+                    'amount': config.amount,
+                    'switch': config.switch,
+                    'is_del': config.is_del
                 }
                 for config in results
             ]
@@ -84,6 +90,8 @@ class SpotTradeConfig(Base):
                         interval=config.get('interval'),
                         percentage=config.get('percentage'),
                         amount=config.get('amount'),
+                        switch=config.get('switch'),
+                        is_del=config.get('is_del')
                     )
                     session.add(new_config)
 
