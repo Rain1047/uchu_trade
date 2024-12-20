@@ -16,8 +16,8 @@ class MarketAPIWrapper:
         return self.marketAPI.get_ticker(instId=instId)
 
     @add_docstring("通过Ticker Symbol获取k线")
-    def get_candlesticks(self, instId: str, bar: Optional[str] = '1D') -> Dict:
-        return self.marketAPI.get_candlesticks(instId=instId, bar=bar)
+    def get_candlesticks(self, instId: str, bar: Optional[str] = '1D', limit: Optional[str] = '300') -> Dict:
+        return self.marketAPI.get_candlesticks(instId=instId, bar=bar, limit=limit)
 
     @add_docstring("通过Ticker Symbol获取k线，并返回DataFrame")
     def get_candlesticks_df(self, instId: str, bar: Optional[str] = '1D') -> pd.DataFrame:
