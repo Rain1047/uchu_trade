@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 
 import pandas as pd
 
+from backend._utils import PriceUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
 from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
@@ -171,17 +172,22 @@ price_collector = TickerPriceCollector()
 
 
 def test_limit_order(trade_pair: str, position: str):
-    sz = price_collector.get_sz(instId=trade_pair, position=position)
-    print(f"trade_pair: {trade_pair}, position: {position}, sz: {sz}")
-    result = trade.place_order(
-        instId=trade_pair,
-        sz="0.1",  # 委托数量 当instId为ETH时，1代表1个ETH
-        side=EnumSide.BUY.value,
-        tdMode=EnumTdMode.CASH.value,
-        ordType=EnumOrdType.LIMIT.value,
-        px=position  # 委托价格
-    )
-    print(result)
+    # current_price = price_collector.get_current_ticker_price(trade_pair)
+
+    df = PriceUtils.query_candles_with_time_frame(trade_pair, '1D')
+    print(df)
+
+    # sz = price_collector.get_sz(instId=trade_pair, position=position)
+    # print(f"trade_pair: {trade_pair}, position: {position}, sz: {sz}")
+    # result = trade.place_order(
+    #     instId=trade_pair,
+    #     sz="0.1",  # 委托数量 当instId为ETH时，1代表1个ETH
+    #     side=EnumSide.BUY.value,
+    #     tdMode=EnumTdMode.CASH.value,
+    #     ordType=EnumOrdType.LIMIT.value,
+    #     px=position  # 委托价格
+    # )
+    # print(result)
 
 
 if __name__ == '__main__':
