@@ -6,9 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base的python对象，使用�
 #p 用于全局搜索，快速定位
 
 #p DAO PROMPT
-在这个类
-    copy ur object class code here
-的基础上，添加
+在这个类的基础上，添加
     to_dict()方法，返回dict
     insert()方法：入参为dict，返回布尔类型
     get_by_id()方法，返回dict类型

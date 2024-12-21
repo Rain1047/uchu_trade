@@ -24,7 +24,7 @@ class FundingAPIWrapper:
         return self.fundingAPI.get_currencies()
 
     @add_docstring("获取余币宝余额")
-    def get_saving_balance(self, ccy: Optional[str]) -> Dict:
+    def get_saving_balance(self, ccy: Optional[str] = '') -> Dict:
         return self.fundingAPI.get_saving_balance(ccy=ccy)
 
     @add_docstring("获取账户资产估值")

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 import pandas as pd
 
@@ -7,6 +7,7 @@ from backend._utils import PriceUtils, FormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center._object_dao.account_balance import AccountBalance
+from backend.object_center._object_dao.saving_balance import SavingBalance
 from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
 from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumSide
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
@@ -16,6 +17,7 @@ kline_reader = KlineDataReader()
 okx = OKXAPIWrapper()
 trade = okx.trade_api
 market = okx.market_api
+funding = okx.funding_api
 
 
 # [调度主任务] 取消所有的限价、止盈止损订单
@@ -202,5 +204,13 @@ def test_limit_order(trade_pair: str, position: str):
     # print(result)
 
 
+# def get_saving_balance(ccy: Optional[str] = ''):
+#     result = funding.get_saving_balance(ccy=ccy)
+
 if __name__ == '__main__':
-    test_limit_order(trade_pair='ETH-USDT', position="1000")
+    # test_limit_order(trade_pair='ETH-USDT', position="1000")
+
+    # success = SavingBalance.reset(funding.get_saving_balance())
+    # print(f"Reset successful: {success}")
+
+    print(SavingBalance().list_by_condition(condition="ccy", value="USDT"))
