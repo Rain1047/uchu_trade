@@ -59,17 +59,17 @@ class FundingBalance(Base):
             return None
 
     # list_by_{condition}方法：根据条件查询记录
-    @staticmethod
-    def list_by_condition(condition):
+    @classmethod
+    def list_by_condition(cls, condition=None, value=None):
         try:
-            # 构建条件查询
-            results = session.query(FundingBalance).filter_by(**condition).all()
-
-            # 如果找到记录，将结果转为字典列表
-            return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
+            if condition and value is not None:  # 如果条件和对应值不为空
+                results = session.query(cls).filter(getattr(cls, condition) == value).all()
+            else:
+                results = session.query(cls).all()
+            return [result.to_dict() for result in results] if results else []
         except Exception as e:
-            logger.error(f"Error fetching account balances by condition {condition}: {e}")
-            return {'strategy_list': []}
+            print(f"Error fetching records by {condition}: {e}")
+            return []
 
     # delete_by_id()方法：根据id删除记录
     @staticmethod

@@ -163,6 +163,7 @@ class AccountBalance(Base):
 
             # 提交事务
             session.commit()
+            print("Account balance reset successfully.")
             return True
         except Exception as e:
             session.rollback()  # 发生错误时回滚事务
@@ -219,6 +220,7 @@ class AccountBalance(Base):
             for data in balance_data:
                 details = data.get('details', [])
                 for balance in details:
+                    # Create balance_info dictionary
                     balance_info = {
                         'ccy': balance.get('ccy', ''),
                         'avail_bal': balance.get('availBal', ''),
@@ -239,15 +241,16 @@ class AccountBalance(Base):
                         'spot_upl_ratio': balance.get('spotUplRatio', ''),
                         'total_pnl': balance.get('totalPnl', ''),
                         'total_pnl_ratio': balance.get('totalPnlRatio', ''),
-                        'stop_loss_switch': balance.get('stopLossSwitch', 'false'),
+                        # Keep the previous values of stop_loss_switch and limit_order_switch
+                        'stop_loss_switch': balance.get('stopLossSwitch', 'false'),  # Default to 'false' if not present
                         'limit_order_switch': balance.get('limitOrderSwitch', 'false'),
+                        # Default to 'false' if not present
                     }
-                    all_balances.append(balance_info)
 
+                    # Add balance_info to the list of all balances
+                    all_balances.append(balance_info)
             # 2. 使用解析出的余额数据来更新AccountBalance
             AccountBalance.reset(all_balances)
-
         else:
             print(response)
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('msg')}")
-
