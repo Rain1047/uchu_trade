@@ -114,29 +114,29 @@ class AccountBalance(Base):
             ).all()
             balance = balances[0]
             return {
-                    'id': balance.id,
-                    'ccy': balance.ccy,
-                    'avail_bal': balance.avail_bal,
-                    'avail_eq': balance.avail_eq,
-                    'eq': balance.eq,
-                    'cash_bal': balance.cash_bal,
-                    'u_time': balance.u_time,
-                    'dis_eq': balance.dis_eq,
-                    'eq_usd': balance.eq_usd,
-                    'notional_lever': balance.notional_lever,
-                    'ord_frozen': balance.ord_frozen,
-                    'spot_iso_bal': balance.spot_iso_bal,
-                    'upl': balance.upl,
-                    'spot_bal': balance.spot_bal,
-                    'open_avg_px': balance.open_avg_px,
-                    'acc_avg_px': balance.acc_avg_px,
-                    'spot_upl': balance.spot_upl,
-                    'spot_upl_ratio': balance.spot_upl_ratio,
-                    'total_pnl': balance.total_pnl,
-                    'total_pnl_ratio': balance.total_pnl_ratio,
-                    'limit_order_switch': balance.limit_order_switch,
-                    'stop_loss_switch': balance.stop_loss_switch,
-                }
+                'id': balance.id,
+                'ccy': balance.ccy,
+                'avail_bal': balance.avail_bal,
+                'avail_eq': balance.avail_eq,
+                'eq': balance.eq,
+                'cash_bal': balance.cash_bal,
+                'u_time': balance.u_time,
+                'dis_eq': balance.dis_eq,
+                'eq_usd': balance.eq_usd,
+                'notional_lever': balance.notional_lever,
+                'ord_frozen': balance.ord_frozen,
+                'spot_iso_bal': balance.spot_iso_bal,
+                'upl': balance.upl,
+                'spot_bal': balance.spot_bal,
+                'open_avg_px': balance.open_avg_px,
+                'acc_avg_px': balance.acc_avg_px,
+                'spot_upl': balance.spot_upl,
+                'spot_upl_ratio': balance.spot_upl_ratio,
+                'total_pnl': balance.total_pnl,
+                'total_pnl_ratio': balance.total_pnl_ratio,
+                'limit_order_switch': balance.limit_order_switch,
+                'stop_loss_switch': balance.stop_loss_switch,
+            }
         finally:
             session.close()
 
@@ -208,6 +208,12 @@ class AccountBalance(Base):
         finally:
             session.close()
 
+    # Sample querying method:
+    @staticmethod
+    def get_existing_balance(ccy):
+        # Explicitly query using session
+        return session.query(AccountBalance).filter_by(ccy=ccy).first()
+
     @staticmethod
     def reset_account_balance(response: dict):
         print(response)
@@ -220,9 +226,24 @@ class AccountBalance(Base):
             for data in balance_data:
                 details = data.get('details', [])
                 for balance in details:
-                    # Create balance_info dictionary
+                    # Try to fetch the existing values for stop_loss_switch and limit_order_switch
+                    ccy = balance.get('ccy', '')
+
+                    # Use the session.query() directly to fetch the existing balance
+                    existing_balance = session.query(AccountBalance).filter_by(ccy=ccy).first()
+
+                    if existing_balance:
+                        # Retain the existing values for stop_loss_switch and limit_order_switch
+                        stop_loss_switch = existing_balance.stop_loss_switch
+                        limit_order_switch = existing_balance.limit_order_switch
+                    else:
+                        # Default to 'false' if not found in database
+                        stop_loss_switch = False  # Should be a Boolean value
+                        limit_order_switch = False  # Should be a Boolean value
+
+                    # Create balance_info dictionary with the fetched or default values
                     balance_info = {
-                        'ccy': balance.get('ccy', ''),
+                        'ccy': ccy,
                         'avail_bal': balance.get('availBal', ''),
                         'avail_eq': balance.get('availEq', ''),
                         'eq': balance.get('eq', ''),
@@ -241,16 +262,17 @@ class AccountBalance(Base):
                         'spot_upl_ratio': balance.get('spotUplRatio', ''),
                         'total_pnl': balance.get('totalPnl', ''),
                         'total_pnl_ratio': balance.get('totalPnlRatio', ''),
-                        # Keep the previous values of stop_loss_switch and limit_order_switch
-                        'stop_loss_switch': balance.get('stopLossSwitch', 'false'),  # Default to 'false' if not present
-                        'limit_order_switch': balance.get('limitOrderSwitch', 'false'),
-                        # Default to 'false' if not present
+                        # Retain existing stop_loss_switch and limit_order_switch values
+                        'stop_loss_switch': stop_loss_switch,
+                        'limit_order_switch': limit_order_switch,
                     }
 
                     # Add balance_info to the list of all balances
                     all_balances.append(balance_info)
+
             # 2. 使用解析出的余额数据来更新AccountBalance
             AccountBalance.reset(all_balances)
+
         else:
             print(response)
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('msg')}")
