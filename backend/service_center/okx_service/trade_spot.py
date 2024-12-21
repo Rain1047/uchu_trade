@@ -209,37 +209,46 @@ def test_limit_order(trade_pair: str, position: str):
 
 
 def get_funding_balance(symbol: Optional[str]):
-    return FundingBalance.list_by_condition(condition='ccy', value=symbol)[0]
+    # Get the result of the query
+    result = FundingBalance.list_by_condition(condition='ccy', value=symbol)
+    if result:
+        return result[0]  # Return the first element if the list is not empty
+    else:
+        return {}  # Or return an empty dict (or None, depending on your use case)
 
 
 # 主要方法 赎回-划转-获取真实的交易账户余额
-def okx_purchase_redempt(ccy: Optional[str]):
+def okx_get_real_account_balance(ccy: Optional[str]):
     try:
         ccy = SymbolFormatUtils.get_base_symbol(ccy)
         # 1.1 reset简单赚币中的币种余额
         reset_saving_balance()
         # 1.2 查看简单赚币币种余额
-        amt = get_saving_balance(symbol=ccy)['loan_amt']
-        # 1.3 赎回
-        funding.purchase_redempt(ccy=ccy, amt=amt)
-        # 1.4 赎回之后再reset一次
-        reset_saving_balance()
+        saving_balance = get_saving_balance(symbol=ccy)
+
+        if saving_balance and 'loan_amt' in saving_balance:
+            amt = saving_balance['loan_amt']
+            # 1.3 赎回
+            funding.purchase_redempt(ccy=ccy, amt=amt)
+            # 1.4 赎回之后再reset一次
+            reset_saving_balance()
+        print(f"{ccy} redempt success.")
 
         # 2.1 reset资金账户中的币种余额
         reset_funding_balance()
         # 2.2 查看资金账户币种余额
-        availBal = get_funding_balance(symbol=ccy)['availBal']
-        # 2.3 划转到交易账户
-        funding.funds_transfer_2exchange(amt=availBal, ccy=ccy)
-        # 2.4 划转后再reset一次
-        reset_funding_balance()
+        funding_balance = get_funding_balance(symbol=ccy)['availBal']
+        if funding_balance and 'availBal' in funding_balance:
+            availBal = funding_balance['availBal']
+            # 2.3 划转到交易账户
+            funding.funds_transfer_2exchange(amt=availBal, ccy=ccy)
+            # 2.4 划转后再reset一次
+            reset_funding_balance()
+        print(f"{ccy} transfer to exchange success.")
 
         # 3.1 reset交易账户中的币种余额
         reset_account_balance()
-
-
-
-
+        print(AccountBalance.list_by_ccy(ccy))
 
     except Exception as e:
         print(f"purchase_redempt error: {e}")
@@ -260,8 +269,16 @@ def list_account_balance():
     return balance_list
 
 
+from typing import Optional
+
+
 def get_saving_balance(symbol: Optional[str] = '') -> dict:
-    return SavingBalance().list_by_condition(condition="ccy", value=symbol)[0]
+    result = SavingBalance().list_by_condition(condition="ccy", value=symbol)
+    # Check if the result is empty
+    if result:
+        return result[0]  # Return the first element if the list is not empty
+    else:
+        return {}  # Or return an empty dict (or [] depending on the return type you'd prefer)
 
 
 def reset_funding_balance():
@@ -305,4 +322,4 @@ if __name__ == '__main__':
     # reset_account_balance()
     # list_account_balance()
 
-    reset_account_balance()
+    okx_get_real_account_balance(ccy='USDT')
