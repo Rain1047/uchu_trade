@@ -87,7 +87,6 @@ def place_spot_stop_loss_by_config(stop_loss_configs: List):
         print(result)
 
 
-
 # [调度子任务] 取消所有的限价、止盈止损订单
 def cancel_all_algo_orders_main_task():
     spot_unfinished_algo_list = list_spot_unfinished_algo_order()
@@ -135,9 +134,6 @@ def cancel_spot_unfinished_algo_order(algo_orders):
     print(cancel_result)
 
 
-
-
-
 # [调度子任务] 根据配置进行限价委托
 def place_spot_limit_order_by_config(limit_order_configs: List):
     for config in limit_order_configs:
@@ -179,8 +175,6 @@ def place_spot_limit_order_by_config(limit_order_configs: List):
             sz=eq,
             slTriggerPx=str()
         )
-
-
 
 
 price_collector = TickerPriceCollector()
@@ -314,6 +308,7 @@ def reset_account_balance():
 
 def reset_saving_balance() -> bool:
     result = funding.get_saving_balance()
+    print(result)
     success = SavingBalance.reset(result)
     return success
 
@@ -330,3 +325,4 @@ if __name__ == '__main__':
     # list_account_balance()
 
     okx_get_real_account_balance(ccy='USDT')
+
