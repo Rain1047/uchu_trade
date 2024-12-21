@@ -91,7 +91,7 @@ def place_spot_stop_loss_by_config(stop_loss_configs: List):
 # [调度子任务] 根据配置进行限价委托
 def place_spot_limit_order_by_config(limit_order_configs: List):
     # 获取真实的账户余额 赎回赚币-划转到交易账户
-    okx_get_real_account_balance(ccy="USDT")
+    real_account_balance = okx_get_real_account_balance(ccy="USDT")
 
     for config in limit_order_configs:
         ccy = config.get('ccy')
