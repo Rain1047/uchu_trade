@@ -43,11 +43,12 @@ def place_algo_order_main_task():
         place_spot_limit_order_by_config(limit_order_configs)
 
 
+# [调度子任务] 止损委托
 def place_spot_stop_loss_by_config(stop_loss_configs: List):
     for config in stop_loss_configs:
         ccy = config.get('ccy')
         print(ccy)
-        balance = AccountBalance().list_by_ccy(config.get('ccy'))
+        balance = AccountBalance().get_by_ccy(config.get('ccy'))
         eq = balance.get('eq')
         interval = config.get('interval')
         pct = config.get('percentage')
@@ -87,7 +88,52 @@ def place_spot_stop_loss_by_config(stop_loss_configs: List):
         print(result)
 
 
-# [调度子任务] 取消所有的限价、止盈止损订单
+# [调度子任务] 根据配置进行限价委托
+def place_spot_limit_order_by_config(limit_order_configs: List):
+    # 获取真实的账户余额 赎回赚币-划转到交易账户
+    okx_get_real_account_balance(ccy="USDT")
+
+    for config in limit_order_configs:
+        ccy = config.get('ccy')
+        print(ccy)
+        balance = AccountBalance().get_by_ccy(config.get('ccy'))
+        eq = balance.get('eq')
+        interval = config.get('interval')
+        pct = config.get('percentage')
+        amount = config.get('amount')
+        # 通过sig和interval获取价格
+        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
+        kline_data = pd.read_csv(f"{file_abspath}")
+        target_index = config.get('signal').lower() + interval
+        target_price = kline_data.iloc[-1][target_index]
+        print(f"{eq},{pct}")
+        if pct is not None and str(pct).strip():
+            eq = str(round(float(eq) * int(pct) / 100, 6))
+            print(eq)
+        else:
+            eq = '0'
+
+        print(
+            {
+                'instId': f"{config.get('ccy')}-USDT",
+                'tdMode': EnumTdMode.CASH.value,
+                'side': "sell",
+                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
+                'sz': eq,
+                'slTriggerPx': str(target_price),  # 止损触发价格
+                'slOrdPx': '-1'
+            }
+        )
+        result = trade.place_algo_order(
+            instId=f"{config.get('ccy')}-USDT",
+            tdMode=EnumTdMode.CASH.value,
+            side="sell",
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
+            sz=eq,
+            slTriggerPx=str()
+        )
+
+
 def cancel_all_algo_orders_main_task():
     spot_unfinished_algo_list = list_spot_unfinished_algo_order()
     cancel_algo_list = []
@@ -134,49 +180,6 @@ def cancel_spot_unfinished_algo_order(algo_orders):
     print(cancel_result)
 
 
-# [调度子任务] 根据配置进行限价委托
-def place_spot_limit_order_by_config(limit_order_configs: List):
-    for config in limit_order_configs:
-        ccy = config.get('ccy')
-        print(ccy)
-        balance = AccountBalance().list_by_ccy(config.get('ccy'))
-        eq = balance.get('eq')
-        interval = config.get('interval')
-        pct = config.get('percentage')
-        amount = config.get('amount')
-        # 通过sig和interval获取价格
-        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
-        kline_data = pd.read_csv(f"{file_abspath}")
-        target_index = config.get('signal').lower() + interval
-        target_price = kline_data.iloc[-1][target_index]
-        print(f"{eq},{pct}")
-        if pct is not None and str(pct).strip():
-            eq = str(round(float(eq) * int(pct) / 100, 6))
-            print(eq)
-        else:
-            eq = '0'
-
-        print(
-            {
-                'instId': f"{config.get('ccy')}-USDT",
-                'tdMode': EnumTdMode.CASH.value,
-                'side': "sell",
-                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
-                'sz': eq,
-                'slTriggerPx': str(target_price),  # 止损触发价格
-                'slOrdPx': '-1'
-            }
-        )
-        result = trade.place_algo_order(
-            instId=f"{config.get('ccy')}-USDT",
-            tdMode=EnumTdMode.CASH.value,
-            side="sell",
-            ordType=EnumAlgoOrdType.CONDITIONAL.value,
-            sz=eq,
-            slTriggerPx=str()
-        )
-
-
 price_collector = TickerPriceCollector()
 
 
@@ -219,7 +222,7 @@ def get_funding_balance(symbol: Optional[str]):
 
 
 # 主要方法 赎回-划转-获取真实的交易账户余额
-def okx_get_real_account_balance(ccy: Optional[str]):
+def okx_get_real_account_balance(ccy: Optional[str]) -> float:
     try:
         ccy = SymbolFormatUtils.get_base_symbol(ccy)
         # 1.1 reset简单赚币中的币种余额
@@ -249,7 +252,13 @@ def okx_get_real_account_balance(ccy: Optional[str]):
 
         # 3.1 reset交易账户中的币种余额
         reset_account_balance()
-        print(AccountBalance.list_by_ccy(ccy))
+        account_balance = AccountBalance.get_by_ccy(ccy)
+        if account_balance and 'avail_bal' in account_balance:
+            print(f"{ccy} avail_bal: {account_balance['avail_bal']}")
+            return float(account_balance['avail_bal'])
+        else:
+            print(f"{ccy} avail_bal: 0.0")
+            return 0.0
 
     except Exception as e:
         print(f"purchase_redempt error: {e}")

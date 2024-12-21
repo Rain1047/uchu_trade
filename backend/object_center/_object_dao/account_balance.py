@@ -104,7 +104,7 @@ class AccountBalance(Base):
             raise e
 
     @staticmethod
-    def list_by_ccy(ccy: str):
+    def get_by_ccy(ccy: str):
         try:
             # 添加过滤条件
             balances = session.query(AccountBalance).filter(
