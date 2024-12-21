@@ -15,6 +15,9 @@ class SpotSubTaskLimitOrder:
         self.trade = OKXAPIWrapper().trade_api
 
     async def execute_limit_order_task(self, limit_order_configs: List):
+        # 获取真实的账户余额 赎回赚币-划转到交易账户
+        real_account_balance = okx_get_real_account_balance(ccy="USDT")
+
         for config in limit_order_configs:
             ccy = config.get('ccy')
             print(ccy)
@@ -28,13 +31,13 @@ class SpotSubTaskLimitOrder:
             kline_data = pd.read_csv(f"{file_abspath}")
             target_index = config.get('signal').lower() + interval
             target_price = kline_data.iloc[-1][target_index]
-
             print(f"{eq},{pct}")
             if pct is not None and str(pct).strip():
                 eq = str(round(float(eq) * int(pct) / 100, 6))
                 print(eq)
             else:
                 eq = '0'
+
             print(
                 {
                     'instId': f"{config.get('ccy')}-USDT",
@@ -52,7 +55,5 @@ class SpotSubTaskLimitOrder:
                 side="sell",
                 ordType=EnumAlgoOrdType.CONDITIONAL.value,
                 sz=eq,
-                slTriggerPx=str(target_price),  # 止损触发价格
-                slOrdPx='-1'
+                slTriggerPx=str()
             )
-            print(result)
