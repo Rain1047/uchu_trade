@@ -10,6 +10,7 @@ class SpotMainTask:
         self.stop_loss_task = SpotSubTaskLimitOrder()
         self.limit_order_task = SpotSubTaskLimitOrder()
 
+    # [调度主任务] 根据配置进行止盈止损、限价委托
     async def execute_spot_main_task(self):
         # 1. 获取configs
         algo_order_configs = SpotTradeConfig().list_all()
