@@ -23,6 +23,10 @@ class FundingAPIWrapper:
     def get_currencies(self) -> Dict:
         return self.fundingAPI.get_currencies()
 
+    @add_docstring("获取资金账户余额")
+    def get_balances(self, ccy: Optional[str] = ''):
+        return self.fundingAPI.get_balances(ccy=ccy)
+
     @add_docstring("获取余币宝余额")
     def get_saving_balance(self, ccy: Optional[str] = '') -> Dict:
         return self.fundingAPI.get_saving_balance(ccy=ccy)
@@ -30,6 +34,17 @@ class FundingAPIWrapper:
     @add_docstring("获取账户资产估值")
     def get_asset_valuation(self, ccy: Optional[str] = '') -> Dict:
         return self.fundingAPI.get_asset_valuation(ccy=ccy)
+
+    @add_docstring("资金划转-资金账户到交易账户")
+    def funds_transfer_2exchange(self, amt: Optional[str], from_: Optional[str] = '6', to: Optional[str] = '18',
+                                 ccy: Optional[str] = 'USDT'):
+        return self.fundingAPI.funds_transfer(ccy=ccy, amt=amt, from_=from_, to=to)
+
+    @add_docstring("资金划转-交易账户到资金账户")
+    def funds_transfer_2funding(self, amt: Optional[str], from_: Optional[str] = '18', to: Optional[str] = '6',
+                                ccy: Optional[str] = 'USDT'):
+        return self.fundingAPI.funds_transfer(ccy=ccy, amt=amt, from_=from_, to=to)
+
 
     @add_docstring("申购赎回")
     def purchase_redempt(self, ccy: str, amt: str,

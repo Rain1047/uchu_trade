@@ -97,20 +97,24 @@ class SavingBalance(Base):
             session.query(cls).delete()
             session.commit()
 
-            # Step 2: Insert new data
+            # Step 2: Insert new data only if bal > 1
             if data.get('code') == '0' and isinstance(data.get('data'), list):
                 for entry in data['data']:
-                    new_entry = cls(
-                        amt=entry.get('amt'),
-                        ccy=entry.get('ccy'),
-                        earnings=entry.get('earnings'),
-                        loan_amt=entry.get('loanAmt'),
-                        pending_amt=entry.get('pendingAmt'),
-                        rate=entry.get('rate'),
-                        redempt_amt=entry.get('redemptAmt')
-                    )
-                    session.add(new_entry)
+                    # Check if 'bal' exists and if it's greater than 1
+                    bal = entry.get('bal', 0)  # Default to 0 if 'bal' is not found
+                    if bal > 1:
+                        new_entry = cls(
+                            amt=entry.get('amt'),
+                            ccy=entry.get('ccy'),
+                            earnings=entry.get('earnings'),
+                            loan_amt=entry.get('loanAmt'),
+                            pending_amt=entry.get('pendingAmt'),
+                            rate=entry.get('rate'),
+                            redempt_amt=entry.get('redemptAmt')
+                        )
+                        session.add(new_entry)
                 session.commit()
+                print("Saving balance reset successfully")
                 return True  # Indicate success
             else:
                 print("Invalid data format")
@@ -119,5 +123,6 @@ class SavingBalance(Base):
             session.rollback()
             print(f"Error resetting data: {e}")
             return False
+
 
 

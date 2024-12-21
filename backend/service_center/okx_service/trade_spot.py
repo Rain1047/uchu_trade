@@ -8,6 +8,7 @@ from backend._utils import PriceUtils, FormatUtils, SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center._object_dao.account_balance import AccountBalance
+from backend.object_center._object_dao.funding_balance import FundingBalance
 from backend.object_center._object_dao.saving_balance import SavingBalance
 from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
 from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumSide
@@ -210,14 +211,21 @@ def test_limit_order(trade_pair: str, position: str):
 # okx一键赎回
 def okx_purchase_redempt(ccy: Optional[str]):
     try:
-        # 1. 重制简单赚币中的币种余额
+        # 1.1 reset简单赚币中的币种余额
         reset_saving_balance()
-        # 2. 查看币种余额
+        # 1.2 查看币种余额
         ccy = SymbolFormatUtils.get_base_symbol(ccy)
-        # 3. 获取金额
+        # 1.3 获取金额
         amt = get_saving_balance(symbol=ccy)['loan_amt']
-        # 4. 赎回
+        # 1.4 赎回
         funding.purchase_redempt(ccy=ccy, amt=amt)
+        # 1.5 赎回之后再reset一次
+        reset_saving_balance()
+
+        # 2.1 reset资金账户中的币种余额
+
+
+
     except Exception as e:
         print(f"purchase_redempt error: {e}")
         pass
@@ -239,6 +247,18 @@ def list_account_balance():
 
 def get_saving_balance(symbol: Optional[str] = '') -> dict:
     return SavingBalance().list_by_condition(condition="ccy", value=symbol)[0]
+
+
+def reset_funding_balance():
+    # 1. 更新现有记录
+    response = funding.get_balances()
+    if response.get('code') == okx_constants.SUCCESS_CODE:
+        FundingBalance.reset(response)
+        return True
+    else:
+        print(response)
+        logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
+        return False
 
 
 def reset_account_balance():
@@ -266,6 +286,8 @@ if __name__ == '__main__':
     # print(f"Reset successful: {success}")
 
     # okx_purchase_redempt(ccy='USDT')
+    #
+    # reset_account_balance()
+    # list_account_balance()
 
-    reset_account_balance()
-    list_account_balance()
+    reset_funding_balance()
