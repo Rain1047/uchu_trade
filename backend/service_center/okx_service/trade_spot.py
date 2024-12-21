@@ -3,7 +3,8 @@ from typing import Dict, Any, List, Optional
 
 import pandas as pd
 
-from backend._utils import PriceUtils, FormatUtils
+from backend._constants import okx_constants
+from backend._utils import PriceUtils, FormatUtils, SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center._object_dao.account_balance import AccountBalance
@@ -13,8 +14,10 @@ from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdT
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.service_center.okx_service.ticker_price_service import TickerPriceCollector
 
+logger = logging.getLogger(__name__)
 kline_reader = KlineDataReader()
 okx = OKXAPIWrapper()
+account = okx.account_api
 trade = okx.trade_api
 market = okx.market_api
 funding = okx.funding_api
@@ -204,8 +207,57 @@ def test_limit_order(trade_pair: str, position: str):
     # print(result)
 
 
-# def get_saving_balance(ccy: Optional[str] = ''):
-#     result = funding.get_saving_balance(ccy=ccy)
+# okx一键赎回
+def okx_purchase_redempt(ccy: Optional[str]):
+    try:
+        # 1. 重制简单赚币中的币种余额
+        reset_saving_balance()
+        # 2. 查看币种余额
+        ccy = SymbolFormatUtils.get_base_symbol(ccy)
+        # 3. 获取金额
+        amt = get_saving_balance(symbol=ccy)['loan_amt']
+        # 4. 赎回
+        funding.purchase_redempt(ccy=ccy, amt=amt)
+    except Exception as e:
+        print(f"purchase_redempt error: {e}")
+        pass
+
+
+def list_account_balance():
+    # 2. 获取列表结果并转换为可修改的字典列表
+    balance_list = [dict(balance) for balance in AccountBalance.list_all()]
+
+    # 3. 通过币种获取自动交易配置
+    for balance in balance_list:
+        ccy = balance.get('ccy')
+        auto_config_list = SpotTradeConfig.list_by_ccy_and_type(ccy)
+        balance['auto_config_list'] = list(auto_config_list) if auto_config_list else []
+
+    print("Final balance list:", balance_list)
+    return balance_list
+
+
+def get_saving_balance(symbol: Optional[str] = '') -> dict:
+    return SavingBalance().list_by_condition(condition="ccy", value=symbol)[0]
+
+
+def reset_account_balance():
+    # 1. 更新现有记录
+    response = account.get_account_balance()
+    if response.get('code') == okx_constants.SUCCESS_CODE:
+        AccountBalance.reset_account_balance(response)
+        return True
+    else:
+        print(response)
+        logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
+        return False
+
+
+def reset_saving_balance() -> bool:
+    result = funding.get_saving_balance()
+    success = SavingBalance.reset(result)
+    return success
+
 
 if __name__ == '__main__':
     # test_limit_order(trade_pair='ETH-USDT', position="1000")
@@ -213,4 +265,7 @@ if __name__ == '__main__':
     # success = SavingBalance.reset(funding.get_saving_balance())
     # print(f"Reset successful: {success}")
 
-    print(SavingBalance().list_by_condition(condition="ccy", value="USDT"))
+    # okx_purchase_redempt(ccy='USDT')
+
+    reset_account_balance()
+    list_account_balance()
