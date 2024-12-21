@@ -212,6 +212,7 @@ def get_funding_balance(symbol: Optional[str]):
     return FundingBalance.list_by_condition(condition='ccy', value=symbol)[0]
 
 
+# 主要方法 赎回-划转-获取真实的交易账户余额
 def okx_purchase_redempt(ccy: Optional[str]):
     try:
         ccy = SymbolFormatUtils.get_base_symbol(ccy)
@@ -235,6 +236,7 @@ def okx_purchase_redempt(ccy: Optional[str]):
 
         # 3.1 reset交易账户中的币种余额
         reset_account_balance()
+
 
 
 
@@ -303,4 +305,4 @@ if __name__ == '__main__':
     # reset_account_balance()
     # list_account_balance()
 
-    reset_funding_balance()
+    reset_account_balance()
