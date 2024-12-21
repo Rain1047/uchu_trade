@@ -5,7 +5,7 @@ from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
 
 
-class OKXService:
+class OKXMainService:
 
     def __init__(self):
         self.okx = OKXAPIWrapper()
@@ -36,7 +36,7 @@ class OKXService:
             if funding_balance and 'availBal' in funding_balance:
                 availBal = funding_balance['availBal']
                 # 2.3 划转到交易账户
-                funding.funds_transfer_2exchange(amt=availBal, ccy=ccy)
+                self.funding.funds_transfer_2exchange(amt=availBal, ccy=ccy)
                 # 2.4 划转后再reset一次
                 reset_funding_balance()
             print(f"{ccy} transfer to exchange success.")
