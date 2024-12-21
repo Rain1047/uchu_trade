@@ -3,8 +3,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from backend.schedule_center.monitoring.schedule_monitor import SchedulerMonitor
 from backend.schedule_center.core.task_chain import TaskChain
-from backend.schedule_center.tasks.trade_tasks.data_fetch_task import TradeDataFetchTask
-from backend.schedule_center.tasks.trade_tasks.period_strategy_task import PeriodicStrategyTask
+from backend.schedule_center.tasks.data_tasks.kline_data_fetch_task import TradeDataFetchTask
+from backend.schedule_center.tasks.trade_tasks.swap_main_task import PeriodicStrategyTask
 import logging
 
 
