@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from backend._utils import DatabaseUtils
 
 Base = declarative_base()
-
+session = DatabaseUtils.get_db_session()
 
 class SpotTradeConfig(Base):
     __tablename__ = 'spot_trade_config'
@@ -24,7 +24,7 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def list_all() -> List[Dict]:
-        session = DatabaseUtils.get_db_session()
+
         try:
             results = session.query(SpotTradeConfig).all()
             return [
