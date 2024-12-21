@@ -101,8 +101,8 @@ class SavingBalance(Base):
             if data.get('code') == '0' and isinstance(data.get('data'), list):
                 for entry in data['data']:
                     # Check if 'bal' exists and if it's greater than 1
-                    bal = entry.get('bal', 0)  # Default to 0 if 'bal' is not found
-                    if bal > 1:
+                    amt = float(entry.get('amt', 0))
+                    if amt > 1:
                         new_entry = cls(
                             amt=entry.get('amt'),
                             ccy=entry.get('ccy'),
