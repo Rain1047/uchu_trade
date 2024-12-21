@@ -208,21 +208,34 @@ def test_limit_order(trade_pair: str, position: str):
     # print(result)
 
 
-# okx一键赎回
+def get_funding_balance(symbol: Optional[str]):
+    return FundingBalance.list_by_condition(condition='ccy', value=symbol)[0]
+
+
 def okx_purchase_redempt(ccy: Optional[str]):
     try:
+        ccy = SymbolFormatUtils.get_base_symbol(ccy)
         # 1.1 reset简单赚币中的币种余额
         reset_saving_balance()
-        # 1.2 查看币种余额
-        ccy = SymbolFormatUtils.get_base_symbol(ccy)
-        # 1.3 获取金额
+        # 1.2 查看简单赚币币种余额
         amt = get_saving_balance(symbol=ccy)['loan_amt']
-        # 1.4 赎回
+        # 1.3 赎回
         funding.purchase_redempt(ccy=ccy, amt=amt)
-        # 1.5 赎回之后再reset一次
+        # 1.4 赎回之后再reset一次
         reset_saving_balance()
 
         # 2.1 reset资金账户中的币种余额
+        reset_funding_balance()
+        # 2.2 查看资金账户币种余额
+        availBal = get_funding_balance(symbol=ccy)['availBal']
+        # 2.3 划转到交易账户
+        funding.funds_transfer_2exchange(amt=availBal, ccy=ccy)
+        # 2.4 划转后再reset一次
+        reset_funding_balance()
+
+        # 3.1 reset交易账户中的币种余额
+        reset_account_balance()
+
 
 
 
