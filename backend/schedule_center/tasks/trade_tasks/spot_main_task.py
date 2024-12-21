@@ -10,7 +10,7 @@ class SpotMainTask:
         self.stop_loss_task = SpotSubTaskLimitOrder()
         self.limit_order_task = SpotSubTaskLimitOrder()
 
-    async def place_algo_order_main_task(self):
+    async def execute_spot_main_task(self):
         # 1. 获取configs
         algo_order_configs = SpotTradeConfig().list_all()
         limit_order_configs = []
