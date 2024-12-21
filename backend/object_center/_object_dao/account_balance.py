@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from backend._utils import DatabaseUtils
 
 Base = declarative_base()
+session = DatabaseUtils.get_db_session()
 
 
 def process_balance_response(api_response):
@@ -50,7 +51,6 @@ class AccountBalance(Base):
 
     @staticmethod
     def insert_or_update(api_response):
-        session = DatabaseUtils.get_db_session()
         details = AccountBalance.process_balance_response(api_response)
 
         for balance_detail in details:
@@ -174,3 +174,49 @@ class AccountBalance(Base):
             ]
         finally:
             session.close()
+
+    @staticmethod
+    def reset(final_balance_list):
+        try:
+            # 1. 删除所有现有记录
+            session.query(AccountBalance).delete()
+            session.commit()
+
+            # 2. 重新插入新数据
+            for balance in final_balance_list:
+                # 提取每个币种的余额信息
+                balance_data = {
+                    'ccy': balance.get('ccy', ''),
+                    'avail_bal': balance.get('avail_bal', ''),
+                    'avail_eq': balance.get('avail_eq', ''),
+                    'eq': balance.get('eq', ''),
+                    'cash_bal': balance.get('cash_bal', ''),
+                    'u_time': balance.get('u_time', ''),
+                    'dis_eq': balance.get('dis_eq', ''),
+                    'eq_usd': balance.get('eq_usd', ''),
+                    'notional_lever': balance.get('notional_lever', ''),
+                    'ord_frozen': balance.get('ord_frozen', ''),
+                    'spot_iso_bal': balance.get('spot_iso_bal', ''),
+                    'upl': balance.get('upl', ''),
+                    'spot_bal': balance.get('spot_bal', ''),
+                    'open_avg_px': balance.get('open_avg_px', ''),
+                    'acc_avg_px': balance.get('acc_avg_px', ''),
+                    'spot_upl': balance.get('spot_upl', ''),
+                    'spot_upl_ratio': balance.get('spot_upl_ratio', ''),
+                    'total_pnl': balance.get('total_pnl', ''),
+                    'total_pnl_ratio': balance.get('total_pnl_ratio', ''),
+                    'stop_loss_switch': balance.get('stop_loss_switch', 'false'),
+                    'limit_order_switch': balance.get('limit_order_switch', 'false'),
+                }
+
+                # 创建并添加新的余额记录
+                account_balance = AccountBalance(**balance_data)
+                session.add(account_balance)
+
+            # 提交事务
+            session.commit()
+            return True
+        except Exception as e:
+            session.rollback()  # 发生错误时回滚事务
+            print(f"Error in resetting account balance: {e}")
+            return False
