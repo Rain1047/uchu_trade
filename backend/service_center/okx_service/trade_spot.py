@@ -23,7 +23,69 @@ trade = okx.trade_api
 market = okx.market_api
 funding = okx.funding_api
 
-# 根据限价止盈止损的配置进行限价委托
+
+# [调度主任务] 根据配置进行止盈止损、限价委托
+def place_algo_order_main_task():
+    # 1. 获取configs
+    algo_order_configs = SpotTradeConfig().list_all()
+    limit_order_configs = []
+    stop_loss_configs = []
+    for config in algo_order_configs:
+        if config.get('type') == 'stop_loss':
+            stop_loss_configs.append(config)
+        elif config.get('type') == 'limit_order':
+            limit_order_configs.append(config)
+    # 2. 处理stop loss的任务
+    if len(stop_loss_configs) > 0:
+        place_spot_stop_loss_by_config(stop_loss_configs)
+    # 3. 处理limit order的任务
+    if len(limit_order_configs) > 0:
+        place_spot_limit_order_by_config(limit_order_configs)
+
+
+def place_spot_stop_loss_by_config(stop_loss_configs: List):
+    for config in stop_loss_configs:
+        ccy = config.get('ccy')
+        print(ccy)
+        balance = AccountBalance().list_by_ccy(config.get('ccy'))
+        eq = balance.get('eq')
+        interval = config.get('interval')
+        pct = config.get('percentage')
+        amount = config.get('amount')
+        # 通过sig和interval获取价格
+        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
+        kline_data = pd.read_csv(f"{file_abspath}")
+        target_index = config.get('signal').lower() + interval
+        target_price = kline_data.iloc[-1][target_index]
+
+        print(f"{eq},{pct}")
+        if pct is not None and str(pct).strip():
+            eq = str(round(float(eq) * int(pct) / 100, 6))
+            print(eq)
+        else:
+            eq = '0'
+        print(
+            {
+                'instId': f"{config.get('ccy')}-USDT",
+                'tdMode': EnumTdMode.CASH.value,
+                'side': "sell",
+                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
+                'sz': eq,
+                'slTriggerPx': str(target_price),  # 止损触发价格
+                'slOrdPx': '-1'
+            }
+        )
+        result = trade.place_algo_order(
+            instId=f"{config.get('ccy')}-USDT",
+            tdMode=EnumTdMode.CASH.value,
+            side="sell",
+            ordType=EnumAlgoOrdType.CONDITIONAL.value,
+            sz=eq,
+            slTriggerPx=str(target_price),  # 止损触发价格
+            slOrdPx='-1'
+        )
+        print(result)
+
 
 
 # [调度子任务] 取消所有的限价、止盈止损订单
@@ -73,23 +135,7 @@ def cancel_spot_unfinished_algo_order(algo_orders):
     print(cancel_result)
 
 
-# [调度主任务] 根据配置进行止盈止损、限价委托
-def place_algo_order_main_task():
-    # 1. 获取configs
-    algo_order_configs = SpotTradeConfig().list_all()
-    limit_order_configs = []
-    stop_loss_configs = []
-    for config in algo_order_configs:
-        if config.get('type') == 'stop_loss':
-            stop_loss_configs.append(config)
-        elif config.get('type') == 'limit_order':
-            limit_order_configs.append(config)
-    # 2. 处理stop loss的任务
-    if len(stop_loss_configs) > 0:
-        place_spot_stop_loss_by_config(stop_loss_configs)
-    # 3. 处理limit order的任务
-    if len(limit_order_configs) > 0:
-        place_spot_limit_order_by_config(limit_order_configs)
+
 
 
 # [调度子任务] 根据配置进行限价委托
@@ -135,48 +181,6 @@ def place_spot_limit_order_by_config(limit_order_configs: List):
         )
 
 
-def place_spot_stop_loss_by_config(stop_loss_configs: List):
-    for config in stop_loss_configs:
-        ccy = config.get('ccy')
-        print(ccy)
-        balance = AccountBalance().list_by_ccy(config.get('ccy'))
-        eq = balance.get('eq')
-        interval = config.get('interval')
-        pct = config.get('percentage')
-        amount = config.get('amount')
-        # 通过sig和interval获取价格
-        file_abspath = kline_reader.get_abspath(symbol=ccy, interval='1D')
-        kline_data = pd.read_csv(f"{file_abspath}")
-        target_index = config.get('signal').lower() + interval
-        target_price = kline_data.iloc[-1][target_index]
-
-        print(f"{eq},{pct}")
-        if pct is not None and str(pct).strip():
-            eq = str(round(float(eq) * int(pct) / 100, 6))
-            print(eq)
-        else:
-            eq = '0'
-        print(
-            {
-                'instId': f"{config.get('ccy')}-USDT",
-                'tdMode': EnumTdMode.CASH.value,
-                'side': "sell",
-                'ordType': EnumAlgoOrdType.CONDITIONAL.value,
-                'sz': eq,
-                'slTriggerPx': str(target_price),  # 止损触发价格
-                'slOrdPx': '-1'
-            }
-        )
-        result = trade.place_algo_order(
-            instId=f"{config.get('ccy')}-USDT",
-            tdMode=EnumTdMode.CASH.value,
-            side="sell",
-            ordType=EnumAlgoOrdType.CONDITIONAL.value,
-            sz=eq,
-            slTriggerPx=str(target_price),  # 止损触发价格
-            slOrdPx='-1'
-        )
-        print(result)
 
 
 price_collector = TickerPriceCollector()
