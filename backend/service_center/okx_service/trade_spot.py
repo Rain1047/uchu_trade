@@ -23,8 +23,10 @@ trade = okx.trade_api
 market = okx.market_api
 funding = okx.funding_api
 
+# 根据限价止盈止损的配置进行限价委托
 
-# [调度主任务] 取消所有的限价、止盈止损订单
+
+# [调度子任务] 取消所有的限价、止盈止损订单
 def cancel_all_algo_orders_main_task():
     spot_unfinished_algo_list = list_spot_unfinished_algo_order()
     cancel_algo_list = []
@@ -90,6 +92,7 @@ def place_algo_order_main_task():
         place_spot_limit_order_by_config(limit_order_configs)
 
 
+# [调度子任务] 根据配置进行限价委托
 def place_spot_limit_order_by_config(limit_order_configs: List):
     for config in limit_order_configs:
         ccy = config.get('ccy')
@@ -237,7 +240,7 @@ def okx_get_real_account_balance(ccy: Optional[str]):
         # 2.1 reset资金账户中的币种余额
         reset_funding_balance()
         # 2.2 查看资金账户币种余额
-        funding_balance = get_funding_balance(symbol=ccy)['availBal']
+        funding_balance = get_funding_balance(symbol=ccy)
         if funding_balance and 'availBal' in funding_balance:
             availBal = funding_balance['availBal']
             # 2.3 划转到交易账户

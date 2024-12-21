@@ -99,7 +99,7 @@ class TradingScheduler:
         try:
             self.logger.info("Starting trading scheduler...")
             # 设置早上八点的定时任务
-            # self.setup_morning_tasks()
+            self.setup_morning_tasks()
             # 设置周期执行的调度任务
             self.setup_periodic_tasks()
 
