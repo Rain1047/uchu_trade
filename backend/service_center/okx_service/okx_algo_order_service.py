@@ -6,8 +6,8 @@ from typing import Optional, List, Dict, Any
 from backend._decorators import add_docstring
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
+from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
+from backend.object_center._object_dao.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
 from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 
@@ -147,9 +147,10 @@ class OKXAlgoOrderService:
                 str(st_result.st_inst_id).zfill(4) + "stInsId" +
                 str(uuid.uuid4())[:4])
 
-    def save_execute_algo_order_result(self, st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
+    def save_execute_algo_order_result(self, st_execute_result: 'StrategyExecuteResult', place_order_result: dict) \
+            -> bool:
         try:
-            algo_order_record = AlgoOrderRecord()
+            algo_order_record = SwapAlgoOrderRecord()
             post_order_data = place_order_result['data'][0]
             algo_order_record.cl_ord_id = post_order_data['clOrdId']
             algo_order_record.ord_id = post_order_data['ordId']
@@ -185,19 +186,21 @@ class OKXAlgoOrderService:
             algo_order_record.source = get_order_data['source']
             algo_order_record.create_time = datetime.now()
             algo_order_record.update_time = datetime.now()
-            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+            SwapAlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
 
             # 委托止盈止损，调用get_algo_order方法
             attach_algo_order_result = self.trade.get_algo_order(algoId='', algoClOrdId=place_order_result[
                 'attachAlgoClOrdId'])
             attach_algo_orders = attach_algo_order_result['data']
-            AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+            SwapAttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+            return True
         except Exception as e:
             print(f"process_strategy@e_handle_trade_result error: {e}")
+            return False
 
-    def save_modified_algo_order(self, source_algo_order_record: 'AlgoOrderRecord', latest_order_data: dict) -> bool:
+    def save_modified_algo_order(self, source_algo_order_record: 'SwapAlgoOrderRecord', latest_order_data: dict) -> bool:
         try:
-            algo_order_record = AlgoOrderRecord()
+            algo_order_record = SwapAlgoOrderRecord()
             algo_order_record.cl_ord_id = latest_order_data['clOrdId']
             algo_order_record.ord_id = latest_order_data['ordId']
             algo_order_record.tag = latest_order_data['tag']
@@ -219,7 +222,7 @@ class OKXAlgoOrderService:
             algo_order_record.sz = float(source_algo_order_record.sz)
             algo_order_record.st_inst_id = int(source_algo_order_record.st_inst_id)
             algo_order_record.interval = source_algo_order_record.interval
-            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+            SwapAlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
             return True
         except Exception as e:
             print(f"process_strategy@e_handle_trade_result error: {e}")
