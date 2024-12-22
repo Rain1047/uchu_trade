@@ -31,35 +31,6 @@ class SymbolFormatUtils:
         return instId.split("-")[0] + "-USDT-SWAP"
 
 
-class PriceUtils:
-    @staticmethod
-    def get_past30day_ticker_price(instId: str):
-        ticker_data = yf.Ticker(instId)
-        return ticker_data.history(
-            start=DateUtils.past_time2string(30),
-            end=DateUtils.current_time2string())
-
-    @staticmethod
-    def get_current_ticker_price(instId: str):
-        from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-        okx = OKXAPIWrapper()
-        # # 获取单个产品行情信息
-        if instId.endswith("-USDT"):
-            return okx.market.get_ticker(instId=instId)['data'][0]['last']
-        else:
-            return okx.market.get_ticker(instId=instId + "-USDT")['data'][0]['last']
-
-    @staticmethod
-    def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
-        from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-        okx = OKXAPIWrapper()
-        result = okx.market.get_candlesticks(
-            instId=instId,
-            bar=bar
-        )
-        return FormatUtils.dict2df(result)
-
-
 class DateUtils:
     @staticmethod
     def current_time2string():
@@ -110,18 +81,6 @@ class ConfigUtils:
             config = json.load(config_file)
 
         return config
-
-    # @staticmethod
-    # def get_headers(request_url: str, method_type: Optional[str] = MethodType.GET.value):
-    #     timestamp = DateUtils.get_current_timestamp()
-    #     config = ConfigUtils.get_config()
-    #     secret = config['okx_secret_key']  # 替换为你的密钥
-    #     body = json.dumps({
-    #         'ccy': ccy,
-    #         'amt': amt,
-    #         'side': side,
-    #         'rate': rate
-    #     })
 
 
 class CheckUtils:
@@ -311,20 +270,4 @@ class FormatUtils:
 
 # 示例用法
 if __name__ == "__main__":
-    # print(DateUtils.current_time2string())
-    #
-    # print(DateUtils.past_time2string(20))
-
-    # print(DatabaseUtils.get_project_root())
-
-    # print(ConfigUtils.get_config())
-
     print(DatabaseUtils.get_db_session())
-
-    # print(DateUtils.milliseconds())
-    # 1720927861614
-    # 1723355565508
-    # print(UuidUtils.generate_32_digit_numeric_id())
-    # print(UuidUtils.generate_32_digit_numeric_id())
-    # print(UuidUtils.generate_32_digit_numeric_id())
-    # print(UuidUtils.generate_32_digit_numeric_id())
