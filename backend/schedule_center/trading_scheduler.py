@@ -4,7 +4,7 @@ from apscheduler.triggers.cron import CronTrigger
 from backend.schedule_center.monitoring.schedule_monitor import SchedulerMonitor
 from backend.schedule_center.core.task_chain import TaskChain
 from backend.schedule_center.tasks.data_tasks.kline_data_fetch_task import TradeDataFetchTask
-from backend.schedule_center.tasks.trade_tasks.swap_main_task import PeriodicStrategyTask
+from backend.schedule_center.tasks.trade_tasks.swap_main_task import SwapMainTask
 import logging
 
 
@@ -49,7 +49,7 @@ class TradingScheduler:
         try:
             """设置周期性任务"""
             # 4小时任务
-            task_4h = PeriodicStrategyTask("strategy", "4H")
+            task_4h = SwapMainTask("strategy", "4H")
             self.scheduler.add_job(
                 task_4h.execute,
                 CronTrigger(
@@ -63,7 +63,7 @@ class TradingScheduler:
             self.logger.info("4-hour strategy task scheduled successfully")
 
             # 15分钟任务
-            task_15min = PeriodicStrategyTask("strategy", "15min")
+            task_15min = SwapMainTask("strategy", "15min")
             self.scheduler.add_job(
                 task_15min.execute,
                 CronTrigger(
@@ -76,7 +76,7 @@ class TradingScheduler:
             )
             self.logger.info("15-minute strategy task scheduled successfully")
 
-            task_5sec = PeriodicStrategyTask("strategy", "5sec")
+            task_5sec = SwapMainTask("strategy", "5sec")
             self.scheduler.add_job(
                 task_5sec.execute,
                 CronTrigger(
