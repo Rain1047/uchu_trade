@@ -51,7 +51,7 @@ class FillsHistory(Base):
         session.commit()
 
     @classmethod
-    def insert_response_to_db(cls, api_response):
+    def insert(cls, api_response):
         data = api_response.get('data', [])
 
         for response in data:
@@ -75,6 +75,64 @@ class FillsHistory(Base):
             session.add(instance)
         # Commit the transaction
         session.commit()
+
+    @classmethod
+    def list_page(cls, request) -> dict:
+        """分页查询成交历史记录
+        Args:
+            request: 包含分页参数的请求对象
+                - pageSize: 每页条数
+                - pageNum: 页码
+                - inst_id: 产品ID（可选）
+                - fill_start_time: 开始时间（可选）
+                - fill_end_time: 结束时间（可选）
+        Returns:
+            dict: 分页结果
+        """
+        try:
+            # 构建基础查询
+            query = session.query(cls)
+
+            # 应用过滤条件
+            if request.inst_id and request.inst_id.strip():
+                query = query.filter(cls.inst_id.like(f'%{request.inst_id}%'))
+
+            if request.fill_start_time and request.fill_start_time.strip():
+                query = query.filter(cls.fill_time >= request.fill_start_time)
+
+            if request.fill_end_time and request.fill_end_time.strip():
+                query = query.filter(cls.fill_time <= request.fill_end_time)
+
+            # 排序
+            query = query.order_by(cls.fill_time.desc())
+
+            # 计算总记录数
+            total_count = query.count()
+
+            # 应用分页
+            offset = (request.pageNum - 1) * request.pageSize
+            results = query.limit(request.pageSize).offset(offset).all()
+
+            # 转换结果为字典格式
+            items = [FormatUtils.dao2dict(item) for item in results]
+
+            return {
+                "success": True,
+                "data": {
+                    "items": items,
+                    "total_count": total_count,
+                    "page_size": request.pageSize,
+                    "page_num": request.pageNum
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error in list_page: {str(e)}")
+            return {
+                "success": False,
+                "message": str(e),
+                "data": None
+            }
 
 
 if __name__ == '__main__':
