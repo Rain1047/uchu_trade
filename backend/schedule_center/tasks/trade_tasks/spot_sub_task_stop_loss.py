@@ -58,11 +58,10 @@ class SpotSubTaskStopLoss:
             slOrdPx='-1'
         )
         print(result)
-        self.save_stop_loss_result(config, result)
+        self.save_and_update_stop_loss_result(config, result)
 
     @staticmethod
-    def save_stop_loss_result(config: dict, result: dict):
-        # 示例 1：插入止损订单
+    def save_and_update_stop_loss_result(config: dict, result: dict):
         stop_loss_data = {
             'ccy': config.get('ccy'),
             'type': EnumAutoTradeConfigType.STOP_LOSS.value,
@@ -74,7 +73,7 @@ class SpotSubTaskStopLoss:
             'status': EnumStateAlgoOrder.LIVE.value
         }
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
-        print(f"Insert stop loss order: {'success' if success else 'failed'}")
+        print(f"Insert stop loss: {'success' if success else 'failed'}")
 
 
 if __name__ == '__main__':
