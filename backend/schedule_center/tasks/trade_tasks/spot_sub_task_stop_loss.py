@@ -15,7 +15,7 @@ class SpotSubTaskStopLoss:
         self.trade = OKXAPIWrapper().trade_api
 
     # [调度子任务] 止损委托
-    def place_spot_stop_loss_by_config(self, stop_loss_configs: List):
+    def execute_stop_loss_task(self, stop_loss_configs: List):
         for config in stop_loss_configs:
             ccy = config.get('ccy')
             print(ccy)

@@ -17,7 +17,7 @@ class SpotSubTaskLimitOrder:
         self.okx_balance_service = OKXBalanceService()
 
     # [调度子任务] 根据配置进行限价委托
-    async def execute_limit_order_task(self, limit_order_configs: List):
+    def execute_limit_order_task(self, limit_order_configs: List):
         # 获取真实的账户余额 赎回赚币-划转到交易账户
         real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
 
