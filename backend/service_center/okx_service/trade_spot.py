@@ -8,8 +8,6 @@ from backend._utils import PriceUtils, FormatUtils, SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
 from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.funding_balance import FundingBalance
-from backend.object_center._object_dao.saving_balance import SavingBalance
 from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
 from backend.object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumSide
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
@@ -88,8 +86,6 @@ def test_limit_order(trade_pair: str, position: str):
     df = query_candles_with_time_frame(trade_pair, '1D')
     df = KlineDataProcessor.add_indicator(df)
     print(df)
-
-
 
 
 def list_account_balance():
