@@ -75,10 +75,13 @@ class StrategyExecutor:
               f"{entry_result.signal if entry_result else None}")
         return entry_result
 
-    def _execute_trade(self, result: 'StrategyExecuteResult'):
+    def _execute_trade(self, st_result: 'StrategyExecuteResult'):
         """执行交易操作"""
         try:
-            trade_result = self.okx_algo_order_service.place_order_by_st_result(result)
+            trade_result = self.okx_algo_order_service.place_order_by_st_result(st_result)
+            self.okx_algo_order_service.save_execute_algo_order_result(st_result, trade_result)
+
+            self.okx_algo_order_service.place_algo_order_by_result(st_result)
             return trade_result
         except Exception as e:
             logging.error(f"StrategyExecutor@_execute_trade, error: {e}", exc_info=True)
