@@ -2,7 +2,7 @@ from typing import Optional
 import pandas as pd
 from pandas import DataFrame
 
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
+from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
@@ -11,7 +11,7 @@ from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 
 @registry.register(name="dbb_exit_long_strategy", desc="布林带做多止损策略", side="long", type="exit")
-def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], algoOrdRecord: Optional[AlgoOrderRecord]):
+def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], algoOrdRecord: Optional[SwapAlgoOrderRecord]):
     """
     Main entry point for the exit strategy.
     Handles both backtest and live trading modes.
@@ -21,7 +21,7 @@ def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], alg
     return dbb_exit_strategy_for_live(df=df, algoOrdRecord=algoOrdRecord)
 
 
-def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[AlgoOrderRecord]) -> StrategyExecuteResult:
+def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[SwapAlgoOrderRecord]) -> StrategyExecuteResult:
     """
     Live trading implementation of the exit strategy.
     Args:
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     strategy_modifier = StrategyModifier()
     # strategy_modifier.main_task()
     st_inst = StrategyInstance.get_st_instance_by_id(id=10)
-    algo_ord = AlgoOrderRecord.get_by_id(record_id=4)
+    algo_ord = SwapAlgoOrderRecord.get_by_id(record_id=4)
     df = strategy_modifier.get_data_frame(st_inst)
     strategy_execute_result = dbb_exit_strategy_for_live(df, algo_ord)
 

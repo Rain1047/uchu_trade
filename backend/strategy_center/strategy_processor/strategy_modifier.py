@@ -8,8 +8,8 @@ from pandas import DataFrame
 from backend._utils import DatabaseUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
+from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
+from backend.object_center._object_dao.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
@@ -32,11 +32,11 @@ class StrategyModifier:
 
     def main_task(self):
         print("StrategyModifier@main_task, starting strategy modifier.")
-        live_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.LIVE.value, source='6')
+        live_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumState.LIVE.value, source='6')
         self.update_live_algo_record(live_algo_order_record_list)
 
         # 测试用：
-        filled_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.FILLED.value, source='6')
+        filled_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumState.FILLED.value, source='6')
         self.update_filled_algo_record(filled_algo_order_record_list)
 
     def update_live_algo_record(self, live_algo_order_record_list: list):
@@ -94,13 +94,13 @@ class StrategyModifier:
         algo_order_record.lever = get_order_data['lever']
         algo_order_record.source = get_order_data['source']
         algo_order_record.update_time = datetime.now()
-        AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
+        SwapAlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
         print(get_order_data)
 
         attach_algo_order_result = self.trade.get_algo_order(
             algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
         attach_algo_orders = attach_algo_order_result['data']
-        save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
+        save_result = SwapAttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
 
         # 5. 匹配历史订单
         orders_history_result = self.trade.get_orders_history(instType="SWAP",

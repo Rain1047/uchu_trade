@@ -5,13 +5,11 @@ from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, E
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-from backend._utils import DatabaseUtils
+from backend._utils import DatabaseUtils, SymbolFormatUtils
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import registry
 from backend.data_center.kline_data.kline_data_collector import *
 import pandas as pd
-
-from backend.strategy_center.strategy_request import PlaceOrderRequest
 
 
 class StrategyExecutor:
@@ -60,7 +58,7 @@ class StrategyExecutor:
             if not entry_result.signal:
                 return
             # 3.下单
-            trade_result = self._execute_trade(entry_result)
+            trade_result = self.okx_algo_order_service.place_order_by_st_result(entry_result)
             # 4.保存交易记录
             self.okx_algo_order_service.save_execute_algo_order_result(
                 st_execute_result=entry_result, place_order_result=trade_result)
@@ -92,33 +90,6 @@ class StrategyExecutor:
             StrategyInstance.is_del == 0,
             StrategyInstance.time_frame == self.tf
         ).all()
-
-    @staticmethod
-    def _convert_to_dto(st_instance: 'StrategyInstance') -> 'StrategyInstance':
-        """将DAO转换为DTO"""
-        return StrategyInstance(
-            tradePair=st_instance.trade_pair,
-            timeFrame=st_instance.time_frame,
-            stEntryCode=st_instance.entry_st_code,
-            stExitCode=st_instance.exit_st_code,
-            lossPerTrans=st_instance.loss_per_trans,
-            side=st_instance.side,
-        )
-
-    @staticmethod
-    def _create_order_request(result: 'StrategyExecuteResult',
-                              strategy: 'StrategyInstance') -> 'PlaceOrderRequest':
-        """创建订单请求"""
-        return PlaceOrderRequest(
-            tradeEnv=strategy.env,
-            instId=strategy.trade_pair,
-            tdMode=EnumTdMode.CASH if result.side == EnumSide.BUY else EnumTdMode.ISOLATED,
-            sz=result.sz,
-            side=result.side,
-            ordType=EnumOrdType.MARKET.value,
-            slTriggerPx=str(result.exit_price),
-            slOrdPx="-1"
-        )
 
     def _get_data_frame(self, st_instance) -> DataFrame:
         # 获取df
@@ -166,3 +137,22 @@ def _check_trading_signals(entry_result: Optional['StrategyExecuteResult']) -> b
         return True
 
     return False
+
+
+if __name__ == '__main__':
+    st_result = StrategyExecuteResult()
+    okx_algo_order_service = OKXAlgoOrderService()
+    st_result.symbol = "ETH-USDT"
+    format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    st_result.symbol = format_symbol
+    st_result.side = "buy"
+    st_result.pos_side = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3300"
+    st_result.signal = True
+    trade_result = okx_algo_order_service.place_order_by_st_result(st_result)
+    save_result = okx_algo_order_service.save_execute_algo_order_result(st_result, trade_result)
+
+
+
