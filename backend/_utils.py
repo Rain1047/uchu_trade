@@ -258,6 +258,7 @@ class FormatUtils:
         # 将 camelCase 转换为 snake_case
         return ''.join(['_' + i.lower() if i.isupper() else i for i in camel_case_str]).lstrip('_')
 
+
     @staticmethod
     def convert_value(value):
         # 将非字符串类型转换为字符串
