@@ -1,10 +1,11 @@
 # trade_api_wrapper.py
 import okx.Trade as Trade
 from typing import Optional, Dict
-from backend._decorators import add_docstring
+from backend._decorators import add_docstring, singleton
 from backend.object_center.enum_obj import *
 
 
+@singleton
 class TradeAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag=flag, debug=False)

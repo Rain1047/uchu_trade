@@ -3,12 +3,14 @@ from typing import Dict, List, Optional, Any
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
+from backend._decorators import singleton
 from backend._utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
+@singleton
 class SpotTradeConfig(Base):
     __tablename__ = 'spot_trade_config'
 

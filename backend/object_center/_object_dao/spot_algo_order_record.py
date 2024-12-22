@@ -3,12 +3,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from typing import Dict, List, Optional, Union
 from datetime import datetime
 
+from backend._decorators import singleton
 from backend._utils import DatabaseUtils
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
+@singleton
 class SpotAlgoOrderRecord(Base):
     __tablename__ = 'spot_algo_order_record'
 

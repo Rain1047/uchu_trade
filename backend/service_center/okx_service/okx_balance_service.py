@@ -2,18 +2,18 @@ import logging
 from typing import Optional, List, Dict, Any
 
 from backend._constants import okx_constants
-from backend._decorators import add_docstring
+from backend._decorators import add_docstring, singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
 from backend.object_center._object_dao.funding_balance import FundingBalance
 from backend.object_center._object_dao.saving_balance import SavingBalance
 from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
-from backend.object_center.enum_obj import EnumAlgoOrdType
 
 logger = logging.getLogger(__name__)
 
 
+@singleton
 class OKXBalanceService:
 
     def __init__(self):

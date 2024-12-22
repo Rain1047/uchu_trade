@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import pandas as pd
 
+from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
@@ -12,6 +13,7 @@ from backend.service_center.okx_service.okx_balance_service import OKXBalanceSer
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
 
+@singleton
 class SpotSubTaskStopLoss:
 
     def __init__(self):
