@@ -5,7 +5,6 @@ import pandas as pd
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
-from backend.object_center._object_dao.account_balance import AccountBalance
 from backend.object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
@@ -27,7 +26,7 @@ class SpotSubTaskStopLoss:
         if not target_price:
             # 计算目标止损价, 根据indicator获取实时价格
             target_price = self.okx_ticker_service.get_target_indicator_latest_price(
-                instId=ccy,
+                instId=SymbolFormatUtils.get_usdt(ccy),
                 bar='1D',  # 固定
                 indicator=config.get('indicator'),
                 indicator_val=config.get('indicator_val')
@@ -55,9 +54,6 @@ class SpotSubTaskStopLoss:
         )
         print(result)
 
-    def handle_real_stop_loss_task(self):
-        pass
-
 
 if __name__ == '__main__':
     pass
@@ -65,15 +61,13 @@ if __name__ == '__main__':
     #     "ccy": "ETH-USDT",
     #     "amount": "1000",
     #     "target_price": "3000",
-    #     # "indicator": "MA",
-    #     # "indicator_val": "5"
     # }
 
-    config = {
+    test_config = {
         "ccy": "ETH-USDT",
         "indicator": "EMA",
         "indicator_val": "120",
         "percentage": "5"
     }
     stop_loss_executor = SpotSubTaskStopLoss()
-    stop_loss_executor.execute_stop_loss_task(config)
+    stop_loss_executor.execute_stop_loss_task(test_config)
