@@ -78,7 +78,6 @@ class StrategyExecutor:
     def _execute_trade(self, result: 'StrategyExecuteResult'):
         """执行交易操作"""
         try:
-            trade_result = None
             trade_result = self.okx_algo_order_service.place_order_by_st_result(result)
             return trade_result
         except Exception as e:
