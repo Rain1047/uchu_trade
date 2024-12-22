@@ -15,8 +15,8 @@ class SpotTradeConfig(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ccy = Column(String, comment='币种')
     type = Column(String, comment='类型')
-    signal = Column(String, comment='指标')
-    interval = Column(String, comment='时间间隔')
+    indicator = Column(String, comment='指标')
+    indicator_val = Column(String, comment='时间间隔')
     percentage = Column(String, comment='百分比')
     amount = Column(Integer, comment='金额')
     switch = Column(String, comment='开关')
@@ -32,8 +32,8 @@ class SpotTradeConfig(Base):
                     'id': config.id,
                     'ccy': config.ccy,
                     'type': config.type,
-                    'signal': config.signal,
-                    'interval': config.interval,
+                    'indicator': config.indicator,
+                    'indicator_val': config.indicator_val,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -58,8 +58,8 @@ class SpotTradeConfig(Base):
                     'id': config.id,
                     'ccy': config.ccy,
                     'type': config.type,
-                    'signal': config.signal,
-                    'interval': config.interval,
+                    'indicator': config.indicator,
+                    'indicator_val': config.indicator_val,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -86,8 +86,8 @@ class SpotTradeConfig(Base):
                     new_config = SpotTradeConfig(
                         ccy=config.get('ccy'),
                         type=config.get('type'),
-                        signal=config.get('signal'),
-                        interval=config.get('interval'),
+                        indicator=config.get('indicator'),
+                        indicator_val=config.get('indicator_val'),
                         percentage=config.get('percentage'),
                         amount=config.get('amount'),
                         switch=config.get('switch'),
