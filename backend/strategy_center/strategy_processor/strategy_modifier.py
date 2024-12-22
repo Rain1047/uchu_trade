@@ -33,7 +33,7 @@ class StrategyModifier:
     def main_task(self):
         print("StrategyModifier@main_task, starting strategy modifier.")
         live_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.LIVE.value, source='6')
-        # self.update_live_algo_record(live_algo_order_record_list)
+        self.update_live_algo_record(live_algo_order_record_list)
 
         # 测试用：
         filled_algo_order_record_list = AlgoOrderRecord.list_by_condition(state=EnumState.FILLED.value, source='6')
@@ -43,8 +43,8 @@ class StrategyModifier:
         for algo_order_record in live_algo_order_record_list:
             print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
             get_order_result = self.trade.get_order(instId=algo_order_record.symbol,
-                                                        ordId=algo_order_record.ord_id,
-                                                        clOrdId=algo_order_record.cl_ord_id)
+                                                    ordId=algo_order_record.ord_id,
+                                                    clOrdId=algo_order_record.cl_ord_id)
             print(get_order_result)
             get_order_data = get_order_result['data'][0]
             order_state = get_order_data['state']
@@ -57,8 +57,8 @@ class StrategyModifier:
         for algo_order_record in filled_algo_order_record_list:
             # print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
             orders_history_result = self.trade.get_orders_history(instType="SWAP",
-                                                                               instId=algo_order_record.symbol,
-                                                                               before=algo_order_record.ord_id)
+                                                                  instId=algo_order_record.symbol,
+                                                                  before=algo_order_record.ord_id)
             # 查找特定的 attachAlgoClOrdId
             target_attach_id = algo_order_record.attach_algo_cl_ord_id
             result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
@@ -76,12 +76,12 @@ class StrategyModifier:
         exit_strategy = registry.get_strategy(exit_st_code)
         exit_result = exit_strategy(df, st_inst)
 
-        # amend_algo_order_result = self.trade_swap_manager.amend_algo_order(
-        #     instId=algo_order_record.symbol,
-        #     algoId=algo_order_record.attach_algo_cl_ord_id,
-        #     newSz=algo_order_record.fill_sz,
-        #     newPx=algo_order_record.fill_px
-        # )
+        amend_algo_order_result = self.trade_swap_manager.amend_algo_order(
+            instId=algo_order_record.symbol,
+            algoId=algo_order_record.attach_algo_cl_ord_id,
+            newSlTriggerPx=exit_result.stop_loss_price,
+            newSlOrdPx="-1",
+        )
 
     def handle_filled_order(self, algo_order_record, get_order_data):
         # 1. 更新订单结果参数，调用get_order方法
@@ -97,14 +97,15 @@ class StrategyModifier:
         AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
         print(get_order_data)
 
-        attach_algo_order_result = self.trade_swap_manager.get_algo_order(
+        attach_algo_order_result = self.trade.get_algo_order(
             algoId='', algoClOrdId=algo_order_record.attach_algo_cl_ord_id)
         attach_algo_orders = attach_algo_order_result['data']
         save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
 
+        # 5. 匹配历史订单
         orders_history_result = self.trade.get_orders_history(instType="SWAP",
-                                                                           instId=algo_order_record.symbol,
-                                                                           before=get_order_data['ordId'])
+                                                              instId=algo_order_record.symbol,
+                                                              before=get_order_data['ordId'])
         print("获取历史订单记录（近七天）, 查看ordId后的记录：")
         orders_history_list = orders_history_result.get('data')
         # 查找特定的 attachAlgoClOrdId
