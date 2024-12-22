@@ -32,7 +32,7 @@ class SpotSubTaskStopLoss:
                 indicator=config.get('indicator'),
                 indicator_val=config.get('indicator_val')
             )
-
+        print(f"target price: {target_price}")
         # 获取目标止损仓位
         target_amount = config.get('amount')
         sz = ''
@@ -42,6 +42,7 @@ class SpotSubTaskStopLoss:
             sz = str(round(float(real_sz) * int(pct) / 100, 6))
         else:
             sz = str(round(float(target_amount) / float(target_price), 6))
+        print(f"sz: {sz}")
 
         result = self.trade.place_algo_order(
             instId=SymbolFormatUtils.get_usdt(ccy),
@@ -60,13 +61,19 @@ class SpotSubTaskStopLoss:
 
 if __name__ == '__main__':
     pass
+    # config = {
+    #     "ccy": "ETH-USDT",
+    #     "amount": "1000",
+    #     "target_price": "3000",
+    #     # "indicator": "MA",
+    #     # "indicator_val": "5"
+    # }
+
     config = {
-        "ccy": "BTC-USDT",
-        "amount": "0.0001",
-        "percentage": "50",
-        "indicator": "MA",
-        "indicator_val": "5"
-        # "target_price": "10000"
+        "ccy": "ETH-USDT",
+        "indicator": "EMA",
+        "indicator_val": "120",
+        "percentage": "5"
     }
     stop_loss_executor = SpotSubTaskStopLoss()
     stop_loss_executor.execute_stop_loss_task(config)
