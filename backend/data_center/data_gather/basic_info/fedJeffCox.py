@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import exists
 
-from backend.object_center._object_dao.fn_instance import FnInstance
+from backend.data_object_center.fn_instance import FnInstance
 from backend._utils import DatabaseUtils
 
 

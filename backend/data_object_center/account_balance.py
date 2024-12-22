@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from backend._constants import okx_constants
 from backend._utils import DatabaseUtils
-from backend.object_center.enum_obj import EnumAutoTradeConfigType
+from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()

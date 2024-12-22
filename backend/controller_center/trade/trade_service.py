@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
-from backend.object_center._object_dao.fills_history import FillsHistory
-from backend.object_center.trade.trade_request import TradePageRequest, UpdateNoteRequest
+from backend.data_object_center.fills_history import FillsHistory
+from backend.controller_center.trade.trade_request import TradePageRequest, UpdateNoteRequest
 from backend.service_center.data_api import *
 from backend._constants import *
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
