@@ -59,20 +59,23 @@ class KlineDataProcessor:
 
         # ADX Indicator
         if indicator == 'adx' or indicator == 'ADX':
-            df['target_indicator'] = ta.ADX(df['high'].values, df['low'].values, df['close'].values,
-                                            timeperiod=int(indicator_val)).round(6)
+            df[indicator] = ta.ADX(df['high'].values, df['low'].values, df['close'].values,
+                                   timeperiod=int(indicator_val)).round(6)
+
         # SMA Indicator
         if indicator == 'sma' or indicator == 'SMA':
-            df['target_indicator'] = ta.SMA(df['close'].values, timeperiod=int(indicator_val)).round(2)
+            df[indicator] = ta.SMA(df['close'].values, timeperiod=int(indicator_val)).round(2)
+
         # EMA Indicator
         if indicator == 'ema' or indicator == 'EMA':
-            df['target_indicator'] = ta.EMA(df['close'].values, timeperiod=int(indicator_val)).round(2)
+            df[indicator] = ta.EMA(df['close'].values, timeperiod=int(indicator_val)).round(2)
+
         # 布林带 Double Boolean Bands
         if indicator == 'upper_band' or indicator == 'UPPER_BAND':
-            df['target_indicator'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=int(indicator_val),
-                                               nbdevdn=int(indicator_val))[0].round(2)
-        if indicator == 'lower_band' or indicator == 'LOWER_BAND':
-            df['target_indicator'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=int(indicator_val),
-                                               nbdevdn=int(indicator_val))[2].round(2)
-        return df
+            df[indicator] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=int(indicator_val),
+                                      nbdevdn=int(indicator_val))[0].round(2)
 
+        if indicator == 'lower_band' or indicator == 'LOWER_BAND':
+            df[indicator] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=int(indicator_val),
+                                      nbdevdn=int(indicator_val))[2].round(2)
+        return df

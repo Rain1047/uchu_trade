@@ -41,6 +41,7 @@ class OKXTickerService:
     def get_target_indicator_latest_price(self, instId: str, bar: str, indicator: str, indicator_val: str):
         df = self.query_candles_with_time_frame(instId=instId, bar=bar)
         df = KlineDataProcessor.add_target_indicator(df, indicator=indicator, indicator_val=indicator_val)
+        return df.iloc[-1][indicator]
 
 
     def get_target_indicator_price(self, instId: str, indicator: str):
