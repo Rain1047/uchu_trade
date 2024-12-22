@@ -25,6 +25,12 @@ class SpotSubTaskStopLoss:
         target_price = config.get('target_price')
         if not target_price:
             # 计算目标止损价
+            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
+                instId=ccy,
+                bar='1D',
+                indicator=config.get('indicator'),
+                indicator_val=config.get('indicator_val')
+            )
 
             # 根据indicator获取实时价格
 
