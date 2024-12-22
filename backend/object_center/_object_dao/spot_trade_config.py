@@ -70,7 +70,7 @@ class SpotTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def create_or_update(config_list):
+    def create_or_update(config_list: List[Dict[str, Any]]):
         try:
             if config_list and len(config_list) > 0:
                 ccy = config_list[0].get('ccy')
