@@ -81,7 +81,7 @@ class SpotAlgoOrderRecord(Base):
             return None
 
     @classmethod
-    def list_by_ccy(cls, ccy: str) -> Dict[str, List[Dict]]:
+    def list_by_ccy(cls, ccy: str) -> List[Dict]:
         """根据币种查询记录列表
         Args:
             ccy: 币种
@@ -90,15 +90,13 @@ class SpotAlgoOrderRecord(Base):
         """
         try:
             results = session.query(cls).filter(cls.ccy == ccy).all()
-            return {
-                'strategy_list': [result.to_dict() for result in results]
-            } if results else {'strategy_list': []}
+            return [result.to_dict() for result in results]
         except Exception as e:
             print(f"Query failed: {e}")
-            return {'strategy_list': []}
+            return []
 
     @classmethod
-    def list_by_type(cls, type: str) -> Dict[str, List[Dict]]:
+    def list_by_type(cls, type: str) -> List[Dict]:
         """根据类型查询记录列表
         Args:
             type: 订单类型
@@ -107,15 +105,13 @@ class SpotAlgoOrderRecord(Base):
         """
         try:
             results = session.query(cls).filter(cls.type == type).all()
-            return {
-                'strategy_list': [result.to_dict() for result in results]
-            } if results else {'strategy_list': []}
+            return [result.to_dict() for result in results]
         except Exception as e:
             print(f"Query failed: {e}")
-            return {'strategy_list': []}
+            return []
 
     @classmethod
-    def list_by_status(cls, status: str) -> Dict[str, List[Dict]]:
+    def list_by_status(cls, status: str) -> List[Dict]:
         """根据状态查询记录列表
         Args:
             status: 订单状态
@@ -124,12 +120,10 @@ class SpotAlgoOrderRecord(Base):
         """
         try:
             results = session.query(cls).filter(cls.status == status).all()
-            return {
-                'strategy_list': [result.to_dict() for result in results]
-            } if results else {'strategy_list': []}
+            return [result.to_dict() for result in results]
         except Exception as e:
             print(f"Query failed: {e}")
-            return {'strategy_list': []}
+            return []
 
     @classmethod
     def delete_by_id(cls, id: int) -> bool:
