@@ -16,9 +16,9 @@ class OKXAlgoOrderService:
         self.funding = self.okx.funding_api
         self.account = self.okx.account
 
-    # [主要方法] 取消所有未成交的限价单
-    @add_docstring("取消所有未成交的限价单")
-    def cancel_all_algo_orders_main_task(self):
+    # [主要方法] 取消所有未成交的现货限价单
+    @add_docstring("[主要方法] 取消所有未成交的现货限价单")
+    def cancel_all_spot_algo_orders(self):
         spot_unfinished_algo_list = self.list_spot_unfinished_algo_order()
         cancel_algo_list = []
         for algo_order in spot_unfinished_algo_list:
@@ -29,6 +29,22 @@ class OKXAlgoOrderService:
                 }
             )
         self.cancel_spot_unfinished_algo_order(cancel_algo_list)
+
+    # [主要方法] 取消所有未成交的合约限价单
+    @add_docstring("[主要方法] 取消所有未成交的现货限价单")
+    def cancel_all_swap_algo_orders(self):
+        spot_unfinished_algo_list = self.list_swap_unfinished_algo_order()
+        cancel_algo_list = []
+        for algo_order in spot_unfinished_algo_list:
+            cancel_algo_list.append(
+                {
+                    'instId': algo_order.get('instId'),
+                    'algoId': algo_order.get('algoId')
+                }
+            )
+        self.cancel_swap_unfinished_algo_order(cancel_algo_list)
+
+
 
     # 获取现货所有未完成的止盈止损委托
     @add_docstring("获取现货所有未完成的止盈止损委托")
@@ -63,3 +79,28 @@ class OKXAlgoOrderService:
         cancel_result = self.trade.cancel_algo_order(algo_orders)
         print(cancel_result)
 
+    def list_swap_unfinished_algo_order(self) -> List[Dict[str, Any]]:
+        try:
+            swap_algo_orders = self.trade.order_algos_list(
+                instType='SWAP',
+                ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
+            )
+            print(swap_algo_orders)
+
+            data = swap_algo_orders.get('data')
+            if swap_algo_orders.get('code') == '0' and data and isinstance(data, list):
+                return data
+            return []
+        except Exception as e:
+            print(f"获取算法订单列表失败: {str(e)}")
+            return []
+
+    def cancel_swap_unfinished_algo_order(self, swap_unfinished_algo_list: List[Dict[str, Any]]) -> None:
+        cancel_algo_list = [
+            {
+                'instId': algo_order.get('instId'),
+                'algoId': algo_order.get('algoId')
+            }
+            for algo_order in swap_unfinished_algo_list
+        ]
+        self.trade.cancel_algo_order(cancel_algo_list)

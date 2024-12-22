@@ -28,37 +28,12 @@ class TradeSwapManager:
         self.account = self.okx.account_api
         self.market = self.okx.market_api
 
-    def cancel_swap_unfinished_algo_order(self, swap_unfinished_algo_list: List[Dict[str, Any]]) -> None:
-        cancel_algo_list = [
-            {
-                'instId': algo_order.get('instId'),
-                'algoId': algo_order.get('algoId')
-            }
-            for algo_order in swap_unfinished_algo_list
-        ]
-        self.trade.cancel_algo_order(cancel_algo_list)
 
     def get_swap_limit_order_list(self) -> List[Dict[str, Any]]:
         swap_limit_orders = self.trade.get_order_list(
             instType='SWAP', ordType='limit')
         print(swap_limit_orders)
         return swap_limit_orders.get('data', []) if swap_limit_orders.get('code') == '0' else []
-
-    def list_swap_unfinished_algo_order(self) -> List[Dict[str, Any]]:
-        try:
-            swap_algo_orders = self.trade.order_algos_list(
-                instType='SWAP',
-                ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
-            )
-            print(swap_algo_orders)
-
-            data = swap_algo_orders.get('data')
-            if swap_algo_orders.get('code') == '0' and data and isinstance(data, list):
-                return data
-            return []
-        except Exception as e:
-            error(f"获取算法订单列表失败: {str(e)}")
-            return []
 
     @staticmethod
     def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:

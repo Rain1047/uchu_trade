@@ -65,8 +65,6 @@ class OKXBalanceService:
             print(f"purchase_redempt error: {e}")
             pass
 
-
-
     @add_docstring("reset资金账户余额")
     def reset_funding_balance(self):
         # 1. 更新现有记录
@@ -114,7 +112,6 @@ class OKXBalanceService:
             return result[0]
         else:
             return {}
-
 
 
 if __name__ == '__main__':
