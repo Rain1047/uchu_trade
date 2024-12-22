@@ -1,7 +1,3 @@
-from typing import List, Optional
-
-import pandas as pd
-
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper

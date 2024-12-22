@@ -1,4 +1,3 @@
-# trade_api_wrapper.py
 import okx.Trade as Trade
 from typing import Optional, Dict
 from backend._decorators import add_docstring, singleton
