@@ -1,12 +1,14 @@
 import logging
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from backend._constants import okx_constants
+from backend._decorators import add_docstring
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.object_center._object_dao.account_balance import AccountBalance
 from backend.object_center._object_dao.funding_balance import FundingBalance
 from backend.object_center._object_dao.saving_balance import SavingBalance
+from backend.object_center.enum_obj import EnumAlgoOrdType
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class OKXBalanceService:
         self.account = self.okx.account
 
     # [主要方法] 赎回-划转-获取真实的交易账户余额
+    @add_docstring("赎回-划转-获取真实的交易账户余额")
     def get_real_account_balance(self, ccy: Optional[str]) -> float:
         try:
             ccy = SymbolFormatUtils.get_base_symbol(ccy)
@@ -62,6 +65,7 @@ class OKXBalanceService:
             print(f"purchase_redempt error: {e}")
             pass
 
+    @add_docstring("reset资金账户余额")
     def reset_funding_balance(self):
         # 1. 更新现有记录
         response = self.funding.get_balances()
@@ -73,12 +77,14 @@ class OKXBalanceService:
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
             return False
 
+    @add_docstring("reset简单赚币账户余额")
     def reset_saving_balance(self) -> bool:
         result = self.funding.get_saving_balance()
         print(result)
         success = SavingBalance.reset(result)
         return success
 
+    @add_docstring("reset交易账户余额")
     def reset_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
@@ -90,6 +96,7 @@ class OKXBalanceService:
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
             return False
 
+    @add_docstring("获取赚币中币种余额")
     def get_saving_balance(self, symbol: Optional[str] = '') -> dict:
         result = SavingBalance().list_by_condition(condition="ccy", value=symbol)
         if result:
@@ -97,6 +104,7 @@ class OKXBalanceService:
         else:
             return {}
 
+    @add_docstring("获取交易账户币种余额")
     def get_funding_balance(self, symbol: Optional[str]):
         # Get the result of the query
         result = FundingBalance.list_by_condition(condition='ccy', value=symbol)

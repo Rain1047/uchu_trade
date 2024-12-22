@@ -4,7 +4,8 @@ from apscheduler.triggers.cron import CronTrigger
 from backend.schedule_center.monitoring.schedule_monitor import SchedulerMonitor
 from backend.schedule_center.core.task_chain import TaskChain
 from backend.schedule_center.tasks.data_tasks.kline_data_fetch_task import TradeDataFetchTask
-from backend.schedule_center.tasks.trade_tasks.swap_main_task import PeriodicStrategyTask
+from backend.schedule_center.tasks.trade_tasks.spot_main_task import SpotMainTask
+from backend.schedule_center.tasks.trade_tasks.swap_main_task import SwapMainTask
 import logging
 
 
@@ -26,30 +27,41 @@ class TradingScheduler:
         #     'to_email': 'alerts@example.com'
         # }))
 
-    def setup_morning_tasks(self):
+    # 设置定时任务
+    def setup_timing_tasks(self):
         """设置早上8点的任务链"""
         # 创建任务
         data_fetch_task = TradeDataFetchTask()
-        # stop_loss_task = StopLossUpdateTask()
+
+        spot_main_task = SpotMainTask()
 
         # 创建任务链
-        morning_chain = TaskChain("morning_tasks", [data_fetch_task])
+        timing_task_chain = TaskChain("morning_tasks", [spot_main_task])
 
         # 添加到调度器
         self.scheduler.add_job(
-            morning_chain.execute,
+            timing_task_chain.execute,
             CronTrigger(hour=8, minute=0, second=0),
             id='morning_chain',
             name='Morning Trading Tasks',
             misfire_grace_time=300  # 5分钟的容错时间
         )
-        self.logger.info("Morning tasks scheduled successfully")
+
+        # # 添加到调度器
+        # self.scheduler.add_job(
+        #     morning_chain.execute,
+        #     CronTrigger(hour=8, minute=0, second=0),
+        #     id='morning_chain',
+        #     name='Morning Trading Tasks',
+        #     misfire_grace_time=300  # 5分钟的容错时间
+        # )
+        # self.logger.info("Morning tasks scheduled successfully")
 
     def setup_periodic_tasks(self):
         try:
             """设置周期性任务"""
             # 4小时任务
-            task_4h = PeriodicStrategyTask("strategy", "4H")
+            task_4h = SwapMainTask("strategy", "4H")
             self.scheduler.add_job(
                 task_4h.execute,
                 CronTrigger(
@@ -63,7 +75,7 @@ class TradingScheduler:
             self.logger.info("4-hour strategy task scheduled successfully")
 
             # 15分钟任务
-            task_15min = PeriodicStrategyTask("strategy", "15min")
+            task_15min = SwapMainTask("strategy", "15min")
             self.scheduler.add_job(
                 task_15min.execute,
                 CronTrigger(
@@ -76,7 +88,7 @@ class TradingScheduler:
             )
             self.logger.info("15-minute strategy task scheduled successfully")
 
-            task_5sec = PeriodicStrategyTask("strategy", "5sec")
+            task_5sec = SwapMainTask("strategy", "5sec")
             self.scheduler.add_job(
                 task_5sec.execute,
                 CronTrigger(
@@ -99,7 +111,7 @@ class TradingScheduler:
         try:
             self.logger.info("Starting trading scheduler...")
             # 设置早上八点的定时任务
-            self.setup_morning_tasks()
+            self.setup_timing_tasks()
             # 设置周期执行的调度任务
             self.setup_periodic_tasks()
 

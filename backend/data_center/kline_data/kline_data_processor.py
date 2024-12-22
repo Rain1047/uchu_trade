@@ -52,3 +52,23 @@ class KlineDataProcessor:
             'stop_loss': 'float64'  # Assuming you want this column as well
         })
 
+    @staticmethod
+    def add_target_indicator(df: DataFrame, indicator: str) -> DataFrame:
+        if 'high' not in df.columns or 'low' not in df.columns or 'close' not in df.columns:
+            raise ValueError("DataFrame must contain 'high', 'low', and 'close' columns.")
+
+        # ADX Indicator
+        df['adx'] = ta.ADX(df['high'].values, df['low'].values, df['close'].values, timeperiod=14).round(6)
+
+        # SMA Indicator
+        SMA_PERIODS = [10, 20, 50, 100, 200]
+        for period in SMA_PERIODS:
+            df[f'sma{period}'] = ta.SMA(df['close'].values, timeperiod=period).round(2)
+            df[f'ema{period}'] = ta.EMA(df['close'].values, timeperiod=period).round(2)
+
+        # 布林带 Double Boolean Bands
+        df['upper_band1'], _, df['lower_band1'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=1, nbdevdn=1)
+        df['upper_band2'], _, df['lower_band2'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2)
+
+        return df
+

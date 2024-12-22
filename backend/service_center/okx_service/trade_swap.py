@@ -6,15 +6,15 @@ import uuid
 import pandas as pd
 
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
-from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
-from backend.object_center._object_dao.st_instance import StrategyInstance
+from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
+from backend.object_center._object_dao.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
 from backend.object_center.enum_obj import (
     EnumAlgoOrdType,
     EnumTradeEnv,
     EnumTdMode,
     EnumOrdType, EnumState
 )
+from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend._utils import SymbolFormatUtils
@@ -28,103 +28,28 @@ class TradeSwapManager:
         self.account = self.okx.account_api
         self.market = self.okx.market_api
 
-    def cancel_swap_unfinished_algo_order(self, swap_unfinished_algo_list: List[Dict[str, Any]]) -> None:
-        cancel_algo_list = [
-            {
-                'instId': algo_order.get('instId'),
-                'algoId': algo_order.get('algoId')
-            }
-            for algo_order in swap_unfinished_algo_list
-        ]
-        self.trade.cancel_algo_order(cancel_algo_list)
-
-    def get_swap_limit_order_list(self) -> List[Dict[str, Any]]:
-        swap_limit_orders = self.trade.get_order_list(
-            instType='SWAP', ordType='limit')
-        print(swap_limit_orders)
-        return swap_limit_orders.get('data', []) if swap_limit_orders.get('code') == '0' else []
-
-    def list_swap_unfinished_algo_order(self) -> List[Dict[str, Any]]:
-        try:
-            swap_algo_orders = self.trade.order_algos_list(
-                instType='SWAP',
-                ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
-            )
-            print(swap_algo_orders)
-
-            data = swap_algo_orders.get('data')
-            if swap_algo_orders.get('code') == '0' and data and isinstance(data, list):
-                return data
-            return []
-        except Exception as e:
-            error(f"获取算法订单列表失败: {str(e)}")
-            return []
-
-    @staticmethod
-    def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        return (
-                current_time +
-                st_result.symbol.split('-')[0] +
-                # 使用 zfill 方法将数字字符串填充为4位
-                str(st_result.st_inst_id).zfill(4) + "stInsId" +
-                str(uuid.uuid4())[:4])
-
-    def place_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
-
-        attach_algo_cl_ordId = self.get_attach_algo_cl_ordId(st_result)
-        print("place_order@attach_algo_cl_ordId: " + attach_algo_cl_ordId)
-        attachAlgoOrds = [
-            {
-                'attachAlgoClOrdId': attach_algo_cl_ordId,
-                'slTriggerPx': st_result.stop_loss_price,
-                'slOrdPx': "-1",
-            }
-        ]
-        format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
-        place_order_result = self.trade.place_order(
-            instId=format_symbol,
-            tdMode=EnumTdMode.ISOLATED.value,
-            side=st_result.side,
-            posSide=st_result.pos_side,
-            ordType=EnumOrdType.MARKET.value,
-            sz=st_result.sz,
-            attachAlgoOrds=attachAlgoOrds,
-        )
-
-        place_order_result['attachAlgoClOrdId'] = attach_algo_cl_ordId
-        place_order_result['symbol'] = format_symbol
-        print(place_order_result)
-        return place_order_result
+    # def get_swap_limit_order_list(self) -> List[Dict[str, Any]]:
+    #     swap_limit_orders = self.trade.get_order_list(
+    #         instType='SWAP', ordType='limit')
+    #     print(swap_limit_orders)
+    #     return swap_limit_orders.get('data', []) if swap_limit_orders.get('code') == '0' else []
 
     def place_algo_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
+        instId = SymbolFormatUtils.get_usdt(instId=st_result.symbol)
         place_algo_order_result = self.trade.place_algo_order(
-            instId="ETH-USDT",
+            instId=instId,
             tdMode="cash",
-            side="sell",
+            side=st_result.side,
             ordType="conditional",
-            sz="1",
+            sz=st_result.sz,
             tpTriggerPx="",
             tpOrdPx="",
-            slTriggerPx="2400",
-            slOrdPx="2300",
+            slTriggerPx=st_result.stop_loss_price,
+            slOrdPx=st_result.stop_loss_price,
             algoClOrdId="test_2024_12_07",
         )
         print(place_algo_order_result)
         return place_algo_order_result
-
-    def order_algos_history(self) -> Dict[str, Any]:
-        return self.trade.order_algos_history(
-            orderType=EnumAlgoOrdType.CONDITIONAL_OCO.value,
-            instType='SWAP',
-            state='canceled'
-        )
-
-    def get_order(self, instId: str, ordId: Optional[str], clOrdId: Optional[str]) -> Dict[str, Any]:
-        return self.trade.get_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
-
-    def get_algo_order(self, algoId: Optional[str] = '', algoClOrdId: Optional[str] = ''):
-        return self.trade.get_algo_order(algoId=algoId, algoClOrdId=algoClOrdId)
 
     def amend_algo_order(
             self,
@@ -158,140 +83,44 @@ class TradeSwapManager:
             None
         )
 
-    def get_orders_history(self, instType: Optional[str], instId: Optional[str], before: Optional[str]):
-        return self.trade.get_orders_history(instType=instType, instId=instId, before=before)
-
-    @staticmethod
-    def save_execute_algo_order_result(st_execute_result: 'StrategyExecuteResult', place_order_result: dict):
-        try:
-            algo_order_record = AlgoOrderRecord()
-            post_order_data = place_order_result['data'][0]
-            algo_order_record.cl_ord_id = post_order_data['clOrdId']
-            algo_order_record.ord_id = post_order_data['ordId']
-            algo_order_record.s_code = post_order_data['sCode']
-            algo_order_record.s_msg = post_order_data['sMsg']
-            algo_order_record.ts = post_order_data['ts']
-
-            algo_order_record.tag = post_order_data['tag']
-            algo_order_record.attach_algo_cl_ord_id = place_order_result['attachAlgoClOrdId']
-
-            # 封装StrategyExecuteResult
-            algo_order_record.symbol = place_order_result['symbol']
-            if st_execute_result is not None:
-                algo_order_record.side = st_execute_result.side
-                algo_order_record.pos_side = st_execute_result.pos_side
-                algo_order_record.sz = st_execute_result.sz
-                algo_order_record.st_inst_id = st_execute_result.st_inst_id
-                algo_order_record.interval = st_execute_result.interval
-
-            # 订单结果参数，调用get_order方法
-            get_order_result = TradeSwapManager().get_order(
-                instId=algo_order_record.symbol,
-                ordId=algo_order_record.ord_id,
-                clOrdId=algo_order_record.cl_ord_id
-            )
-            get_order_data = get_order_result['data'][0]
-            algo_order_record.fill_px = get_order_data['fillPx']
-            algo_order_record.fill_sz = get_order_data['fillSz']
-            algo_order_record.avg_px = get_order_data['avgPx']
-            algo_order_record.pnl = get_order_data['pnl']
-            algo_order_record.state = get_order_data['state']
-            algo_order_record.lever = get_order_data['lever']
-            algo_order_record.source = get_order_data['source']
-            algo_order_record.create_time = datetime.now()
-            algo_order_record.update_time = datetime.now()
-            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
-
-            # 委托止盈止损，调用get_algo_order方法
-            attach_algo_order_result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId=place_order_result[
-                'attachAlgoClOrdId'])
-            attach_algo_orders = attach_algo_order_result['data']
-            AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-        except Exception as e:
-            print(f"process_strategy@e_handle_trade_result error: {e}")
-
-    @staticmethod
-    def save_modified_algo_order(source_algo_order_record: 'AlgoOrderRecord', latest_order_data: dict) -> bool:
-        try:
-            algo_order_record = AlgoOrderRecord()
-            algo_order_record.cl_ord_id = latest_order_data['clOrdId']
-            algo_order_record.ord_id = latest_order_data['ordId']
-            algo_order_record.tag = latest_order_data['tag']
-            algo_order_record.attach_algo_cl_ord_id = latest_order_data['attachAlgoClOrdId']
-            algo_order_record.fill_px = latest_order_data['fillPx']
-            algo_order_record.fill_sz = latest_order_data['fillSz']
-            algo_order_record.avg_px = latest_order_data['avgPx']
-            algo_order_record.pnl = latest_order_data['pnl']
-            algo_order_record.state = latest_order_data['state']
-            algo_order_record.lever = latest_order_data['lever']
-            algo_order_record.source = latest_order_data['source']
-            algo_order_record.create_time = datetime.now()
-            algo_order_record.update_time = datetime.now()
-
-            algo_order_record.attach_algo_cl_ord_id = source_algo_order_record.attach_algo_cl_ord_id
-            algo_order_record.symbol = source_algo_order_record.symbol
-            algo_order_record.pos_side = source_algo_order_record.pos_side
-            algo_order_record.side = source_algo_order_record.side
-            algo_order_record.sz = float(source_algo_order_record.sz)
-            algo_order_record.st_inst_id = int(source_algo_order_record.st_inst_id)
-            algo_order_record.interval = source_algo_order_record.interval
-            AlgoOrderRecord.save_or_update_algo_order_record(algo_order_record.to_dict())
-            return True
-        except Exception as e:
-            print(f"process_strategy@e_handle_trade_result error: {e}")
-            return False
-
 
 if __name__ == '__main__':
     # 1. 下单委托 place_order 市价入场 clOrdId
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
-    # st_result = StrategyExecuteResult()
-    # st_result.symbol = "ETH-USDT"
-    # format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
-    # st_result.symbol = format_symbol
-    # st_result.side = "buy"
-    # st_result.pos_side = "long"
-    # st_result.sz = "1"
-    # st_result.st_inst_id = 1
-    # st_result.stop_loss_price = "3860"
-    # st_result.signal = True
-    # trade_result = trade_swap_manager.place_order(st_result)
-    #
-    # trade_swap_manager.save_place_algo_order_result(
-    #     st_execute_result=st_result, place_order_result=trade_result)
+    okx = OKXAPIWrapper()
+    okx_algo_order_service = OKXAlgoOrderService()
+    st_result = StrategyExecuteResult()
+    st_result.symbol = "ETH-USDT"
+    format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    st_result.symbol = format_symbol
+    st_result.side = "buy"
+    st_result.pos_side = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3860"
+    st_result.signal = True
+    trade_result = okx_algo_order_service.place_order_by_st_result(st_result)
 
-    # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    # print(result)
+    okx_algo_order_service.save_execute_algo_order_result(
+        st_execute_result=st_result, place_order_result=trade_result)
 
-    # 2. 获取订单 get_order clOrdId -> 查看过程和结果
-    # result = trade_swap_manager.get_order(instId='ETH-USDT-SWAP', ordId='2068880367670255616', clOrdId='')
-    # print("通过ordId查看订单：")
-    # print(result)
 
-    # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    attach_algo_orders = result['data']
-    save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
-    print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
     # 4. 修改策略止损价
     # 只修改止损触发价，止盈传"", 取消止损，传"0"
-    # result = trade_swap_manager.amend_algo_order(
-    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
-    #     newSlTriggerPx='3994.5', newSlOrdPx='-1',
-    # )
+    result = trade_swap_manager.amend_algo_order(
+        instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
+        newSlTriggerPx='3994.5', newSlOrdPx='-1',
+    )
     # print(result)
     #
     # # 5. 匹配历史订单
-    result = trade_swap_manager.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
-                                                   before='2052302587604230144')
+    result = TradeSwapManager().trade.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
+                                                         before='2052302587604230144')
     print("获取历史订单记录（近七天）, 查看ordId后的记录：")
 
     # orders_history_list = result.get('data')

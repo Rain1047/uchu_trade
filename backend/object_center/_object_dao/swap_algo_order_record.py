@@ -10,8 +10,8 @@ Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
-class AlgoOrderRecord(Base):
-    __tablename__ = 'algo_order_record'
+class SwapAlgoOrderRecord(Base):
+    __tablename__ = 'swap_algo_order_record'
 
     # 主键
     id = Column(Integer, primary_key=True, autoincrement=True)

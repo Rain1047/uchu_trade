@@ -8,6 +8,7 @@ from backend._utils import DatabaseUtils
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
+
 class SpotTradeConfig(Base):
     __tablename__ = 'spot_trade_config'
 
@@ -20,7 +21,6 @@ class SpotTradeConfig(Base):
     amount = Column(Integer, comment='金额')
     switch = Column(String, comment='开关')
     is_del = Column(String, comment='是否删除')
-
 
     @staticmethod
     def list_all() -> List[Dict]:
