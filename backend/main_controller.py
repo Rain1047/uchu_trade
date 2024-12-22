@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api_center.okx_api.okx_main import OKXAPIWrapper
-from backend.controller_center.trade import router as trade_router
-from backend.controller_center.strategy import router as strategy_router
+from backend.controller_center.trade.trade_controller import router as trade_router
+from backend.controller_center.strategy.strategy_controller import router as strategy_router
 from backend.controller_center.balance.balance_controller import router as balance_router
-from backend.controller_center.backtest import router as backtest_router
+from backend.controller_center.backtest.backtest_controller import router as backtest_router
 from backend.controller_center.strategy_files.strategy_files_controller import router as strategy_files_router
 
 okx = OKXAPIWrapper()
