@@ -12,7 +12,6 @@ class BalanceService:
     """
     balance service
     """
-
     @staticmethod
     def update_account_balance_switch(request: UpdateAccountBalanceSwitchRequest) -> bool:
         return AccountBalance.update_switch(ccy=request.ccy, type=request.type, switch=request.switch)
