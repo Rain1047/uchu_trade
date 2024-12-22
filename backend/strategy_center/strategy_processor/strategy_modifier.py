@@ -12,6 +12,7 @@ from backend.object_center._object_dao.algo_order_record import AlgoOrderRecord
 from backend.object_center._object_dao.attach_algo_orders_record import AttachAlgoOrdersRecord
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
+from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
@@ -22,10 +23,11 @@ class StrategyModifier:
         self.env = env
         self.tf = time_frame
         self.okx_api = OKXAPIWrapper(env)
-        self.trade_api = self.okx_api.trade
+        self.trade = self.okx_api.trade_api
         self.trade_swap_manager = TradeSwapManager()
         self.data_collector = KlineDataCollector()
         self.session = DatabaseUtils.get_db_session()
+        self.okx_algo_order_service = OKXAlgoOrderService()
         _setup_logging()
 
     def main_task(self):
@@ -40,7 +42,7 @@ class StrategyModifier:
     def update_live_algo_record(self, live_algo_order_record_list: list):
         for algo_order_record in live_algo_order_record_list:
             print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
-            get_order_result = self.trade_api.get_order(instId=algo_order_record.symbol,
+            get_order_result = self.trade.get_order(instId=algo_order_record.symbol,
                                                         ordId=algo_order_record.ord_id,
                                                         clOrdId=algo_order_record.cl_ord_id)
             print(get_order_result)
@@ -54,14 +56,14 @@ class StrategyModifier:
     def update_filled_algo_record(self, filled_algo_order_record_list: list):
         for algo_order_record in filled_algo_order_record_list:
             # print(f"StrategyModifier@main_task, processing algo order record: {algo_order_record.to_dict()}")
-            orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
+            orders_history_result = self.trade.get_orders_history(instType="SWAP",
                                                                                instId=algo_order_record.symbol,
                                                                                before=algo_order_record.ord_id)
             # 查找特定的 attachAlgoClOrdId
             target_attach_id = algo_order_record.attach_algo_cl_ord_id
             result = self.trade_swap_manager.find_order_by_attach_algo_id(orders_history_result, target_attach_id)
             print(f"update_filled_algo_record@find result: {result}")
-            save_result = self.trade_swap_manager.save_modified_algo_order(algo_order_record, result)
+            save_result = self.okx_algo_order_service.save_modified_algo_order(algo_order_record, result)
             print(f"update_filled_algo_record@save result: {save_result}")
 
     def handle_live_order(self, algo_order_record, get_order_data):
@@ -100,7 +102,7 @@ class StrategyModifier:
         attach_algo_orders = attach_algo_order_result['data']
         save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
 
-        orders_history_result = self.trade_swap_manager.get_orders_history(instType="SWAP",
+        orders_history_result = self.trade.get_orders_history(instType="SWAP",
                                                                            instId=algo_order_record.symbol,
                                                                            before=get_order_data['ordId'])
         print("获取历史订单记录（近七天）, 查看ordId后的记录：")

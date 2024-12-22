@@ -2,6 +2,7 @@ from datetime import datetime
 
 from backend.object_center._object_dao.st_instance import StrategyInstance
 from backend.object_center.enum_obj import EnumTradeEnv, EnumSide, EnumTdMode, EnumOrdType
+from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend._utils import DatabaseUtils
@@ -22,6 +23,7 @@ class StrategyExecutor:
         self.trade_swap_manager = TradeSwapManager()
         self.data_collector = KlineDataCollector()
         self.session = DatabaseUtils.get_db_session()
+        self.okx_algo_order_service = OKXAlgoOrderService()
         _setup_logging()
 
     def main_task(self):
@@ -60,7 +62,7 @@ class StrategyExecutor:
             # 3.下单
             trade_result = self._execute_trade(entry_result)
             # 4.保存交易记录
-            self.trade_swap_manager.save_execute_algo_order_result(
+            self.okx_algo_order_service.save_execute_algo_order_result(
                 st_execute_result=entry_result, place_order_result=trade_result)
         except Exception as e:
             print(f"StrategyExecutor@_process_strategy Error processing strategy: {e}")
@@ -77,7 +79,7 @@ class StrategyExecutor:
         """执行交易操作"""
         try:
             trade_result = None
-            trade_result = self.trade_swap_manager.place_order(result)
+            trade_result = self.okx_algo_order_service.place_order_by_st_result(result)
             return trade_result
         except Exception as e:
             logging.error(f"StrategyExecutor@_execute_trade, error: {e}", exc_info=True)
