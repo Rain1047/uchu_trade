@@ -7,26 +7,7 @@ from backend.strategy_center.strategy_processor.strategy_executor import Strateg
 from backend._utils import DatabaseUtils
 
 
-class StrategyExecutionResult:
-    def __init__(self, strategy_id: int, success: bool, message: str, data: Dict = None):
-        self.strategy_id = strategy_id
-        self.success = success
-        self.message = message
-        self.data = data or {}
-        self.timestamp = datetime.now()
-
-    def to_dict(self) -> Dict:
-        return {
-            'strategy_id': self.strategy_id,
-            'success': self.success,
-            'message': self.message,
-            'data': self.data,
-            'timestamp': self.timestamp.isoformat()
-        }
-
-
-class PeriodicStrategyTask(BaseTask):
-    """周期性策略执行任务"""
+class SwapMainTask(BaseTask):
 
     def __init__(self, name: str, interval: str):
         """
