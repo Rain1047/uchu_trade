@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ class SpotSubTaskLimitOrder:
         self.okx_balance_service = OKXBalanceService()
 
     # [调度子任务] 根据配置进行限价委托
-    def execute_limit_order_task(self, config: dict):
+    def execute_limit_order_task(self, config: dict, is_real: Optional[bool] = False):
         # 获取真实的账户余额 赎回赚币-划转到交易账户
         real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
         ccy = config.get('ccy')
