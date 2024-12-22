@@ -127,7 +127,6 @@ class FillsHistory(Base):
             }
 
         except Exception as e:
-            logger.error(f"Error in list_page: {str(e)}")
             return {
                 "success": False,
                 "message": str(e),
