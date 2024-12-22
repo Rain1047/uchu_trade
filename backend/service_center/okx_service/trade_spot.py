@@ -3,7 +3,6 @@ from typing import Dict, Any, List, Optional
 
 import pandas as pd
 
-from backend._constants import okx_constants
 from backend._utils import PriceUtils, FormatUtils, SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
@@ -20,56 +19,6 @@ account = okx.account_api
 trade = okx.trade_api
 market = okx.market_api
 funding = okx.funding_api
-
-
-def cancel_all_algo_orders_main_task():
-    spot_unfinished_algo_list = list_spot_unfinished_algo_order()
-    cancel_algo_list = []
-    for algo_order in spot_unfinished_algo_list:
-        cancel_algo_list.append(
-            {
-                'instId': algo_order.get('instId'),
-                'algoId': algo_order.get('algoId')
-            }
-        )
-    cancel_spot_unfinished_algo_order(cancel_algo_list)
-
-
-# 获取现货所有未完成的止盈止损委托
-def list_spot_unfinished_algo_order() -> List[Dict[str, Any]]:
-    """
-    获取未完成的现货算法订单列表
-
-    Returns:
-        List[Dict[str, Any]]: 订单列表，如果没有订单或发生错误则返回空列表
-    """
-    try:
-        result = trade.order_algos_list(
-            instType='SPOT',
-            ordType=EnumAlgoOrdType.CONDITIONAL_OCO.value
-        )
-
-        # 检查result和data是否存在且有效
-        data = result.get('data')
-        if result.get('code') == '0' and data and isinstance(data, list):
-            return data
-
-        return []
-
-    except Exception as e:
-        # 记录错误日志
-        logging.error(f"获取算法订单列表失败: {str(e)}")
-        return []
-
-
-# 取消现货所有未完成的止盈止损和限价委托
-def cancel_spot_unfinished_algo_order(algo_orders):
-    cancel_result = trade.cancel_algo_order(algo_orders)
-    print(cancel_result)
-
-
-price_collector = TickerPriceCollector()
-
 
 def query_candles_with_time_frame(instId: str, bar: str) -> pd.DataFrame:
     result = market.get_candlesticks(
