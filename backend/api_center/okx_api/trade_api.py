@@ -1,7 +1,7 @@
 import okx.Trade as Trade
 from typing import Optional, Dict
 from backend._decorators import add_docstring, singleton
-from backend.object_center.enum_obj import *
+from backend.data_object_center.enum_obj import *
 
 
 @singleton

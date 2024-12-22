@@ -2,8 +2,8 @@ from typing import Optional
 import pandas as pd
 from pandas import DataFrame
 
-from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
-from backend.object_center._object_dao.st_instance import StrategyInstance
+from backend.data_object_center.swap_algo_order_record import SwapAlgoOrderRecord
+from backend.data_object_center.st_instance import StrategyInstance
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
 from backend.strategy_center.strategy_processor.strategy_modifier import StrategyModifier

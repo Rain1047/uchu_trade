@@ -2,7 +2,7 @@ import pandas as pd
 
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_processor import KlineDataProcessor
-from backend.object_center.enum_obj import EnumTimeFrame
+from backend.data_object_center.enum_obj import EnumTimeFrame
 from backend._utils import CheckUtils, DateUtils, FormatUtils, SymbolFormatUtils
 import yfinance as yf
 

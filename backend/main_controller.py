@@ -5,13 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api_center.okx_api.okx_main import OKXAPIWrapper
-from object_center.trade.trade_controller import router as trade_router
-from object_center.strategy.strategy_controller import router as strategy_router
-from object_center.balance.balance_controller import router as balance_router
-from object_center.backtest.backtest_controller import router as backtest_router
-from object_center.strategy_files.strategy_files_controller import router as strategy_files_router
-from object_center.settings import settings
-import uvicorn
+from backend.controller_center.trade import router as trade_router
+from backend.controller_center.strategy import router as strategy_router
+from backend.controller_center.balance.balance_controller import router as balance_router
+from backend.controller_center.backtest import router as backtest_router
+from backend.controller_center.strategy_files.strategy_files_controller import router as strategy_files_router
 
 okx = OKXAPIWrapper()
 
@@ -55,7 +53,7 @@ def get_account_balance():
 if __name__ == "__main__":
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     import uvicorn
-    from object_center.settings import settings
+    from data_object_center.settings import settings
     uvicorn.run("main_controller:app",
                 host=settings.API_HOST,
                 port=settings.API_PORT,

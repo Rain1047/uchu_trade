@@ -3,8 +3,8 @@ from datetime import datetime
 
 from backend.strategy_center.atom_strategy.strategy_registry import StrategyRegistry
 from backend._utils import DatabaseUtils
-from backend.object_center._object_dao.st_instance import StrategyInstance
-from backend.object_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
+from backend.data_object_center.st_instance import StrategyInstance
+from backend.controller_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
 
 
 class StrategyService:
