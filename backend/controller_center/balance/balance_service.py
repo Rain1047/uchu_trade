@@ -1,11 +1,9 @@
 from typing import List, Any, Dict
 
 from backend._utils import SymbolFormatUtils
-from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.funding_balance import FundingBalance
-from backend.object_center._object_dao.saving_balance import SavingBalance
-from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
-from backend.object_center.balance.balance_request import UpdateAccountBalanceSwitchRequest
+from backend.data_object_center.account_balance import AccountBalance
+from backend.data_object_center.spot_trade_config import SpotTradeConfig
+from backend.controller_center.balance.balance_request import UpdateAccountBalanceSwitchRequest
 
 
 class BalanceService:

@@ -2,8 +2,8 @@ from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
-from backend.object_center._object_dao.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumOrdType, EnumStateAlgoOrder, \
+from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
+from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumStateAlgoOrder, \
     EnumAutoTradeConfigType
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService

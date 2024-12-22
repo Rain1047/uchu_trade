@@ -5,10 +5,10 @@ from backend._constants import okx_constants
 from backend._decorators import add_docstring, singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-from backend.object_center._object_dao.account_balance import AccountBalance
-from backend.object_center._object_dao.funding_balance import FundingBalance
-from backend.object_center._object_dao.saving_balance import SavingBalance
-from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
+from backend.data_object_center.account_balance import AccountBalance
+from backend.data_object_center.funding_balance import FundingBalance
+from backend.data_object_center.saving_balance import SavingBalance
+from backend.data_object_center.spot_trade_config import SpotTradeConfig
 
 logger = logging.getLogger(__name__)
 

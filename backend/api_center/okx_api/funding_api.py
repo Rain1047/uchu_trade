@@ -11,7 +11,7 @@ from typing import Dict, Optional
 import requests
 
 from backend._decorators import add_docstring
-from backend.object_center.enum_obj import *
+from backend.data_object_center.enum_obj import *
 from backend._utils import ConfigUtils
 
 

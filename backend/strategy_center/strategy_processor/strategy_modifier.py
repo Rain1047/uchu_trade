@@ -8,14 +8,13 @@ from pandas import DataFrame
 from backend._utils import DatabaseUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
-from backend.object_center._object_dao.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
-from backend.object_center._object_dao.st_instance import StrategyInstance
-from backend.object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
+from backend.data_object_center.swap_algo_order_record import SwapAlgoOrderRecord
+from backend.data_object_center.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
+from backend.data_object_center.st_instance import StrategyInstance
+from backend.data_object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
 from backend.strategy_center.atom_strategy.strategy_registry import registry
-from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
 
 
 class StrategyModifier:

@@ -1,7 +1,6 @@
 import logging
-from abc import ABC
 
-from backend.object_center._object_dao.spot_trade_config import SpotTradeConfig
+from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.schedule_center.tasks.trade_tasks.spot_sub_task_limit_order import SpotSubTaskLimitOrder
 from backend.schedule_center.tasks.trade_tasks.spot_sub_task_stop_loss import SpotSubTaskStopLoss
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService

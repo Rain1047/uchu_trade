@@ -1,18 +1,8 @@
-from logging import error
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-import uuid
-
-import pandas as pd
+from typing import Dict, Any, Optional
 
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-from backend.object_center._object_dao.swap_algo_order_record import SwapAlgoOrderRecord
-from backend.object_center._object_dao.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
-from backend.object_center.enum_obj import (
-    EnumAlgoOrdType,
-    EnumTradeEnv,
-    EnumTdMode,
-    EnumOrdType, EnumState
+from backend.data_object_center.enum_obj import (
+    EnumTradeEnv
 )
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.strategy_center.strategy_result import StrategyExecuteResult

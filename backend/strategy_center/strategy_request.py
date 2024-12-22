@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 
-from backend.object_center.enum_obj import *
+from backend.data_object_center.enum_obj import *
 
 
 class PlaceOrderRequest(BaseModel):

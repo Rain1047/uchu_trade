@@ -1,8 +1,7 @@
 from backend.backtest_center.backtest_main import *
-from backend.backtest_center.models.backtest_result import BacktestResults
-from backend.object_center._object_dao.backtest_record import BacktestRecord
-from backend.object_center._object_dao.backtest_result import BacktestResult
-from backend.object_center._object_dao.symbol_instance import SymbolInstance
+from backend.data_object_center.backtest_record import BacktestRecord
+from backend.data_object_center.backtest_result import BacktestResult
+from backend.data_object_center.symbol_instance import SymbolInstance
 
 
 class BacktestService:
