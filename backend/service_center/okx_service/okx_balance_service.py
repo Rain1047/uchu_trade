@@ -19,7 +19,7 @@ class OKXBalanceService:
         self.okx = OKXAPIWrapper()
         self.trade = self.okx.trade_api
         self.funding = self.okx.funding_api
-        self.account = self.okx.account
+        self.account = self.okx.account_api
 
     # [主要方法] 赎回-划转-获取真实的交易账户余额
     @add_docstring("赎回-划转-获取真实的交易账户余额")

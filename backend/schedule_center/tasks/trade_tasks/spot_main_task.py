@@ -38,4 +38,4 @@ class SpotMainTask:
         # 4. 处理limit order的任务
         if len(limit_order_configs) > 0:
             for config in limit_order_configs:
-                self.limit_order_task.execute_limit_order_task(config, is_real=True)
+                self.limit_order_task.execute_limit_order_task(config)

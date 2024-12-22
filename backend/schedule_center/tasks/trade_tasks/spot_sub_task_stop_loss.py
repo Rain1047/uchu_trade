@@ -5,7 +5,7 @@ import pandas as pd
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
-from backend.object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide
+from backend.object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumOrdType
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
@@ -71,3 +71,6 @@ if __name__ == '__main__':
     }
     stop_loss_executor = SpotSubTaskStopLoss()
     stop_loss_executor.execute_stop_loss_task(test_config)
+
+
+
