@@ -48,7 +48,6 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def list_by_ccy_and_type(ccy, type: Optional[str] = "") -> List[Dict[str, Any]]:
-        session = DatabaseUtils.get_db_session()
         try:
             filters = [SpotTradeConfig.ccy == ccy]
             if type and type.strip():
@@ -74,7 +73,6 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def create_or_update(config_list):
-        session = DatabaseUtils.get_db_session()
         try:
             if config_list and len(config_list) > 0:
                 ccy = config_list[0].get('ccy')
