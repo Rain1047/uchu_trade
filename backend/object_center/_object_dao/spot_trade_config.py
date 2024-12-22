@@ -16,7 +16,8 @@ class SpotTradeConfig(Base):
     ccy = Column(String, comment='币种')
     type = Column(String, comment='类型')
     indicator = Column(String, comment='指标')
-    indicator_val = Column(String, comment='时间间隔')
+    indicator_val = Column(String, comment='指标值')
+    target_price = Column(String, comment='目标价格')
     percentage = Column(String, comment='百分比')
     amount = Column(Integer, comment='金额')
     switch = Column(String, comment='开关')
@@ -24,9 +25,12 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def list_all() -> List[Dict]:
+        filters = [
+            SpotTradeConfig.is_del == '0'
+        ]
 
         try:
-            results = session.query(SpotTradeConfig).all()
+            results = session.query(SpotTradeConfig).filter(*filters).all()
             return [
                 {
                     'id': config.id,
@@ -34,6 +38,7 @@ class SpotTradeConfig(Base):
                     'type': config.type,
                     'indicator': config.indicator,
                     'indicator_val': config.indicator_val,
+                    'target_price': config.target_price,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -47,7 +52,11 @@ class SpotTradeConfig(Base):
     @staticmethod
     def list_by_ccy_and_type(ccy, type: Optional[str] = "") -> List[Dict[str, Any]]:
         try:
-            filters = [SpotTradeConfig.ccy == ccy]
+            filters = [
+                SpotTradeConfig.ccy == ccy,
+                SpotTradeConfig.is_del == '0'
+            ]
+
             if type and type.strip():
                 filters.append(SpotTradeConfig.type == type)
 
@@ -59,6 +68,7 @@ class SpotTradeConfig(Base):
                     'type': config.type,
                     'indicator': config.indicator,
                     'indicator_val': config.indicator_val,
+                    'target_price': config.target_price,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -86,6 +96,7 @@ class SpotTradeConfig(Base):
                         type=config.get('type'),
                         indicator=config.get('indicator'),
                         indicator_val=config.get('indicator_val'),
+                        target_price=config.get('target_price'),
                         percentage=config.get('percentage'),
                         amount=config.get('amount'),
                         switch=config.get('switch'),
