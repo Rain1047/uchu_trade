@@ -38,10 +38,11 @@ class OKXTickerService:
         # 获取单个产品行情信息
         return okx.market.get_ticker(instId=instId)['data'][0]['last']
 
-    def get_target_indicator_latest_price(self, instId: str, bar: str, indicator: str):
+    def get_target_indicator_latest_price(self, instId: str, bar: str, indicator: str, indicator_val: str):
         df = self.query_candles_with_time_frame(instId=instId, bar=bar)
-        df = KlineDataProcessor.add_indicator(df)
-        pass
+        df = KlineDataProcessor.add_target_indicator(df, indicator=indicator, indicator_val=indicator_val)
+        return df.iloc[-1][indicator]
+
 
     def get_target_indicator_price(self, instId: str, indicator: str):
         pass

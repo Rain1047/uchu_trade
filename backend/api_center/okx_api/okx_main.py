@@ -1,5 +1,3 @@
-# okx_api_wrapper.py
-
 from typing import Optional
 
 from backend._decorators import singleton

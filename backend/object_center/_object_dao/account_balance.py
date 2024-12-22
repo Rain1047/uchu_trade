@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from backend._constants import okx_constants
 from backend._utils import DatabaseUtils
+from backend.object_center.enum_obj import EnumAutoTradeConfigType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -275,3 +276,36 @@ class AccountBalance(Base):
         else:
             print(response)
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('msg')}")
+
+    @classmethod
+    def update_switch(cls, ccy: str, type: str, switch: str) -> bool:
+        """更新止损或限价订单开关状态
+        Args:
+            ccy: 币种
+            type: 订单类型 ('stop_loss' 或 'limit_order')
+            switch: 开关状态
+        Returns:
+            bool: 更新是否成功
+        """
+        try:
+            update_field = (
+                'stop_loss_switch' if type == EnumAutoTradeConfigType.STOP_LOSS.value
+                else 'limit_order_switch' if type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                else None
+            )
+
+            if not update_field:
+                print(f"Invalid order type: {type}")
+                return False
+
+            result = session.query(cls) \
+                .filter(cls.ccy == ccy) \
+                .update({update_field: switch})
+
+            session.commit()
+            return result > 0
+
+        except Exception as e:
+            session.rollback()
+            print(f"Update switch failed: {e}")
+            return False

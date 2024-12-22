@@ -1,10 +1,10 @@
-# trade_api_wrapper.py
 import okx.Trade as Trade
 from typing import Optional, Dict
-from backend._decorators import add_docstring
+from backend._decorators import add_docstring, singleton
 from backend.object_center.enum_obj import *
 
 
+@singleton
 class TradeAPIWrapper:
     def __init__(self, apikey, secretkey, passphrase, flag):
         self.tradeAPI = Trade.TradeAPI(apikey, secretkey, passphrase, False, flag=flag, debug=False)
@@ -79,7 +79,7 @@ class TradeAPIWrapper:
     '''
 
     @add_docstring("获取策略订单信息")
-    def get_algo_order(self, algoId: Optional[str], algoClOrdId: Optional[str]) -> Dict:
+    def get_algo_order(self, algoId: Optional[str] = '', algoClOrdId: Optional[str] = '') -> Dict:
         return self.tradeAPI.get_algo_order_details(algoId=algoId, algoClOrdId=algoClOrdId)
 
     @add_docstring("获取未完成策略委托单列表")

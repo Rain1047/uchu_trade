@@ -15,8 +15,9 @@ class SpotTradeConfig(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ccy = Column(String, comment='币种')
     type = Column(String, comment='类型')
-    signal = Column(String, comment='指标')
-    interval = Column(String, comment='时间间隔')
+    indicator = Column(String, comment='指标')
+    indicator_val = Column(String, comment='指标值')
+    target_price = Column(String, comment='目标价格')
     percentage = Column(String, comment='百分比')
     amount = Column(Integer, comment='金额')
     switch = Column(String, comment='开关')
@@ -24,16 +25,20 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def list_all() -> List[Dict]:
+        filters = [
+            SpotTradeConfig.is_del == '0'
+        ]
 
         try:
-            results = session.query(SpotTradeConfig).all()
+            results = session.query(SpotTradeConfig).filter(*filters).all()
             return [
                 {
                     'id': config.id,
                     'ccy': config.ccy,
                     'type': config.type,
-                    'signal': config.signal,
-                    'interval': config.interval,
+                    'indicator': config.indicator,
+                    'indicator_val': config.indicator_val,
+                    'target_price': config.target_price,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -46,9 +51,12 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def list_by_ccy_and_type(ccy, type: Optional[str] = "") -> List[Dict[str, Any]]:
-        session = DatabaseUtils.get_db_session()
         try:
-            filters = [SpotTradeConfig.ccy == ccy]
+            filters = [
+                SpotTradeConfig.ccy == ccy,
+                SpotTradeConfig.is_del == '0'
+            ]
+
             if type and type.strip():
                 filters.append(SpotTradeConfig.type == type)
 
@@ -58,8 +66,9 @@ class SpotTradeConfig(Base):
                     'id': config.id,
                     'ccy': config.ccy,
                     'type': config.type,
-                    'signal': config.signal,
-                    'interval': config.interval,
+                    'indicator': config.indicator,
+                    'indicator_val': config.indicator_val,
+                    'target_price': config.target_price,
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
@@ -71,8 +80,7 @@ class SpotTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def create_or_update(config_list):
-        session = DatabaseUtils.get_db_session()
+    def create_or_update(config_list: List[Dict[str, Any]]):
         try:
             if config_list and len(config_list) > 0:
                 ccy = config_list[0].get('ccy')
@@ -86,8 +94,9 @@ class SpotTradeConfig(Base):
                     new_config = SpotTradeConfig(
                         ccy=config.get('ccy'),
                         type=config.get('type'),
-                        signal=config.get('signal'),
-                        interval=config.get('interval'),
+                        indicator=config.get('indicator'),
+                        indicator_val=config.get('indicator_val'),
+                        target_price=config.get('target_price'),
                         percentage=config.get('percentage'),
                         amount=config.get('amount'),
                         switch=config.get('switch'),
