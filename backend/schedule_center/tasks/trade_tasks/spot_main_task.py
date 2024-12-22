@@ -33,7 +33,9 @@ class SpotMainTask:
 
         # 3. 处理stop loss的任务
         if len(stop_loss_configs) > 0:
-            self.stop_loss_task.execute_stop_loss_task(stop_loss_configs)
+            for config in stop_loss_configs:
+                self.stop_loss_task.execute_stop_loss_task(config)
         # 4. 处理limit order的任务
         if len(limit_order_configs) > 0:
-            self.limit_order_task.execute_limit_order_task(limit_order_configs)
+            for config in limit_order_configs:
+                self.limit_order_task.execute_limit_order_task(config)
