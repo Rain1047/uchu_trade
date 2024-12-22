@@ -58,10 +58,10 @@ class SpotSubTaskStopLoss:
             slOrdPx='-1'
         )
         print(result)
-        self.save_and_update_stop_loss_result(config, result)
+        self.save_stop_loss_result(config, result)
 
     @staticmethod
-    def save_and_update_stop_loss_result(config: dict, result: dict):
+    def save_stop_loss_result(config: dict, result: dict):
         stop_loss_data = {
             'ccy': config.get('ccy'),
             'type': EnumAutoTradeConfigType.STOP_LOSS.value,
@@ -74,6 +74,17 @@ class SpotSubTaskStopLoss:
         }
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")
+
+    def update_stop_loss_status(self):
+        live_order_list = SpotAlgoOrderRecord.list_by_status(EnumStateAlgoOrder.LIVE.value)
+        if len(live_order_list) > 0:
+            for live_order in live_order_list:
+                latest_order = self.trade.get_algo_order(algoId=live_order.get('algoId'))
+                latest_status = latest_order.get('data')[0].get('state')
+                if latest_order.get('data')[0].get('state') != EnumStateAlgoOrder.LIVE.value:
+                    success = SpotAlgoOrderRecord.update_status_by_algo_id(live_order.get('algoId'), latest_status)
+                    print(f"Update stop loss status: {'success' if success else 'failed'}")
+                print(f"{live_order.get('algoId')}: {latest_status}")
 
 
 if __name__ == '__main__':
@@ -91,7 +102,4 @@ if __name__ == '__main__':
     #     "percentage": "5"
     # }
     stop_loss_executor = SpotSubTaskStopLoss()
-    stop_loss_executor.execute_stop_loss_task(test_config)
-
-
-
+    stop_loss_executor.update_stop_loss_status()
