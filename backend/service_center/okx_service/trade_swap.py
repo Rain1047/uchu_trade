@@ -89,6 +89,7 @@ if __name__ == '__main__':
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
+    okx = OKXAPIWrapper()
     okx_algo_order_service = OKXAlgoOrderService()
     st_result = StrategyExecuteResult()
     st_result.symbol = "ETH-USDT"
@@ -105,31 +106,16 @@ if __name__ == '__main__':
     okx_algo_order_service.save_execute_algo_order_result(
         st_execute_result=st_result, place_order_result=trade_result)
 
-    ordId = trade_result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    print(trade_result)
 
-    # 2. 获取订单 get_order clOrdId -> 查看过程和结果
-    # result = trade_swap_manager.get_order(instId='ETH-USDT-SWAP', ordId='2068880367670255616', clOrdId='')
-    # print("通过ordId查看订单：")
-    # print(result)
-
-    # 3. 获取策略委托 get_algo_order algoClOrdId <- attachAlgoOrds-attachAlgoClOrdId
-    # 委托订单待生效-live  委托订单已生效-effective
-    result = trade_swap_manager.get_algo_order(algoId='', algoClOrdId='20241214223602ETH0001stInsId6174')
-    attach_algo_orders = result['data']
-    save_result = AttachAlgoOrdersRecord.save_or_update_attach_algo_orders(attach_algo_orders)
-    print("通过algoClOrdId查看策略委托订单：")
-    print(result)
-    print(f"save_result:{save_result}")
     # 当get_algo_order by algoClOrdId 委托订单结果为effective时，遍历get_order，通过匹配algoClOrdId
     # 来获取订单结果的明细，判断订单的state是否为filled，如果是，则进行记录
     #
     # 4. 修改策略止损价
     # 只修改止损触发价，止盈传"", 取消止损，传"0"
-    # result = trade_swap_manager.amend_algo_order(
-    #     instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
-    #     newSlTriggerPx='3994.5', newSlOrdPx='-1',
-    # )
+    result = trade_swap_manager.amend_algo_order(
+        instId='ETH-USDT-SWAP', algoId='', algoClOrdId="attachAlgoClOrdId12082149",
+        newSlTriggerPx='3994.5', newSlOrdPx='-1',
+    )
     # print(result)
     #
     # # 5. 匹配历史订单

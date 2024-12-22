@@ -64,6 +64,7 @@ class StrategyExecutor:
             # 4.保存交易记录
             self.okx_algo_order_service.save_execute_algo_order_result(
                 st_execute_result=entry_result, place_order_result=trade_result)
+
         except Exception as e:
             print(f"StrategyExecutor@_process_strategy Error processing strategy: {e}")
 
@@ -80,8 +81,6 @@ class StrategyExecutor:
         try:
             trade_result = self.okx_algo_order_service.place_order_by_st_result(st_result)
             self.okx_algo_order_service.save_execute_algo_order_result(st_result, trade_result)
-
-            self.okx_algo_order_service.place_algo_order_by_result(st_result)
             return trade_result
         except Exception as e:
             logging.error(f"StrategyExecutor@_execute_trade, error: {e}", exc_info=True)
