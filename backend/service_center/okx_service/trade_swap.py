@@ -27,22 +27,11 @@ class TradeSwapManager:
         self.account = self.okx.account_api
         self.market = self.okx.market_api
 
-
     # def get_swap_limit_order_list(self) -> List[Dict[str, Any]]:
     #     swap_limit_orders = self.trade.get_order_list(
     #         instType='SWAP', ordType='limit')
     #     print(swap_limit_orders)
     #     return swap_limit_orders.get('data', []) if swap_limit_orders.get('code') == '0' else []
-
-    @staticmethod
-    def get_attach_algo_cl_ordId(st_result: StrategyExecuteResult) -> str:
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        return (
-                current_time +
-                st_result.symbol.split('-')[0] +
-                # 使用 zfill 方法将数字字符串填充为4位
-                str(st_result.st_inst_id).zfill(4) + "stInsId" +
-                str(uuid.uuid4())[:4])
 
     def place_algo_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
         place_algo_order_result = self.trade.place_algo_order(
@@ -91,7 +80,6 @@ class TradeSwapManager:
              if order.get('algoClOrdId') == target_attach_id),
             None
         )
-
 
 
 if __name__ == '__main__':
@@ -143,7 +131,7 @@ if __name__ == '__main__':
     #
     # # 5. 匹配历史订单
     result = TradeSwapManager().trade.get_orders_history(instType="SWAP", instId='ETH-USDT-SWAP',
-                                                   before='2052302587604230144')
+                                                         before='2052302587604230144')
     print("获取历史订单记录（近七天）, 查看ordId后的记录：")
 
     # orders_history_list = result.get('data')
