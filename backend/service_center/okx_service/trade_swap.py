@@ -14,6 +14,7 @@ from backend.object_center.enum_obj import (
     EnumTdMode,
     EnumOrdType, EnumState
 )
+from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend._utils import SymbolFormatUtils
@@ -34,16 +35,17 @@ class TradeSwapManager:
     #     return swap_limit_orders.get('data', []) if swap_limit_orders.get('code') == '0' else []
 
     def place_algo_order(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
+        instId = SymbolFormatUtils.get_usdt(instId=st_result.symbol)
         place_algo_order_result = self.trade.place_algo_order(
-            instId="ETH-USDT",
+            instId=instId,
             tdMode="cash",
-            side="sell",
+            side=st_result.side,
             ordType="conditional",
-            sz="1",
+            sz=st_result.sz,
             tpTriggerPx="",
             tpOrdPx="",
-            slTriggerPx="2400",
-            slOrdPx="2300",
+            slTriggerPx=st_result.stop_loss_price,
+            slOrdPx=st_result.stop_loss_price,
             algoClOrdId="test_2024_12_07",
         )
         print(place_algo_order_result)
@@ -87,23 +89,24 @@ if __name__ == '__main__':
     # 合约市价下单
 
     trade_swap_manager = TradeSwapManager()
-    # st_result = StrategyExecuteResult()
-    # st_result.symbol = "ETH-USDT"
-    # format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
-    # st_result.symbol = format_symbol
-    # st_result.side = "buy"
-    # st_result.pos_side = "long"
-    # st_result.sz = "1"
-    # st_result.st_inst_id = 1
-    # st_result.stop_loss_price = "3860"
-    # st_result.signal = True
-    # trade_result = trade_swap_manager.place_order(st_result)
-    #
-    # trade_swap_manager.save_place_algo_order_result(
-    #     st_execute_result=st_result, place_order_result=trade_result)
+    okx_algo_order_service = OKXAlgoOrderService()
+    st_result = StrategyExecuteResult()
+    st_result.symbol = "ETH-USDT"
+    format_symbol = SymbolFormatUtils.get_swap_usdt(st_result.symbol)
+    st_result.symbol = format_symbol
+    st_result.side = "buy"
+    st_result.pos_side = "long"
+    st_result.sz = "1"
+    st_result.st_inst_id = 1
+    st_result.stop_loss_price = "3860"
+    st_result.signal = True
+    trade_result = okx_algo_order_service.place_order_by_st_result(st_result)
 
-    # ordId = result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
-    # print(result)
+    okx_algo_order_service.save_execute_algo_order_result(
+        st_execute_result=st_result, place_order_result=trade_result)
+
+    ordId = trade_result.get('data')[0].get('ordId')  # 后续查询成交明细时消费
+    print(trade_result)
 
     # 2. 获取订单 get_order clOrdId -> 查看过程和结果
     # result = trade_swap_manager.get_order(instId='ETH-USDT-SWAP', ordId='2068880367670255616', clOrdId='')

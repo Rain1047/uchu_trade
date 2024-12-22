@@ -50,7 +50,7 @@ class OKXAlgoOrderService:
             )
         self.cancel_swap_unfinished_algo_order(cancel_algo_list)
 
-    @add_docstring("[主要方法] 市价下单")
+    @add_docstring("[主要方法] 根据策略执行结果市价下单")
     def place_order_by_st_result(self, st_result: StrategyExecuteResult) -> Dict[str, Any]:
 
         attach_algo_cl_ordId = self.get_attach_algo_cl_ordId(st_result)
