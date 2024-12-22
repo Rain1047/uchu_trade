@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 from backend.data_object_center.fills_history import FillsHistory
 from backend.controller_center.trade.trade_request import TradePageRequest, UpdateNoteRequest
-from backend.service_center.data_api import *
 from backend._constants import *
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 
@@ -10,46 +9,42 @@ from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-dbApi = DataAPIWrapper()
 okx = OKXAPIWrapper()
 
 
 class TradeService:
     @staticmethod
     def get_fill_history(req: Optional[TradePageRequest] = None) -> dict:
-        """
-        获取成交历史记录，支持分页查询
-
+        """获取成交历史记录
         Args:
-            req (Optional[PageRequest]): 分页请求参数，如果为None则使用默认值
-
+            req: 分页请求参数
         Returns:
-            dict: 包含分页数据的字典，格式如下:
-            {
-                "items": List[FillsHistory],
-                "total_count": int,
-                "page_size": int,
-                "page_num": int
-            }
+            dict: 分页数据结果
         """
         try:
+            # 1. 从API获取最新数据并保存
             result = okx.trade.get_trade_fills_history(instType="SPOT")
-            code = result['code']
-            msg = result['msg']
-            if code == okx_constants.SUCCESS_CODE:
-                dbApi.insert2db(result, FillsHistory)
+            if result['code'] == okx_constants.SUCCESS_CODE:
+                FillsHistory.insert(result)
             else:
-                print(code, msg)
-        except Exception as e:
-            logger.error(f"Error processing request: {str(e)}")
+                logger.error(f"Failed to get fills history: {result['code']}, {result['msg']}")
 
-        # 使用默认分页参数，如果请求为空
-        page_request = req or TradePageRequest(
-            pageSize=10,
-            pageNum=1
-        )
-        # 调用数据库API获取数据
-        return dbApi.page(page_request, FillsHistory)
+            # 2. 使用默认分页参数（如果请求为空）
+            page_request = req or TradePageRequest(
+                pageSize=10,
+                pageNum=1
+            )
+
+            # 3. 直接使用类的分页方法
+            return FillsHistory.list_page(page_request)
+
+        except Exception as e:
+            logger.error(f"Error in get_fill_history: {str(e)}")
+            return {
+                "success": False,
+                "message": str(e),
+                "data": None
+            }
 
     @staticmethod
     def update_history_note(req: UpdateNoteRequest) -> bool:
