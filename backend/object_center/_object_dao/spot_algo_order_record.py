@@ -10,7 +10,6 @@ Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 
 
-@singleton
 class SpotAlgoOrderRecord(Base):
     __tablename__ = 'spot_algo_order_record'
 
