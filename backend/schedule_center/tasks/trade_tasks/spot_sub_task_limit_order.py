@@ -48,10 +48,11 @@ class SpotSubTaskLimitOrder:
             sz=sz,
             px=target_price
         )
-        self.save_and_update_limit_order_result(config, result)
+        self.save_limit_order_result(config, result)
         print(result)
 
-    def save_and_update_limit_order_result(self, config: dict, result: dict):
+    @staticmethod
+    def save_limit_order_result(config: dict, result: dict):
         stop_loss_data = {
             'ccy': config.get('ccy'),
             'type': EnumAutoTradeConfigType.LIMIT_ORDER.value,
@@ -65,6 +66,7 @@ class SpotSubTaskLimitOrder:
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
         print(f"Insert limit order: {'success' if success else 'failed'}")
 
+    def update_limit_order_status(self):
         live_order_list = SpotAlgoOrderRecord.list_by_status(EnumState.LIVE.value)
         if len(live_order_list) > 1:
             for live_order in live_order_list:
