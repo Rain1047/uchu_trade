@@ -139,10 +139,10 @@ class OKXBalanceService:
                                                        .list_by_ccy_and_type(ccy=ccy,
                                                                              type=EnumAutoTradeConfigType.STOP_LOSS.value))
             balance['live_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                       .list_by_ccy_and_type(ccy=ccy, type=EnumState.LIVE.value))
+                                                       .list_by_ccy_and_status(ccy=ccy, status=EnumState.LIVE.value))
 
             balance['filled_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                         .list_by_ccy_and_type(ccy=ccy, type=EnumState.FILLED.value))
+                                                         .list_by_ccy_and_status(ccy=ccy, status=EnumState.FILLED.value))
 
         # print(balance_list)
         return balance_list
