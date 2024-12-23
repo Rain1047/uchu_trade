@@ -35,6 +35,7 @@ class SpotMainTask:
             elif config.get('type') == EnumAutoTradeConfigType.LIMIT_ORDER.value:
                 limit_order_configs.append(config)
         # 3. 处理stop loss的任务
+        print(stop_loss_configs)
         if len(stop_loss_configs) > 0:
             for config in stop_loss_configs:
                 print(config)

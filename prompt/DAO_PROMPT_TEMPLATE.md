@@ -32,11 +32,11 @@ from sqlalchemy.ext.declarative import declarative_base的python对象，使用�
      - 事务和异常处理
 
 3. 批量查询操作:
-   - list_by_{condition}(**kwargs) -> Dict[str, List[Dict[str, Any]]]
+   - list_by_{condition}(**kwargs) -> [str, List[Dict[str, Any]]
      - 支持分页参数（page_num, page_size）
      - 支持排序参数（sort_field, sort_order）
-     - 返回格式：{'list_name': [item.to_dict() for item in items]}
-     - 空结果返回：{'list_name': []}
+     - 返回格式：[item.to_dict() for item in items]
+     - 空结果返回：[]
 
 4. 批量更新操作:
    - batch_create_or_update(items: List[Dict[str, Any]]) -> bool
