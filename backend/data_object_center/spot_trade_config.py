@@ -155,11 +155,19 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def update_spot_config_exec_nums(config: dict) -> bool:
-        exec_nums = config.get('exec_nums')
-        if not exec_nums:
-            return SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=-1)
-        else:
-            return SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=exec_nums - 1)
+        try:
+            exec_nums = config.get('exec_nums')
+            if not exec_nums:
+                SpotTradeConfig.delete_by_id(id=config.get('id'))
+            else:
+                update = exec_nums - 1
+                if update <= 0:
+                    SpotTradeConfig.delete_by_id(id=config.get('id'))
+                SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=update)
+            return True
+        except Exception as e:
+            print(f"Update exec_nums failed: {e}")
+            return False
 
     @classmethod
     def update_exec_nums(cls, id: int, exec_nums: int = None) -> bool:
