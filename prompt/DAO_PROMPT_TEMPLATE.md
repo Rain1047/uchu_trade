@@ -15,6 +15,19 @@ from sqlalchemy.ext.declarative import declarative_base的python对象，使用�
         return {'strategy_list': [result.to_dict() for result in results]} if results else {'strategy_list': []}
     delete_by_id()方法，返回布尔
     update_selective_by_id() 方法，返回布尔
+    batch_crate_or_update() 方法，参数为list[dict]，返回布尔
+        (Bulk Upsert)功能，具体需求如下：
+        1. 输入：包含多条记录的列表，每条记录可能是新增或更新
+        2. 判断逻辑：
+          - 如果记录带有ID，则更新已存在记录
+          - 如果记录没有ID，则新增记录
+          - 对于已存在但输入列表中未包含的记录，需要软删除(将is_del设为1)
+        3. 其他要求：
+          - 需要支持事务
+          - 需要进行异常处理
+          - 所有操作应该是原子的(要么全部成功，要么全部失败)
+
+请帮我实现这个功能，使用[期望的编程语言]。
 
 在这个页面上增加“运行回测”的按钮，按钮的位置在策略的输入框之后，回测记录之前。回测需要加一个loading判断是否执行完成。完成后自动取
 

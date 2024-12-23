@@ -26,6 +26,10 @@ class SpotMainTask:
         limit_order_configs = []
         stop_loss_configs = []
         for config in algo_order_configs:
+            exec_nums = config.get('exec_nums')
+            if exec_nums <= 0:
+                print(f"Exec config: {config.get('id')} task finished.")
+                continue
             if config.get('type') == EnumAutoTradeConfigType.STOP_LOSS.value:
                 stop_loss_configs.append(config)
             elif config.get('type') == EnumAutoTradeConfigType.LIMIT_ORDER.value:
