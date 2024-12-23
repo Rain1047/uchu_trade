@@ -21,6 +21,7 @@ class SpotTradeConfig(Base):
     percentage = Column(String, comment='百分比')
     amount = Column(Integer, comment='金额')
     switch = Column(String, comment='开关')
+    exec_nums = Column(Integer, comment='执行次数')
     is_del = Column(String, comment='是否删除')
 
     @staticmethod
@@ -42,6 +43,7 @@ class SpotTradeConfig(Base):
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
+                    'exec_nums': config.exec_nums,
                     'is_del': config.is_del
                 }
                 for config in results
@@ -54,7 +56,8 @@ class SpotTradeConfig(Base):
         try:
             filters = [
                 SpotTradeConfig.ccy == ccy,
-                SpotTradeConfig.is_del == '0'
+                SpotTradeConfig.is_del == '0',
+                SpotTradeConfig.exec_nums > 0
             ]
 
             if type and type.strip():
@@ -72,6 +75,7 @@ class SpotTradeConfig(Base):
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
+                    'exec_nums':config.exec_nums,
                     'is_del': config.is_del
                 }
                 for config in results
@@ -100,6 +104,7 @@ class SpotTradeConfig(Base):
                         percentage=config.get('percentage'),
                         amount=config.get('amount'),
                         switch=config.get('switch'),
+                        exec_nums=config.get('exec_nums'),
                         is_del=config.get('is_del')
                     )
                     session.add(new_config)
@@ -111,7 +116,89 @@ class SpotTradeConfig(Base):
         finally:
             session.close()
 
+    @classmethod
+    def update_switch(cls, id: int, switch: str) -> bool:
+        """更新开关状态
+        Args:
+            id: 配置ID
+            switch: 开关状态
+        Returns:
+            bool: 更新是否成功
+        """
+        try:
+            result = session.query(cls) \
+                .filter(cls.id == id) \
+                .update({
+                'switch': switch,
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update switch failed: {e}")
+            return False
+
+    @classmethod
+    def delete_by_id(cls, id: int) -> bool:
+        try:
+            result = session.query(cls) \
+                .filter(cls.id == id) \
+                .update({
+                'is_del': '1'
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Delete config failed: {e}")
+            return False
+
+    @staticmethod
+    def update_spot_config_exec_nums(config: dict) -> bool:
+        exec_nums = config.get('exec_nums')
+        if not exec_nums:
+            return SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=-1)
+        else:
+            return SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=exec_nums - 1)
+
+    @classmethod
+    def update_exec_nums(cls, id: int, exec_nums: int = None) -> bool:
+        """更新执行次数
+        Args:
+            id: 配置ID
+            exec_nums: 指定的执行次数，如果为None则自增1
+        Returns:
+            bool: 更新是否成功
+        """
+        try:
+            if exec_nums is None:
+                # 自增1
+                record = session.query(cls).filter(cls.id == id).first()
+                if not record:
+                    return False
+                exec_nums = (record.exec_nums or 0) + 1
+
+            result = session.query(cls) \
+                .filter(cls.id == id) \
+                .update({
+                'exec_nums': exec_nums
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update exec_nums failed: {e}")
+            return False
+
 
 if __name__ == '__main__':
     swap = SpotTradeConfig()
     print(swap.list_all())
+    # 更新开关状态
+    success = SpotTradeConfig.update_switch(id=1, switch='ON')
+
+    # 更新执行次数（自增1）
+    success = SpotTradeConfig.update_exec_nums(id=1)
+
+    # 更新执行次数（指定值）
+    success = SpotTradeConfig.update_exec_nums(id=1, exec_nums=5)

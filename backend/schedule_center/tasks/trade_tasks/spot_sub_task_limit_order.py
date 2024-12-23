@@ -5,6 +5,7 @@ from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumAutoTradeConfigType, \
     EnumState
+from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
@@ -51,6 +52,7 @@ class SpotSubTaskLimitOrder:
             px=target_price
         )
         self.save_limit_order_result(config, result)
+        SpotTradeConfig.update_spot_config_exec_nums(config)
         print(result)
 
     @staticmethod
@@ -83,8 +85,8 @@ if __name__ == '__main__':
     test_config = {
         "id": "1",
         "ccy": "ETH-USDT",
-        "amount": "1000",
-        "target_price": "3000",
+        "amount": "2000",
+        "target_price": "3130",
     }
 
     # test_config = {
