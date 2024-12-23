@@ -53,7 +53,7 @@ def get_account_balance():
 if __name__ == "__main__":
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     import uvicorn
-    from data_object_center.settings import settings
+    from backend.controller_center.settings import settings
     uvicorn.run("main_controller:app",
                 host=settings.API_HOST,
                 port=settings.API_PORT,

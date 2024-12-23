@@ -1,4 +1,3 @@
-// components/SpotTradeConfig.js
 import React, { useState } from 'react';
 import {
     Box,
@@ -50,11 +49,6 @@ const useStyles = makeStyles((theme) => ({
     addButton: {
         marginTop: theme.spacing(2),
     },
-    form: {
-        '& .MuiTextField-root': {
-            marginBottom: theme.spacing(2),
-        },
-    },
     typeIndicator: {
         padding: theme.spacing(0.5, 1),
         borderRadius: theme.shape.borderRadius,
@@ -68,12 +62,6 @@ const useStyles = makeStyles((theme) => ({
     limitOrderIndicator: {
         backgroundColor: theme.palette.success.dark,
         color: theme.palette.success.contrastText,
-    },
-    fieldsContainer: {
-        display: 'flex',
-        gap: theme.spacing(2),
-        alignItems: 'flex-start',
-        flexGrow: 1,
     }
 }));
 
@@ -95,7 +83,7 @@ export const AutoTradeConfig = ({
 
     const getInitialConfig = () => ({
         type,
-        signal: '',
+        indicator: '',
         interval: '',
         percentage: '',
         amount: '',
@@ -119,30 +107,14 @@ export const AutoTradeConfig = ({
         setConfigs(newConfigs);
     };
 
-    const handleSave = () => {
-        // 验证配置
-        const isValid = configs.every(config =>
-            config.signal &&
-            config.interval &&
-            (config.percentage || config.amount)
-        );
-
-        if (!isValid) {
-            // 可以添加错误提示
-            return;
-        }
-
-        onSave(configs);
-    };
-
     const ConfigItem = ({ config, index }) => (
         <Box className={classes.configItem}>
             <Box className={classes.fieldsContainer}>
                 <TextField
                     select
                     label="指标"
-                    value={config.signal}
-                    onChange={(e) => handleConfigChange(index, 'signal', e.target.value)}
+                    value={config.indicator || ''}
+                    onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
                     variant="outlined"
                     size="small"
                     style={{ width: '120px' }}
@@ -156,7 +128,7 @@ export const AutoTradeConfig = ({
 
                 <TextField
                     label="间隔"
-                    value={config.interval}
+                    value={config.interval || ''}
                     onChange={(e) => handleConfigChange(index, 'interval', e.target.value)}
                     variant="outlined"
                     size="small"
@@ -165,25 +137,13 @@ export const AutoTradeConfig = ({
                 />
 
                 <TextField
-                    label="百分比"
-                    value={config.percentage}
-                    onChange={(e) => handleConfigChange(index, 'percentage', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    disabled={!!config.amount}
-                    style={{ width: '100px' }}
-                />
-
-                <TextField
                     label="金额"
-                    value={config.amount}
+                    value={config.amount || ''}
                     onChange={(e) => handleConfigChange(index, 'amount', e.target.value)}
                     variant="outlined"
                     size="small"
                     type="number"
-                    disabled={!!config.percentage}
-                    style={{ width: '100px' }}
+                    style={{ width: '120px' }}
                 />
             </Box>
 
@@ -223,7 +183,7 @@ export const AutoTradeConfig = ({
             </DialogTitle>
 
             <DialogContent className={classes.content}>
-                <Box className={classes.form}>
+                <Box>
                     {configs.map((config, index) => (
                         <ConfigItem
                             key={index}
@@ -247,11 +207,11 @@ export const AutoTradeConfig = ({
             <Divider />
 
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={onClose}>
                     取消
                 </Button>
                 <Button
-                    onClick={handleSave}
+                    onClick={() => onSave(configs)}
                     color="primary"
                     variant="contained"
                 >

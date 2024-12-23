@@ -97,6 +97,25 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
+    def list_by_ccy_and_status(cls, ccy: str, status: str) -> List[Dict]:
+        """根据币种查询记录列表
+        Args:
+            ccy: 币种
+        Returns:
+            Dict[str, List[Dict]]: 包含记录列表的字典
+        """
+        filters = [
+            SpotAlgoOrderRecord.ccy == ccy,
+            SpotAlgoOrderRecord.status == status,
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
+
+    @classmethod
     def list_by_type(cls, type: str) -> List[Dict]:
         """根据类型查询记录列表
         Args:
@@ -233,3 +252,7 @@ class SpotAlgoOrderRecord(Base):
         except Exception as e:
             print(f"Query failed: {e}")
             return None
+
+
+if __name__ == '__main__':
+    print(SpotAlgoOrderRecord.list_by_ccy_and_type("ETH", "limit_order"))

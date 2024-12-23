@@ -1,68 +1,52 @@
 import { useState, useCallback } from 'react';
-import { API_ENDPOINTS, API_STATUS } from '../constants/balanceConstants';
+import { API_ENDPOINTS } from '../constants/balanceConstants';
 
 export const useBalance = () => {
-    const [assets, setAssets] = useState([]);
-    const [positions, setPositions] = useState({});
-    const [orders, setOrders] = useState({});
+    const [balances, setBalances] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const handleApiResponse = async (response, errorMessage) => {
+    const handleApiResponse = async (response, errorMsg) => {
         if (!response.ok) {
-            throw new Error(errorMessage);
+            throw new Error(errorMsg);
         }
         const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || errorMessage);
+        if (!data.success && !data.data) {
+            throw new Error(data.message || errorMsg);
         }
         return data;
     };
 
-    const fetchBalance = useCallback(async () => {
+    const fetchBalances = useCallback(async () => {
         setLoading(true);
         try {
-          const response = await fetch(API_ENDPOINTS.LIST_BALANCE);
-          const data = await handleApiResponse(response, '获取资产数据失败');
-          setAssets(data.data || []);
-          setError(null);
+            const response = await fetch(API_ENDPOINTS.LIST_BALANCE);
+            const { data } = await handleApiResponse(response, '获取资产数据失败');
+            setBalances(data || []);
+            setError(null);
         } catch (err) {
-          setError(err.message);
-          console.error('获取资产列表失败:', err);
+            setError(err.message);
+            console.error('获取资产列表失败:', err);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      }, []);
+    }, []);
 
-    const fetchPositions = useCallback(async (ccy) => {
+    const toggleAutoConfig = useCallback(async (ccy, type, enabled) => {
         try {
-          const response = await fetch(`${API_ENDPOINTS.LIST_POSITIONS}?ccy=${ccy}`);
-          const data = await handleApiResponse(response, '获取持仓数据失败');
-          setPositions(prev => ({
-            ...prev,
-            [ccy]: data.data || []
-          }));
-          return data.data;
+            const response = await fetch(API_ENDPOINTS.TOGGLE_SWITCH, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ccy, type, enabled }),
+            });
+            await handleApiResponse(response, '切换配置失败');
+            await fetchBalances();
+            return true;
         } catch (err) {
-          console.error('获取持仓数据失败:', err);
-          return [];
+            console.error('切换配置失败:', err);
+            return false;
         }
-      }, []);
-
-      const fetchOrders = useCallback(async (ccy) => {
-        try {
-          const response = await fetch(`${API_ENDPOINTS.LIST_ORDERS}?ccy=${ccy}`);
-          const data = await handleApiResponse(response, '获取委托数据失败');
-          setOrders(prev => ({
-            ...prev,
-            [ccy]: data.data || []
-          }));
-          return data.data;
-        } catch (err) {
-          console.error('获取委托数据失败:', err);
-          return [];
-        }
-      }, []);
+    }, [fetchBalances]);
 
     const saveAutoConfig = useCallback(async (ccy, type, configs) => {
         try {
@@ -72,40 +56,20 @@ export const useBalance = () => {
                 body: JSON.stringify({ ccy, type, configs }),
             });
             await handleApiResponse(response, '保存配置失败');
-            await fetchBalance();
+            await fetchBalances();
             return true;
         } catch (err) {
             console.error('保存配置失败:', err);
             return false;
         }
-    }, [fetchBalance]);
-
-    const toggleAutoSwitch = useCallback(async (ccy, type, value) => {
-        try {
-          const response = await fetch(API_ENDPOINTS.TOGGLE_SWITCH, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ccy, type, value }),
-          });
-          await handleApiResponse(response, '切换开关失败');
-          await fetchBalance();
-          return true;
-        } catch (err) {
-          console.error('切换开关失败:', err);
-          return false;
-        }
-      }, [fetchBalance]);
+    }, [fetchBalances]);
 
     return {
-        assets,
-        positions,
-        orders,
+        balances,
         loading,
         error,
-        fetchBalance,
-        fetchPositions,
-        fetchOrders,
-        saveAutoConfig,
-        toggleAutoSwitch
+        fetchBalances,
+        toggleAutoConfig,
+        saveAutoConfig
     };
 };

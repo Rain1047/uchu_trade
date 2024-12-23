@@ -16,7 +16,7 @@ class BalanceService:
 
     @staticmethod
     def save_update_balance_config(config_list: List[Dict[str, Any]]) -> bool:
-        return SpotTradeConfig.create_or_update(config_list)
+        return SpotTradeConfig.batch_create_or_update(config_list)
 
 
 if __name__ == '__main__':
