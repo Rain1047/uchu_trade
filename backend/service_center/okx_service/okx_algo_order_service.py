@@ -26,6 +26,9 @@ class OKXAlgoOrderService:
     @add_docstring("[主要方法] 取消所有未成交的现货限价单")
     def cancel_all_spot_algo_orders(self):
         spot_unfinished_algo_list = self.list_spot_unfinished_algo_order()
+        if not spot_unfinished_algo_list:
+            logger.info("无未成交的订单")
+            return
         cancel_algo_list = []
         for algo_order in spot_unfinished_algo_list:
             cancel_algo_list.append(
@@ -34,6 +37,9 @@ class OKXAlgoOrderService:
                     'algoId': algo_order.get('algoId')
                 }
             )
+        if not cancel_algo_list:
+            logger.info("无未成交的订单")
+            return
         self.cancel_spot_unfinished_algo_order(cancel_algo_list)
 
     # [主要方法] 取消所有未成交的合约限价单
