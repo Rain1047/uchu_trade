@@ -16,6 +16,10 @@ def get_balance_list():
     try:
         okx_balance_service = OKXBalanceService()
         balance_list = okx_balance_service.list_account_balance()
+        print({
+            "success": True,
+            "data": balance_list
+        })
         return {
             "success": True,
             "data": balance_list
