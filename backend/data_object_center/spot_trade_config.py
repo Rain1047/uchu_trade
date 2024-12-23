@@ -27,7 +27,8 @@ class SpotTradeConfig(Base):
     @staticmethod
     def list_all() -> List[Dict]:
         filters = [
-            SpotTradeConfig.is_del == '0'
+            SpotTradeConfig.is_del == '0',
+            SpotTradeConfig.switch == '0'
         ]
 
         try:
@@ -57,7 +58,7 @@ class SpotTradeConfig(Base):
             filters = [
                 SpotTradeConfig.ccy == ccy,
                 SpotTradeConfig.is_del == '0',
-                SpotTradeConfig.exec_nums > 0
+                SpotTradeConfig.exec_nums >= 0
             ]
 
             if type and type.strip():
@@ -75,7 +76,7 @@ class SpotTradeConfig(Base):
                     'percentage': config.percentage,
                     'amount': config.amount,
                     'switch': config.switch,
-                    'exec_nums':config.exec_nums,
+                    'exec_nums': config.exec_nums,
                     'is_del': config.is_del
                 }
                 for config in results
@@ -84,17 +85,71 @@ class SpotTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def create_or_update(config_list: List[Dict[str, Any]]):
+    def create_or_update(config: Dict):
         try:
-            if config_list and len(config_list) > 0:
-                ccy = config_list[0].get('ccy')
-                # 删除已存在配置
+            if config.get('id'):
+                # 更新
                 session.query(SpotTradeConfig).filter(
-                    SpotTradeConfig.ccy == ccy
-                ).delete()
+                    SpotTradeConfig.id == config.get('id')
+                ).update(config)
+            else:
+                # 新增
+                new_config = SpotTradeConfig(
+                    ccy=config.get('ccy'),
+                    type=config.get('type'),
+                    indicator=config.get('indicator'),
+                    indicator_val=config.get('indicator_val'),
+                    target_price=config.get('target_price'),
+                    percentage=config.get('percentage'),
+                    amount=config.get('amount'),
+                    switch=config.get('switch'),
+                    exec_nums=config.get('exec_nums'),
+                    is_del=config.get('is_del')
+                )
+                session.add(new_config)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
-                # 批量新增配置
-                for config in config_list:
+    @staticmethod
+    def batch_create_or_update(config_list: List[Dict[str, Any]]):
+        try:
+            if not config_list:
+                return
+
+            ccy = config_list[0].get('ccy')
+
+            # 1. 获取数据库中当前ccy的所有未删除记录
+            existing_configs = session.query(SpotTradeConfig).filter(
+                SpotTradeConfig.ccy == ccy,
+                SpotTradeConfig.is_del == 0
+            ).all()
+
+            # 2. 创建现有配置的id集合,用于后续比对
+            existing_ids = {config.id for config in existing_configs}
+            processed_ids = set()
+
+            # 3. 遍历新配置列表,执行新增或更新
+            for config in config_list:
+                if config.get('id'):  # 更新已存在的记录
+                    processed_ids.add(config['id'])
+                    session.query(SpotTradeConfig).filter(
+                        SpotTradeConfig.id == config['id']
+                    ).update({
+                        'type': config.get('type'),
+                        'indicator': config.get('indicator'),
+                        'indicator_val': config.get('indicator_val'),
+                        'target_price': config.get('target_price'),
+                        'percentage': config.get('percentage'),
+                        'amount': config.get('amount'),
+                        'switch': config.get('switch'),
+                        'exec_nums': config.get('exec_nums'),
+                        'is_del': config.get('is_del', '0')
+                    })
+                else:  # 新增记录
                     new_config = SpotTradeConfig(
                         ccy=config.get('ccy'),
                         type=config.get('type'),
@@ -105,11 +160,21 @@ class SpotTradeConfig(Base):
                         amount=config.get('amount'),
                         switch=config.get('switch'),
                         exec_nums=config.get('exec_nums'),
-                        is_del=config.get('is_del')
+                        is_del=config.get('is_del', '0')
                     )
                     session.add(new_config)
 
-                session.commit()
+            # 4. 将未在新配置中出现的旧记录标记为删除
+            to_delete_ids = existing_ids - processed_ids
+            if to_delete_ids:
+                session.query(SpotTradeConfig).filter(
+                    SpotTradeConfig.id.in_(to_delete_ids)
+                ).update({
+                    'is_del': 1
+                }, synchronize_session='fetch')
+
+            session.commit()
+
         except Exception as e:
             session.rollback()
             raise e
@@ -161,8 +226,6 @@ class SpotTradeConfig(Base):
                 SpotTradeConfig.delete_by_id(id=config.get('id'))
             else:
                 update = exec_nums - 1
-                if update <= 0:
-                    SpotTradeConfig.delete_by_id(id=config.get('id'))
                 SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=update)
             return True
         except Exception as e:
