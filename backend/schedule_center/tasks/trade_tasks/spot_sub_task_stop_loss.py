@@ -64,11 +64,12 @@ class SpotSubTaskStopLoss:
             target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
         sz = str(round(float(amount) / float(target_price), 6))
 
-        self.trade.amend_order(
+        self.trade.amend_algo_order(
             instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
-            ordId=latest_order.get('ordId'),
-            newPx=target_price,
-            newSz=sz
+            algoId=latest_algo_order.get('algoId'),
+            newSz=sz,
+            newSlTriggerPx=str(target_price),
+            newTpOrdPx='-1'
         )
 
     # [调度子任务] 止损委托
