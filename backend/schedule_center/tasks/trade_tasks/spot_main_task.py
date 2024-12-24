@@ -28,7 +28,7 @@ class SpotMainTask:
         self.stop_loss_task.check_and_update_auto_spot_live_algo_order()
 
         # 3. 获取当前生效中的现货configs
-        algo_order_configs = SpotTradeConfig().list_all()
+        algo_order_configs = SpotTradeConfig().get_effective_and_unfinished_spot_configs()
         limit_order_configs = []
         stop_loss_configs = []
         for config in algo_order_configs:
