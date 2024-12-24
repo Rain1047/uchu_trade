@@ -38,13 +38,40 @@ class SpotSubTaskLimitOrder:
                 if latest_order.get('state') == EnumState.FILLED.value:
                     SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.FILLED.value)
                     SpotTradeConfig.minus_exec_nums(id=live_order.get('config_id'))
-                else:
+                elif latest_order.get('state') == EnumState.LIVE.value:
                     logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
                     spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
                     if spot_trade_config:
-                        self.update_limit_order_task(spot_trade_config)
+                        self.update_limit_order_task(spot_trade_config, latest_order)
+                else:
+                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
+
+    # [限价委托方法] 更新生效中的限价委托
+    def update_limit_order_task(self, spot_trade_config: dict, latest_order: dict):
+        target_price = spot_trade_config.get('target_price')
+        if not target_price:
+            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
+                instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
+                bar='1D',
+                indicator=spot_trade_config.get('indicator'),
+                indicator_val=spot_trade_config.get('indicator_val')
+            )
+        amount = spot_trade_config.get('amount')
+        if not amount:
+            # 获取真实的账户余额 赎回赚币-划转到交易账户
+            real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
+            pct = spot_trade_config.get('percentage')
+            target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
+        sz = str(round(float(amount) / float(target_price), 6))
+
+        self.trade.amend_order(
+            instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
+            ordId=latest_order.get('ordId'),
+            newPx=target_price,
+            newSz=sz
+        )
 
     # [调度子任务] 根据配置进行限价委托
     def execute_limit_order_task(self, config: dict):
