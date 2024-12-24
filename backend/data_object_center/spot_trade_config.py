@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend._utils import DatabaseUtils
+from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -249,10 +250,21 @@ class SpotTradeConfig(Base):
         return result.to_dict() if result else None
 
     @classmethod
-    def get_effective_and_unfinished_spot_configs(cls) -> List[Dict]:
+    def get_effective_and_unfinished_limit_order_configs(cls) -> List[Dict]:
         filters = [cls.is_del == 0,
                    cls.switch == '0',
-                   cls.exec_nums > 0
+                   cls.exec_nums > 0,
+                   cls.type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                   ]
+        results = session.query(cls).filter(*filters).all()
+        return [result.to_dict() for result in results]
+
+    @classmethod
+    def get_effective_and_unfinished_stop_loss_configs(cls) -> List[Dict]:
+        filters = [cls.is_del == 0,
+                   cls.switch == '0',
+                   cls.exec_nums > 0,
+                   cls.type == EnumAutoTradeConfigType.STOP_LOSS.value
                    ]
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]

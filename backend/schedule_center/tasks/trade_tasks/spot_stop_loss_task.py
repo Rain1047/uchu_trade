@@ -138,6 +138,13 @@ class SpotStopLossTask:
                     print(f"Update stop loss status: {'success' if success else 'failed'}")
                 print(f"{live_order.get('algoId')}: {latest_status}")
 
+    def process_new_auto_stop_loss_task(self):
+        stop_loss_configs = SpotTradeConfig.get_effective_and_unfinished_stop_loss_configs()
+        if len(stop_loss_configs) > 0:
+            for config in stop_loss_configs:
+                print(config)
+                self.execute_stop_loss_task(config)
+
 
 if __name__ == '__main__':
     pass
