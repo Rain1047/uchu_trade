@@ -43,6 +43,13 @@ class OKXTickerService:
         df = KlineDataProcessor.add_target_indicator(df, indicator=indicator, indicator_val=indicator_val)
         return df.iloc[-1][indicator]
 
+    def get_target_indicator_latest_price_by_spot_config(self, config: dict):
+        return self.get_target_indicator_latest_price(
+            instId=SymbolFormatUtils.get_usdt(config.get('ccy')),
+            bar='1D',
+            indicator=config.get('indicator'),
+            indicator_val=config.get('indicator_val')
+        )
 
     def get_target_indicator_price(self, instId: str, indicator: str):
         pass

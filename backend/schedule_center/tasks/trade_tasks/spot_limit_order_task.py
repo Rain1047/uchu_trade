@@ -52,12 +52,8 @@ class SpotLimitOrderTask:
     def update_limit_order(self, spot_trade_config: dict, latest_order: dict):
         target_price = spot_trade_config.get('target_price')
         if not target_price:
-            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
-                instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
-                bar='1D',
-                indicator=spot_trade_config.get('indicator'),
-                indicator_val=spot_trade_config.get('indicator_val')
-            )
+            target_price = (self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
+                config=spot_trade_config))
         amount = spot_trade_config.get('amount')
         if not amount:
             # 获取真实的账户余额 赎回赚币-划转到交易账户
@@ -79,11 +75,8 @@ class SpotLimitOrderTask:
         ccy = config.get('ccy')
         target_price = config.get('target_price')
         if not target_price:
-            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
-                instId=SymbolFormatUtils.get_usdt(ccy),
-                bar='1D',
-                indicator=config.get('indicator'),
-                indicator_val=config.get('indicator_val')
+            target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
+                config=config
             )
 
         target_amount = config.get('amount')
