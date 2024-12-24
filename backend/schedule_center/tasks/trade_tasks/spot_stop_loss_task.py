@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @singleton
-class SpotSubTaskStopLoss:
+class SpotStopLossTask:
 
     def __init__(self):
         self.kline_reader = KlineDataReader()
@@ -38,7 +38,8 @@ class SpotSubTaskStopLoss:
                     SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
                 elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
                     logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
-                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_algo_order.get('config_id'))
+                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
+                        live_algo_order.get('config_id'))
                     if spot_trade_config:
                         self.update_stop_loss_order(spot_trade_config, latest_algo_order)
                 else:
@@ -144,7 +145,6 @@ class SpotSubTaskStopLoss:
                 print(f"{live_order.get('algoId')}: {latest_status}")
 
 
-
 if __name__ == '__main__':
     pass
     test_config = {
@@ -159,5 +159,5 @@ if __name__ == '__main__':
     #     "indicator_val": "120",
     #     "percentage": "5"
     # }
-    stop_loss_executor = SpotSubTaskStopLoss()
+    stop_loss_executor = SpotStopLossTask()
     stop_loss_executor.update_stop_loss_status()
