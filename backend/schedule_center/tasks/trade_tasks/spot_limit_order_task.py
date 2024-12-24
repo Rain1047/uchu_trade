@@ -24,7 +24,7 @@ class SpotLimitOrderTask:
         self.okx_ticker_service = OKXTickerService()
 
     # [限价委托主任务] 检查并更新自动限价委托
-    def check_and_update_auto_spot_live_order(self):
+    def check_and_update_auto_live_limit_order(self):
         # 1. get all unfinished orders
         live_order_list = SpotAlgoOrderRecord.list_live_spot_orders()
         if len(live_order_list) > 0:
@@ -37,16 +37,23 @@ class SpotLimitOrderTask:
                     SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.CANCELED.value)
                 if latest_order.get('state') == EnumOrderState.FILLED.value:
                     SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.FILLED.value)
-                    SpotTradeConfig.minus_exec_nums(id=live_order.get('config_id'))
                 elif latest_order.get('state') == EnumOrderState.LIVE.value:
                     logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
                     spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
                     if spot_trade_config:
                         self.update_limit_order(spot_trade_config, latest_order)
                 else:
-                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
+                    logger.info(
+                        f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
+
+    def process_new_auto_limit_order_task(self):
+        limit_order_configs = SpotTradeConfig().get_effective_and_unfinished_limit_order_configs()
+        if len(limit_order_configs) > 0:
+            for config in limit_order_configs:
+                print(config)
+                self.execute_limit_order_task(config)
 
     # [限价委托方法] 更新生效中的限价委托
     def update_limit_order(self, spot_trade_config: dict, latest_order: dict):
