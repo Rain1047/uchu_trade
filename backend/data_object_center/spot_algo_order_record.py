@@ -5,7 +5,7 @@ from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumState
+from backend.data_object_center.enum_obj import EnumOrderState
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -257,7 +257,7 @@ class SpotAlgoOrderRecord(Base):
     @classmethod
     def list_live_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
-            SpotAlgoOrderRecord.status == EnumState.LIVE.value,
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.algoId is None,
             SpotAlgoOrderRecord.ordId is not None
         ]
@@ -271,7 +271,7 @@ class SpotAlgoOrderRecord(Base):
     @classmethod
     def list_live_spot_algo_orders(cls) -> List[Dict[str, Any]]:
         filters = [
-            SpotAlgoOrderRecord.status == EnumState.LIVE.value,
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.algoId is not None,
             SpotAlgoOrderRecord.ordId is None
         ]
