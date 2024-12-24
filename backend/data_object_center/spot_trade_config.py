@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend._utils import DatabaseUtils
+from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -218,48 +219,55 @@ class SpotTradeConfig(Base):
             print(f"Delete config failed: {e}")
             return False
 
-    @staticmethod
-    def update_spot_config_exec_nums(config: dict) -> bool:
-        try:
-            exec_nums = config.get('exec_nums')
-            if not exec_nums:
-                SpotTradeConfig.delete_by_id(id=config.get('id'))
-            else:
-                update = exec_nums - 1
-                SpotTradeConfig.update_exec_nums(id=config.get('id'), exec_nums=update)
-            return True
-        except Exception as e:
-            print(f"Update exec_nums failed: {e}")
-            return False
-
     @classmethod
-    def update_exec_nums(cls, id: int, exec_nums: int = None) -> bool:
-        """更新执行次数
-        Args:
-            id: 配置ID
-            exec_nums: 指定的执行次数，如果为None则自增1
-        Returns:
-            bool: 更新是否成功
-        """
+    def minus_exec_nums(cls, id) -> bool:
         try:
-            if exec_nums is None:
-                # 自增1
-                record = session.query(cls).filter(cls.id == id).first()
-                if not record:
-                    return False
-                exec_nums = (record.exec_nums or 0) + 1
-
-            result = session.query(cls) \
-                .filter(cls.id == id) \
-                .update({
-                'exec_nums': exec_nums
-            })
-            session.commit()
-            return result > 0
+            spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(id=id)
+            if not spot_trade_config:
+                return False
+            exec_nums = int(spot_trade_config.get('exec_nums'))
+            if exec_nums is not None:
+                result = session.query(cls) \
+                    .filter(cls.id == id) \
+                    .update({
+                        'exec_nums': str(exec_nums - 1)
+                    })
+                session.commit()
+                return result > 0
+            else:
+                return False
         except Exception as e:
             session.rollback()
             print(f"Update exec_nums failed: {e}")
             return False
+
+    @classmethod
+    def get_effective_spot_config_by_id(cls, id):
+        filters = [cls.is_del == 0,
+                   cls.id == id,
+                   cls.switch == '0']
+        result = session.query(cls).filter(*filters).first()
+        return result.to_dict() if result else None
+
+    @classmethod
+    def get_effective_and_unfinished_limit_order_configs(cls) -> List[Dict]:
+        filters = [cls.is_del == 0,
+                   cls.switch == '0',
+                   cls.exec_nums > 0,
+                   cls.type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                   ]
+        results = session.query(cls).filter(*filters).all()
+        return [result.to_dict() for result in results]
+
+    @classmethod
+    def get_effective_and_unfinished_stop_loss_configs(cls) -> List[Dict]:
+        filters = [cls.is_del == 0,
+                   cls.switch == '0',
+                   cls.exec_nums > 0,
+                   cls.type == EnumAutoTradeConfigType.STOP_LOSS.value
+                   ]
+        results = session.query(cls).filter(*filters).all()
+        return [result.to_dict() for result in results]
 
 
 if __name__ == '__main__':
@@ -269,7 +277,7 @@ if __name__ == '__main__':
     success = SpotTradeConfig.update_switch(id=1, switch='ON')
 
     # 更新执行次数（自增1）
-    success = SpotTradeConfig.update_exec_nums(id=1)
+    success = SpotTradeConfig.minus_exec_nums(id=1)
 
     # 更新执行次数（指定值）
-    success = SpotTradeConfig.update_exec_nums(id=1, exec_nums=5)
+    success = SpotTradeConfig.minus_exec_nums(id=1, exec_nums=5)

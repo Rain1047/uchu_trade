@@ -6,7 +6,7 @@ from backend._decorators import add_docstring, singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_object_center.account_balance import AccountBalance
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType, EnumState
+from backend.data_object_center.enum_obj import EnumAutoTradeConfigType, EnumOrderState
 from backend.data_object_center.funding_balance import FundingBalance
 from backend.data_object_center.saving_balance import SavingBalance
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
@@ -139,10 +139,10 @@ class OKXBalanceService:
                                                        .list_by_ccy_and_type(ccy=ccy,
                                                                              type=EnumAutoTradeConfigType.STOP_LOSS.value))
             balance['live_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                       .list_by_ccy_and_status(ccy=ccy, status=EnumState.LIVE.value))
+                                                       .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.LIVE.value))
 
             balance['filled_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                         .list_by_ccy_and_status(ccy=ccy, status=EnumState.FILLED.value))
+                                                         .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.FILLED.value))
 
         # print(balance_list)
         return balance_list

@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
+from backend.data_object_center.enum_obj import EnumOrderState
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -252,6 +253,34 @@ class SpotAlgoOrderRecord(Base):
         except Exception as e:
             print(f"Query failed: {e}")
             return None
+
+    @classmethod
+    def list_live_spot_orders(cls) -> List[Dict[str, Any]]:
+        filters = [
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
+            SpotAlgoOrderRecord.algoId is None,
+            SpotAlgoOrderRecord.ordId is not None
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
+
+    @classmethod
+    def list_live_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+        filters = [
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
+            SpotAlgoOrderRecord.algoId is not None,
+            SpotAlgoOrderRecord.ordId is None
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
 
 
 if __name__ == '__main__':

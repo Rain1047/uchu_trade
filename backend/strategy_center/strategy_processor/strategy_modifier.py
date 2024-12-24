@@ -11,7 +11,7 @@ from backend.data_center.kline_data.kline_data_collector import KlineDataCollect
 from backend.data_object_center.swap_algo_order_record import SwapAlgoOrderRecord
 from backend.data_object_center.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
 from backend.data_object_center.st_instance import StrategyInstance
-from backend.data_object_center.enum_obj import EnumTradeEnv, EnumState, EnumTimeFrame
+from backend.data_object_center.enum_obj import EnumTradeEnv, EnumOrderState, EnumTimeFrame
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.service_center.okx_service.trade_swap import TradeSwapManager
 from backend.strategy_center.atom_strategy.strategy_registry import registry
@@ -31,11 +31,11 @@ class StrategyModifier:
 
     def main_task(self):
         print("StrategyModifier@main_task, starting strategy modifier.")
-        live_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumState.LIVE.value, source='6')
+        live_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumOrderState.LIVE.value, source='6')
         self.update_live_algo_record(live_algo_order_record_list)
 
         # 测试用：
-        filled_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumState.FILLED.value, source='6')
+        filled_algo_order_record_list = SwapAlgoOrderRecord.list_by_condition(state=EnumOrderState.FILLED.value, source='6')
         self.update_filled_algo_record(filled_algo_order_record_list)
 
     def update_live_algo_record(self, live_algo_order_record_list: list):
@@ -47,9 +47,9 @@ class StrategyModifier:
             print(get_order_result)
             get_order_data = get_order_result['data'][0]
             order_state = get_order_data['state']
-            if order_state == EnumState.LIVE.value:
+            if order_state == EnumOrderState.LIVE.value:
                 self.handle_live_order(algo_order_record, get_order_data)
-            if order_state == EnumState.FILLED.value:
+            if order_state == EnumOrderState.FILLED.value:
                 self.handle_filled_order(algo_order_record, get_order_data)
 
     def update_filled_algo_record(self, filled_algo_order_record_list: list):
