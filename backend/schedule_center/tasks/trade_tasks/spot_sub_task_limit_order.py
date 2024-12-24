@@ -42,14 +42,14 @@ class SpotSubTaskLimitOrder:
                     logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
                     spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
                     if spot_trade_config:
-                        self.update_limit_order_task(spot_trade_config, latest_order)
+                        self.update_limit_order(spot_trade_config, latest_order)
                 else:
                     logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
     # [限价委托方法] 更新生效中的限价委托
-    def update_limit_order_task(self, spot_trade_config: dict, latest_order: dict):
+    def update_limit_order(self, spot_trade_config: dict, latest_order: dict):
         target_price = spot_trade_config.get('target_price')
         if not target_price:
             target_price = self.okx_ticker_service.get_target_indicator_latest_price(
