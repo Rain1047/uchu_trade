@@ -63,7 +63,7 @@ class SpotSubTaskLimitOrder:
             # 获取真实的账户余额 赎回赚币-划转到交易账户
             real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
             pct = spot_trade_config.get('percentage')
-            target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
+            amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
         sz = str(round(float(amount) / float(target_price), 6))
 
         self.trade.amend_order(
