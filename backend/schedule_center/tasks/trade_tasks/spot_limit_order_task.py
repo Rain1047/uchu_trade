@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @singleton
-class SpotSubTaskLimitOrder:
+class SpotLimitOrderTask:
 
     def __init__(self):
         self.kline_reader = KlineDataReader()
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     #     "indicator_val": "120",
     #     "percentage": "5"
     # }
-    limit_order_task = SpotSubTaskLimitOrder()
+    limit_order_task = SpotLimitOrderTask()
     limit_order_task.execute_limit_order_task(test_config)

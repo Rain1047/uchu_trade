@@ -2,8 +2,8 @@ import logging
 
 from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
-from backend.schedule_center.tasks.trade_tasks.spot_sub_task_limit_order import SpotSubTaskLimitOrder
-from backend.schedule_center.tasks.trade_tasks.spot_sub_task_stop_loss import SpotSubTaskStopLoss
+from backend.schedule_center.tasks.trade_tasks.spot_limit_order_task import SpotLimitOrderTask
+from backend.schedule_center.tasks.trade_tasks.spot_stop_loss_task import SpotStopLossTask
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_order_service import OKXOrderService
@@ -16,8 +16,8 @@ class SpotMainTask:
         self.okx_balance_service = OKXBalanceService()
         self.okx_order_service = OKXOrderService()
         self.okx_algo_order_service = OKXAlgoOrderService()
-        self.stop_loss_task = SpotSubTaskStopLoss()
-        self.limit_order_task = SpotSubTaskLimitOrder()
+        self.stop_loss_task = SpotStopLossTask()
+        self.limit_order_task = SpotLimitOrderTask()
 
     # [调度主任务] 根据配置进行止盈止损、限价委托
     def execute_spot_main_task(self):
