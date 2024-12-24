@@ -99,7 +99,7 @@ class SpotLimitOrderTask:
             px=target_price
         )
         self.save_limit_order_result(config, result)
-        SpotTradeConfig.update_spot_config_exec_nums(config)
+        SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod

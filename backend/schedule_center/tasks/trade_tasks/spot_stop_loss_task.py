@@ -81,11 +81,8 @@ class SpotStopLossTask:
         target_price = config.get('target_price')
         if not target_price:
             # 计算目标止损价, 根据indicator获取实时价格
-            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
-                instId=SymbolFormatUtils.get_usdt(ccy),
-                bar='1D',  # 固定
-                indicator=config.get('indicator'),
-                indicator_val=config.get('indicator_val')
+            target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
+                config=config
             )
         print(f"target price: {target_price}")
         # 获取目标止损仓位
@@ -112,7 +109,7 @@ class SpotStopLossTask:
             slOrdPx='-1'
         )
         self.save_stop_loss_result(config, result)
-        SpotTradeConfig.update_spot_config_exec_nums(config)
+        SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod

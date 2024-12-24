@@ -218,24 +218,10 @@ class SpotTradeConfig(Base):
             print(f"Delete config failed: {e}")
             return False
 
-    @staticmethod
-    def update_spot_config_exec_nums(config: dict) -> bool:
-        try:
-            exec_nums = config.get('exec_nums')
-            if not exec_nums:
-                SpotTradeConfig.delete_by_id(id=config.get('id'))
-            else:
-                update = exec_nums - 1
-                SpotTradeConfig.minus_exec_nums(id=config.get('id'), exec_nums=update)
-            return True
-        except Exception as e:
-            print(f"Update exec_nums failed: {e}")
-            return False
-
     @classmethod
     def minus_exec_nums(cls, id) -> bool:
         try:
-            spot_trade_config = SpotTradeConfig.get_by_id(id=id)
+            spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(id=id)
             if not spot_trade_config:
                 return False
             exec_nums = int(spot_trade_config.get('exec_nums'))
@@ -261,6 +247,15 @@ class SpotTradeConfig(Base):
                    cls.switch == '0']
         result = session.query(cls).filter(*filters).first()
         return result.to_dict() if result else None
+
+    @classmethod
+    def get_effective_and_unfinished_spot_configs(cls) -> List[Dict]:
+        filters = [cls.is_del == 0,
+                   cls.switch == '0',
+                   cls.exec_nums > 0
+                   ]
+        results = session.query(cls).filter(*filters).all()
+        return [result.to_dict() for result in results]
 
 
 if __name__ == '__main__':
