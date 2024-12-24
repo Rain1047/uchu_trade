@@ -1,3 +1,5 @@
+import logging
+
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
@@ -9,6 +11,8 @@ from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
+logger = logging.getLogger(__name__)
+
 
 @singleton
 class SpotSubTaskLimitOrder:
@@ -18,6 +22,29 @@ class SpotSubTaskLimitOrder:
         self.trade = OKXAPIWrapper().trade_api
         self.okx_balance_service = OKXBalanceService()
         self.okx_ticker_service = OKXTickerService()
+
+    # [限价委托主任务] 检查并更新自动限价委托
+    def check_and_update_auto_spot_live_order(self):
+        # 1. get all unfinished orders
+        live_order_list = SpotAlgoOrderRecord.list_live_spot_orders()
+        if len(live_order_list) > 0:
+            for live_order in live_order_list:
+                ordId = live_order.get('ordId')
+                # 2. check order status
+                latest_order = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(live_order.get('ccy')),
+                                                    ordId=ordId)
+                if latest_order.get('state') == EnumState.CANCELED.value:
+                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.CANCELED.value)
+                if latest_order.get('state') == EnumState.FILLED.value:
+                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.FILLED.value)
+                    SpotTradeConfig.minus_exec_nums(id=live_order.get('config_id'))
+                else:
+                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
+                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
+                    if spot_trade_config:
+                        self.update_limit_order_task(spot_trade_config)
+        else:
+            logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
     # [调度子任务] 根据配置进行限价委托
     def execute_limit_order_task(self, config: dict):

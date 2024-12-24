@@ -6,6 +6,7 @@ from backend.schedule_center.tasks.trade_tasks.spot_sub_task_limit_order import 
 from backend.schedule_center.tasks.trade_tasks.spot_sub_task_stop_loss import SpotSubTaskStopLoss
 from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
+from backend.service_center.okx_service.okx_order_service import OKXOrderService
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +14,19 @@ logger = logging.getLogger(__name__)
 class SpotMainTask:
     def __init__(self):
         self.okx_balance_service = OKXBalanceService()
+        self.okx_order_service = OKXOrderService()
         self.okx_algo_order_service = OKXAlgoOrderService()
         self.stop_loss_task = SpotSubTaskStopLoss()
         self.limit_order_task = SpotSubTaskLimitOrder()
 
     # [调度主任务] 根据配置进行止盈止损、限价委托
     def execute_spot_main_task(self):
-        # 1. 取消当前的委托
+        # 1. 检查当前生效中的限价委托
+        self.limit_order_task.check_and_update_auto_spot_live_order()
+
+        # 2. 取消所有未完成的策略委托
         self.okx_algo_order_service.cancel_all_spot_algo_orders()
+
         # 2. 获取当前生效中的现货configs
         algo_order_configs = SpotTradeConfig().list_all()
         limit_order_configs = []
