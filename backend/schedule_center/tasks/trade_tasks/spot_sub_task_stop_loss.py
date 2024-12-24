@@ -1,3 +1,5 @@
+import logging
+
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
@@ -8,6 +10,8 @@ from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, Enu
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
+
+logger = logging.getLogger(__name__)
 
 
 @singleton
@@ -25,23 +29,47 @@ class SpotSubTaskStopLoss:
         if len(live_algo_order_list) > 0:
             for live_algo_order in live_algo_order_list:
                 algoId = live_algo_order.get('algoId')
-                # 2. check order status
-                latest_order = self.trade.get_algo_order(algoId=algoId)
-                if latest_order.get('state') == EnumAlgoState.CANCELED.value:
-                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.CANCELED.value)
-                if latest_order.get('state') == EnumState.FILLED.value:
-                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.FILLED.value)
-                    SpotTradeConfig.minus_exec_nums(id=live_order.get('config_id'))
-                elif latest_order.get('state') == EnumState.LIVE.value:
-                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
-                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
+                # 2. check algo order status
+                latest_algo_order = self.trade.get_algo_order(algoId=algoId)
+                if latest_algo_order.get('state') == EnumAlgoOrderState.CANCELED.value:
+                    SpotAlgoOrderRecord.update_status_by_ord_id(algoId, EnumAlgoOrderState.CANCELED.value)
+                if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
+                    SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
+                    SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
+                elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
+                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
+                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_algo_order.get('config_id'))
                     if spot_trade_config:
-                        self.update_limit_order_task(spot_trade_config, latest_order)
+                        self.update_stop_loss_order(spot_trade_config, latest_algo_order)
                 else:
                     logger.info(
-                        f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
+                        f"check_and_update_auto_spot_live_order@ {latest_algo_order} is {latest_algo_order.get('state')}.")
         else:
-            logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
+            logger.info("check_and_update_auto_spot_live_algo_order@no auto live spot algo orders.")
+
+    def update_stop_loss_order(self, spot_trade_config, latest_algo_order):
+        target_price = spot_trade_config.get('target_price')
+        if not target_price:
+            target_price = self.okx_ticker_service.get_target_indicator_latest_price(
+                instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
+                bar='1D',
+                indicator=spot_trade_config.get('indicator'),
+                indicator_val=spot_trade_config.get('indicator_val')
+            )
+        amount = spot_trade_config.get('amount')
+        if not amount:
+            # 获取真实的账户余额 赎回赚币-划转到交易账户
+            real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
+            pct = spot_trade_config.get('percentage')
+            target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
+        sz = str(round(float(amount) / float(target_price), 6))
+
+        self.trade.amend_order(
+            instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
+            ordId=latest_order.get('ordId'),
+            newPx=target_price,
+            newSz=sz
+        )
 
     # [调度子任务] 止损委托
     def execute_stop_loss_task(self, config: dict):
@@ -109,7 +137,6 @@ class SpotSubTaskStopLoss:
                     success = SpotAlgoOrderRecord.update_status_by_algo_id(live_order.get('algoId'), latest_status)
                     print(f"Update stop loss status: {'success' if success else 'failed'}")
                 print(f"{live_order.get('algoId')}: {latest_status}")
-
 
 
 
