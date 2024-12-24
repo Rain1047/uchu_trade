@@ -27,7 +27,7 @@ class SpotMainTask:
         # 2. 取消所有未完成的策略委托
         self.stop_loss_task.check_and_update_auto_spot_live_algo_order()
 
-        # 2. 获取当前生效中的现货configs
+        # 3. 获取当前生效中的现货configs
         algo_order_configs = SpotTradeConfig().list_all()
         limit_order_configs = []
         stop_loss_configs = []
