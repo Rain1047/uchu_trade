@@ -50,19 +50,23 @@ class SpotSubTaskStopLoss:
     def update_stop_loss_order(self, spot_trade_config, latest_algo_order):
         target_price = spot_trade_config.get('target_price')
         if not target_price:
+            # 计算目标止损价, 根据indicator获取实时价格
             target_price = self.okx_ticker_service.get_target_indicator_latest_price(
                 instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
-                bar='1D',
+                bar='1D',  # 固定
                 indicator=spot_trade_config.get('indicator'),
                 indicator_val=spot_trade_config.get('indicator_val')
             )
-        amount = spot_trade_config.get('amount')
-        if not amount:
-            # 获取真实的账户余额 赎回赚币-划转到交易账户
-            real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
+        print(f"update_stop_loss_order@target price: {target_price}")
+        # 获取目标止损仓位
+        target_amount = spot_trade_config.get('amount')
+        sz = ''
+        if not target_amount:
+            real_sz = self.okx_balance_service.get_real_account_balance(ccy=spot_trade_config.get('ccy'))
             pct = spot_trade_config.get('percentage')
-            target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
-        sz = str(round(float(amount) / float(target_price), 6))
+            sz = str(round(float(real_sz) * int(pct) / 100, 6))
+        else:
+            sz = str(round(float(target_amount) / float(target_price), 6))
 
         self.trade.amend_algo_order(
             instId=SymbolFormatUtils.get_usdt(spot_trade_config.get('ccy')),
