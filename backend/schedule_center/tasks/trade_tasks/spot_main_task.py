@@ -21,11 +21,11 @@ class SpotMainTask:
 
     # [调度主任务] 根据配置进行止盈止损、限价委托
     def execute_spot_main_task(self):
-        # 1. 检查当前生效中的限价委托
+        # 1. 检查并更新生效中的限价委托
         self.limit_order_task.check_and_update_auto_spot_live_order()
 
         # 2. 取消所有未完成的策略委托
-        self.okx_algo_order_service.cancel_all_spot_algo_orders()
+        self.stop_loss_task.check_and_update_auto_spot_live_algo_order()
 
         # 2. 获取当前生效中的现货configs
         algo_order_configs = SpotTradeConfig().list_all()

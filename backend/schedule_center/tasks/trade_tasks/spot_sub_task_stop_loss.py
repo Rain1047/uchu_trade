@@ -3,7 +3,7 @@ from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumStateAlgoOrder, \
+from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumAlgoOrderState, \
     EnumAutoTradeConfigType
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
@@ -18,6 +18,30 @@ class SpotSubTaskStopLoss:
         self.trade = OKXAPIWrapper().trade_api
         self.okx_balance_service = OKXBalanceService()
         self.okx_ticker_service = OKXTickerService()
+
+    def check_and_update_auto_spot_live_algo_order(self):
+        # 1. get all unfinished algo orders
+        live_algo_order_list = SpotAlgoOrderRecord.list_live_spot_algo_orders()
+        if len(live_algo_order_list) > 0:
+            for live_algo_order in live_algo_order_list:
+                algoId = live_algo_order.get('algoId')
+                # 2. check order status
+                latest_order = self.trade.get_algo_order(algoId=algoId)
+                if latest_order.get('state') == EnumAlgoState.CANCELED.value:
+                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.CANCELED.value)
+                if latest_order.get('state') == EnumState.FILLED.value:
+                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumState.FILLED.value)
+                    SpotTradeConfig.minus_exec_nums(id=live_order.get('config_id'))
+                elif latest_order.get('state') == EnumState.LIVE.value:
+                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
+                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
+                    if spot_trade_config:
+                        self.update_limit_order_task(spot_trade_config, latest_order)
+                else:
+                    logger.info(
+                        f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
+        else:
+            logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
     # [调度子任务] 止损委托
     def execute_stop_loss_task(self, config: dict):
@@ -70,21 +94,23 @@ class SpotSubTaskStopLoss:
             'amount': config.get('amount'),
             'target_price': config.get('target_price'),
             'algoId': result.get('data')[0].get('algoId'),
-            'status': EnumStateAlgoOrder.LIVE.value
+            'status': EnumAlgoOrderState.LIVE.value
         }
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")
 
     def update_stop_loss_status(self):
-        live_order_list = SpotAlgoOrderRecord.list_by_status(EnumStateAlgoOrder.LIVE.value)
+        live_order_list = SpotAlgoOrderRecord.list_by_status(EnumAlgoOrderState.LIVE.value)
         if len(live_order_list) > 0:
             for live_order in live_order_list:
                 latest_order = self.trade.get_algo_order(algoId=live_order.get('algoId'))
                 latest_status = latest_order.get('data')[0].get('state')
-                if latest_order.get('data')[0].get('state') != EnumStateAlgoOrder.LIVE.value:
+                if latest_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
                     success = SpotAlgoOrderRecord.update_status_by_algo_id(live_order.get('algoId'), latest_status)
                     print(f"Update stop loss status: {'success' if success else 'failed'}")
                 print(f"{live_order.get('algoId')}: {latest_status}")
+
+
 
 
 if __name__ == '__main__':

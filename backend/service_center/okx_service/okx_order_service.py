@@ -10,7 +10,7 @@ from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecor
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.data_object_center.swap_algo_order_record import SwapAlgoOrderRecord
 from backend.data_object_center.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
-from backend.data_object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumState
+from backend.data_object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumOrderState
 from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 logger = logging.getLogger(__name__)

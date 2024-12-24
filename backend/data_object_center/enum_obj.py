@@ -7,7 +7,7 @@ class EnumSide(Enum):
     ALL = 'all'  # 买卖都可
 
 
-class EnumState(Enum):
+class EnumOrderState(Enum):
     CANCELED = 'canceled'
     LIVE = 'live'
     FILLED = 'filled'
@@ -15,7 +15,7 @@ class EnumState(Enum):
     MMP_CANCELED = 'mmp_canceled'
 
 
-class EnumStateAlgoOrder(Enum):
+class EnumAlgoOrderState(Enum):
     LIVE = 'live'
     CANCELED = 'canceled'
     PAUSE = 'pause'
