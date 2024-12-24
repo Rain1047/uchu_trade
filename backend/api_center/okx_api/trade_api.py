@@ -1,6 +1,7 @@
 import okx.Trade as Trade
 from typing import Optional, Dict
 from backend._decorators import add_docstring, singleton
+from backend._utils import SymbolFormatUtils
 from backend.data_object_center.enum_obj import *
 
 
@@ -53,7 +54,7 @@ class TradeAPIWrapper:
 
     @add_docstring("撤销订单")
     def cancel_order(self, instId: str, ordId: Optional[str] = "", clOrdId: Optional[str] = "") -> Dict:
-        return self.tradeAPI.cancel_order(instId=instId, ordId=ordId, clOrdId=clOrdId)
+        return self.tradeAPI.cancel_order(instId=SymbolFormatUtils.get_usdt(instId), ordId=ordId, clOrdId=clOrdId)
 
     @add_docstring("修改订单")
     def amend_order(self, instId: str, cxlOnFail: Optional[str] = '', ordId: Optional[str] = '',

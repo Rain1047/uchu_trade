@@ -20,7 +20,7 @@ class OKXAlgoOrderService:
         self.okx = OKXAPIWrapper()
         self.trade = self.okx.trade_api
         self.funding = self.okx.funding_api
-        self.account = self.okx.account
+        self.account = self.okx.account_api
 
     # [主要方法] 取消所有未成交的现货限价单
     @add_docstring("[主要方法] 取消所有未成交的现货限价单")
