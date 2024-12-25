@@ -128,7 +128,7 @@ class SpotStopLossTask:
             'status': EnumAlgoOrderState.LIVE.value,
             'exec_source': exec_source
         }
-        success = SpotAlgoOrderRecord.insert(stop_loss_data)
+        success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")
 
     def update_stop_loss_status(self):
@@ -148,6 +148,9 @@ class SpotStopLossTask:
             for config in stop_loss_configs:
                 print(config)
                 self.execute_stop_loss_task(config)
+
+    def check_and_update_manual_live_algo_order(self):
+        pass
 
 
 if __name__ == '__main__':

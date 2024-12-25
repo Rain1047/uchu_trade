@@ -24,7 +24,7 @@ class SpotLimitOrderTask:
         self.okx_ticker_service = OKXTickerService()
 
     # [限价委托主任务] 检查并更新自动限价委托
-    def check_and_update_auto_live_limit_order(self):
+    def check_and_update_auto_live_order(self):
         # 1. get all unfinished orders
         live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_orders()
         if len(live_order_list) > 0:
@@ -32,7 +32,7 @@ class SpotLimitOrderTask:
                 ordId = live_order.get('ordId')
                 # 2. check order status
                 latest_order_result = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(live_order.get('ccy')),
-                                                    ordId=ordId)
+                                                           ordId=ordId)
                 print(latest_order_result)
                 if latest_order_result and latest_order_result.get('code') == '0':
                     latest_order = latest_order_result.get('data')[0]
@@ -109,24 +109,29 @@ class SpotLimitOrderTask:
             sz=sz,
             px=target_price
         )
-        self.save_limit_order_result(config, result, exec_source=EnumExecSource.AUTO.value)
+        if result and result.get('code') == '0':
+            result = result.get('data')[0]
+            self.save_limit_order_result(config, result, exec_source=EnumExecSource.AUTO.value)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod
     def save_limit_order_result(config: dict, result: dict, exec_source: str):
         stop_loss_data = {
-            'ccy': config.get('ccy'),
+            'ccy': config.get('ccy') if exec_source == EnumExecSource.AUTO.value
+            else SymbolFormatUtils.get_base_symbol(result.get('instId')),
             'type': EnumAutoTradeConfigType.LIMIT_ORDER.value,
-            'config_id': config.get('id'),
+            'config_id': config.get('id') if exec_source == EnumExecSource.AUTO.value else '',
             'sz': config.get('sz'),
-            'amount': config.get('amount'),
-            'target_price': config.get('target_price'),
-            'ordId': result.get('data')[0].get('ordId'),
+            'amount': config.get('amount') if exec_source == EnumExecSource.AUTO.value else
+            float(result.get('sz')) * float(result.get('px')),
+            'target_price': config.get('target_price') if exec_source == EnumExecSource.AUTO.value else
+            result.get('px'),
+            'ordId': result.get('ordId'),
             'status': EnumOrderState.LIVE.value,
             'exec_source': exec_source
         }
-        success = SpotAlgoOrderRecord.insert(stop_loss_data)
+        success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
         print(f"Insert limit order: {'success' if success else 'failed'}")
 
     def update_limit_order_status(self):
@@ -138,6 +143,17 @@ class SpotLimitOrderTask:
                 latest_status = latest_order.get('data')[0].get('state')
                 if latest_order.get('data')[0].get('state') != EnumOrderState.LIVE.value:
                     SpotAlgoOrderRecord.update_status_by_ord_id(live_order.get('ordId'), latest_status)
+
+    def check_and_update_manual_live_order(self):
+        order_list_result = self.trade.get_order_list(
+            instType="SPOT", state=EnumOrderState.LIVE.value, ordType="market,limit")
+        if order_list_result and order_list_result.get('code') == '0':
+            order_list = order_list_result.get('data')
+            if len(order_list) > 0:
+                for order in order_list:
+                    self.save_limit_order_result(config={}, result=order, exec_source=EnumExecSource.MANUAL.value)
+        else:
+            logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
 
 if __name__ == '__main__':
@@ -157,4 +173,9 @@ if __name__ == '__main__':
     # limit_order_task = SpotLimitOrderTask()
     # limit_order_task.execute_limit_order_task(test_config)
     spot_limit_task = SpotLimitOrderTask()
-    spot_limit_task.check_and_update_auto_live_limit_order()
+    # spot_limit_task.check_and_update_auto_live_order()
+    # print(spot_limit_task.trade.get_order(
+    #     instId=SymbolFormatUtils.get_usdt("SOL-USDT"),
+    #     ordId="2101749636187545600",
+    # ))
+    spot_limit_task.check_and_update_manual_live_order()
