@@ -258,8 +258,8 @@ class SpotAlgoOrderRecord(Base):
     def list_live_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId is None,
-            SpotAlgoOrderRecord.ordId is not None
+            SpotAlgoOrderRecord.algoId.is_(None),
+            SpotAlgoOrderRecord.ordId.isnot(None)
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -272,8 +272,8 @@ class SpotAlgoOrderRecord(Base):
     def list_live_spot_algo_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId is not None,
-            SpotAlgoOrderRecord.ordId is None
+            SpotAlgoOrderRecord.algoId.isnot(None),
+            SpotAlgoOrderRecord.ordId.is_(None)
         ]
         try:
             results = session.query(cls).filter(*filters).all()
