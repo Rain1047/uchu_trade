@@ -49,7 +49,7 @@ class SpotAlgoOrderRecord(Base):
     @classmethod
     def insert_or_update(cls, data: Dict) -> bool:
         try:
-            current_time = datetime.now().replace(microsecond=0)
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             data['update_time'] = current_time
 
             # Check if record exists by ordId or algoId
