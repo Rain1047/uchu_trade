@@ -6,7 +6,7 @@ from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumAutoTradeConfigType, \
-    EnumOrderState
+    EnumOrderState, EnumExecSource
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
@@ -109,12 +109,12 @@ class SpotLimitOrderTask:
             sz=sz,
             px=target_price
         )
-        self.save_limit_order_result(config, result)
+        self.save_limit_order_result(config, result, exec_source=EnumExecSource.AUTO.value)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod
-    def save_limit_order_result(config: dict, result: dict):
+    def save_limit_order_result(config: dict, result: dict, exec_source: str):
         stop_loss_data = {
             'ccy': config.get('ccy'),
             'type': EnumAutoTradeConfigType.LIMIT_ORDER.value,
@@ -123,7 +123,8 @@ class SpotLimitOrderTask:
             'amount': config.get('amount'),
             'target_price': config.get('target_price'),
             'ordId': result.get('data')[0].get('ordId'),
-            'status': EnumOrderState.LIVE.value
+            'status': EnumOrderState.LIVE.value,
+            'exec_source': exec_source
         }
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
         print(f"Insert limit order: {'success' if success else 'failed'}")

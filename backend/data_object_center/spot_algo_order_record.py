@@ -288,4 +288,4 @@ class SpotAlgoOrderRecord(Base):
 
 
 if __name__ == '__main__':
-    print(SpotAlgoOrderRecord.list_by_ccy_and_type("ETH", "limit_order"))
+    pass

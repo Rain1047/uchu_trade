@@ -6,7 +6,7 @@ from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumAlgoOrderState, \
-    EnumAutoTradeConfigType
+    EnumAutoTradeConfigType, EnumExecSource
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
@@ -111,12 +111,12 @@ class SpotStopLossTask:
             slTriggerPx=str(target_price),  # 止损触发价格
             slOrdPx='-1'
         )
-        self.save_stop_loss_result(config, result)
+        self.save_stop_loss_result(config, result, exec_source=EnumExecSource.AUTO.value)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod
-    def save_stop_loss_result(config: dict, result: dict):
+    def save_stop_loss_result(config: dict, result: dict, exec_source: str):
         stop_loss_data = {
             'ccy': config.get('ccy'),
             'type': EnumAutoTradeConfigType.STOP_LOSS.value,
@@ -125,7 +125,8 @@ class SpotStopLossTask:
             'amount': config.get('amount'),
             'target_price': config.get('target_price'),
             'algoId': result.get('data')[0].get('algoId'),
-            'status': EnumAlgoOrderState.LIVE.value
+            'status': EnumAlgoOrderState.LIVE.value,
+            'exec_source': exec_source
         }
         success = SpotAlgoOrderRecord.insert(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")
