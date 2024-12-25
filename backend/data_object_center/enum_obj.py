@@ -197,6 +197,11 @@ class EnumAutoTradeConfigType(Enum):
     LIMIT_ORDER = "limit_order"
 
 
+class EnumExecSource(Enum):
+    MANUAL = "manual"
+    AUTO = "auto"
+
+
 if __name__ == '__main__':
     # 使用示例
     print(EnumSubType.get_description('275'))  # 输出: 价差交易平空

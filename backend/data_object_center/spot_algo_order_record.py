@@ -24,6 +24,7 @@ class SpotAlgoOrderRecord(Base):
     algoId = Column(String, comment='止损订单id')
     ordId = Column(String, comment='限价订单id')
     status = Column(String, comment='订单状态')
+    exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
 
@@ -40,31 +41,39 @@ class SpotAlgoOrderRecord(Base):
             'algoId': self.algoId,
             'ordId': self.ordId,
             'status': self.status,
+            'exec_source': self.exec_source,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
         }
 
     @classmethod
-    def insert(cls, data: Dict) -> bool:
-        """插入记录
-        Args:
-            data: 记录数据字典
-        Returns:
-            bool: 插入是否成功
-        """
+    def insert_or_update(cls, data: Dict) -> bool:
         try:
-            # 添加创建和更新时间
-            current_time = datetime.now().replace(microsecond=0)
-            data['create_time'] = current_time
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             data['update_time'] = current_time
 
-            record = cls(**data)
-            session.add(record)
+            # Check if record exists by ordId or algoId
+            existing_record = None
+            if data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == data['ordId']).first()
+            elif data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
+
+            if existing_record:
+                # Update existing record
+                for key, value in data.items():
+                    setattr(existing_record, key, value)
+            else:
+                # Insert new record
+                data['create_time'] = current_time
+                record = cls(**data)
+                session.add(record)
+
             session.commit()
             return True
         except Exception as e:
             session.rollback()
-            print(f"Insert failed: {e}")
+            print(f"Insert/Update failed: {e}")
             return False
 
     @classmethod
@@ -255,11 +264,12 @@ class SpotAlgoOrderRecord(Base):
             return None
 
     @classmethod
-    def list_live_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId is None,
-            SpotAlgoOrderRecord.ordId is not None
+            SpotAlgoOrderRecord.algoId.is_(None),
+            SpotAlgoOrderRecord.ordId.isnot(None),
+            SpotAlgoOrderRecord.exec_source == 'auto'
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -269,11 +279,42 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId is not None,
-            SpotAlgoOrderRecord.ordId is None
+            SpotAlgoOrderRecord.algoId.is_(None),
+            SpotAlgoOrderRecord.ordId.isnot(None),
+            SpotAlgoOrderRecord.exec_source == 'manual'
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
+
+    @classmethod
+    def list_live_auto_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+        filters = [
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
+            SpotAlgoOrderRecord.algoId.isnot(None),
+            SpotAlgoOrderRecord.ordId.is_(None),
+            SpotAlgoOrderRecord.exec_source == 'auto'
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
+
+    @classmethod
+    def list_live_manual_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+        filters = [
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
+            SpotAlgoOrderRecord.algoId.isnot(None),
+            SpotAlgoOrderRecord.ordId.is_(None),
+            SpotAlgoOrderRecord.exec_source == 'manual'
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -284,4 +325,4 @@ class SpotAlgoOrderRecord(Base):
 
 
 if __name__ == '__main__':
-    print(SpotAlgoOrderRecord.list_by_ccy_and_type("ETH", "limit_order"))
+    pass
