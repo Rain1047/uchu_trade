@@ -30,21 +30,24 @@ class SpotStopLossTask:
             for live_algo_order in live_algo_order_list:
                 algoId = live_algo_order.get('algoId')
                 # 2. check algo order status
-                latest_algo_order = self.trade.get_algo_order(algoId=algoId)
-                if latest_algo_order.get('state') == EnumAlgoOrderState.CANCELED.value:
-                    SpotAlgoOrderRecord.update_status_by_ord_id(algoId, EnumAlgoOrderState.CANCELED.value)
-                if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
-                    SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
-                    SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
-                elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
-                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
-                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
-                        live_algo_order.get('config_id'))
-                    if spot_trade_config:
-                        self.update_stop_loss_order(spot_trade_config, latest_algo_order)
-                else:
-                    logger.info(
-                        f"check_and_update_auto_spot_live_order@ {latest_algo_order} is {latest_algo_order.get('state')}.")
+                latest_algo_order_result = self.trade.get_algo_order(algoId=algoId)
+                if latest_algo_order_result and latest_algo_order_result.get('code') == '0':
+                    latest_algo_order = latest_algo_order_result.get('data')[0]
+                    print(f"algoId:{algoId} latest status is {latest_algo_order.get('state')}.")
+                    if latest_algo_order.get('state') == EnumAlgoOrderState.CANCELED.value:
+                        SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.CANCELED.value)
+                    if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
+                        SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
+                        SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
+                    elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
+                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
+                        spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
+                            live_algo_order.get('config_id'))
+                        if spot_trade_config:
+                            self.update_stop_loss_order(spot_trade_config, latest_algo_order)
+                    else:
+                        logger.info(
+                            f"check_and_update_auto_spot_live_order@ {latest_algo_order} is {latest_algo_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_algo_order@no auto live spot algo orders.")
 
@@ -147,12 +150,12 @@ class SpotStopLossTask:
 
 
 if __name__ == '__main__':
-    pass
-    test_config = {
-        "ccy": "ETH-USDT",
-        "amount": "1000",
-        "target_price": "3000",
-    }
+    # pass
+    # test_config = {
+    #     "ccy": "ETH-USDT",
+    #     "amount": "1000",
+    #     "target_price": "3000",
+    # }
 
     # test_config = {
     #     "ccy": "ETH-USDT",
@@ -161,4 +164,4 @@ if __name__ == '__main__':
     #     "percentage": "5"
     # }
     stop_loss_executor = SpotStopLossTask()
-    stop_loss_executor.update_stop_loss_status()
+    stop_loss_executor.check_and_update_auto_spot_live_algo_order()

@@ -31,20 +31,24 @@ class SpotLimitOrderTask:
             for live_order in live_order_list:
                 ordId = live_order.get('ordId')
                 # 2. check order status
-                latest_order = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(live_order.get('ccy')),
+                latest_order_result = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(live_order.get('ccy')),
                                                     ordId=ordId)
-                if latest_order.get('state') == EnumOrderState.CANCELED.value:
-                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.CANCELED.value)
-                if latest_order.get('state') == EnumOrderState.FILLED.value:
-                    SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.FILLED.value)
-                elif latest_order.get('state') == EnumOrderState.LIVE.value:
-                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
-                    spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
-                    if spot_trade_config:
-                        self.update_limit_order(spot_trade_config, latest_order)
-                else:
-                    logger.info(
-                        f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
+                print(latest_order_result)
+                if latest_order_result and latest_order_result.get('code') == '0':
+                    latest_order = latest_order_result.get('data')[0]
+                    print(f"ordId:{latest_order.get('ordId')} latest status is {latest_order.get('state')}.")
+                    if latest_order.get('state') == EnumOrderState.CANCELED.value:
+                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.CANCELED.value)
+                    if latest_order.get('state') == EnumOrderState.FILLED.value:
+                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.FILLED.value)
+                    elif latest_order.get('state') == EnumOrderState.LIVE.value:
+                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
+                        spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
+                        if spot_trade_config:
+                            self.update_limit_order(spot_trade_config, latest_order)
+                    else:
+                        logger.info(
+                            f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
@@ -136,18 +140,20 @@ class SpotLimitOrderTask:
 
 
 if __name__ == '__main__':
-    test_config = {
-        "id": "1",
-        "ccy": "ETH-USDT",
-        "amount": "2000",
-        "target_price": "3130",
-    }
-
     # test_config = {
+    #     "id": "1",
     #     "ccy": "ETH-USDT",
-    #     "indicator": "EMA",
-    #     "indicator_val": "120",
-    #     "percentage": "5"
+    #     "amount": "2000",
+    #     "target_price": "3130",
     # }
-    limit_order_task = SpotLimitOrderTask()
-    limit_order_task.execute_limit_order_task(test_config)
+    #
+    # # test_config = {
+    # #     "ccy": "ETH-USDT",
+    # #     "indicator": "EMA",
+    # #     "indicator_val": "120",
+    # #     "percentage": "5"
+    # # }
+    # limit_order_task = SpotLimitOrderTask()
+    # limit_order_task.execute_limit_order_task(test_config)
+    spot_limit_task = SpotLimitOrderTask()
+    spot_limit_task.check_and_update_auto_live_limit_order()
