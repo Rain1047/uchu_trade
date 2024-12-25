@@ -25,7 +25,7 @@ class SpotStopLossTask:
 
     def check_and_update_auto_spot_live_algo_order(self):
         # 1. get all unfinished algo orders
-        live_algo_order_list = SpotAlgoOrderRecord.list_live_spot_algo_orders()
+        live_algo_order_list = SpotAlgoOrderRecord.list_live_auto_spot_algo_orders()
         if len(live_algo_order_list) > 0:
             for live_algo_order in live_algo_order_list:
                 algoId = live_algo_order.get('algoId')
