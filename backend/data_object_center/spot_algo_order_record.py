@@ -308,6 +308,21 @@ class SpotAlgoOrderRecord(Base):
             print(f"Query failed: {e}")
             return []
 
+    @classmethod
+    def list_live_manual_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+        filters = [
+            SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
+            SpotAlgoOrderRecord.algoId.isnot(None),
+            SpotAlgoOrderRecord.ordId.is_(None),
+            SpotAlgoOrderRecord.exec_source == 'manual'
+        ]
+        try:
+            results = session.query(cls).filter(*filters).all()
+            return [result.to_dict() for result in results]
+        except Exception as e:
+            print(f"Query failed: {e}")
+            return []
+
 
 if __name__ == '__main__':
     pass

@@ -163,7 +163,8 @@ class SpotLimitOrderTask:
             order_list = order_list_result.get('data')
             if len(order_list) > 0:
                 for order in order_list:
-                    self.save_or_update_limit_order_result(config={}, result=order, exec_source=EnumExecSource.MANUAL.value)
+                    self.save_or_update_limit_order_result(config={}, result=order,
+                                                           exec_source=EnumExecSource.MANUAL.value)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
