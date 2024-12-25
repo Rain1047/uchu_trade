@@ -164,7 +164,7 @@ class SpotStopLossTask:
                 if latest_algo_order and latest_algo_order.get('code') == '0':
                     if latest_algo_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
                         SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_algo_order.get('algoId'),
-                                                                     manual_live_algo_order.get('data')[0].get('state'))
+                                                                     latest_algo_order.get('data')[0].get('state'))
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(
             instType="SPOT", ordType="conditional,oco")
@@ -193,4 +193,4 @@ if __name__ == '__main__':
     #     "percentage": "5"
     # }
     stop_loss_executor = SpotStopLossTask()
-    stop_loss_executor.check_and_update_auto_spot_live_algo_order()
+    stop_loss_executor.check_and_update_manual_live_algo_order()
