@@ -22,10 +22,12 @@ class SpotMainTask:
     # [调度主任务] 根据配置进行止盈止损、限价委托
     def execute_spot_main_task(self):
         # 1. 检查并更新生效中的限价委托, 执行新的限价委托
-        self.limit_order_task.check_and_update_auto_live_limit_order()
+        self.limit_order_task.check_and_update_manual_live_order()
+        self.limit_order_task.check_and_update_auto_live_order()
         self.limit_order_task.process_new_auto_limit_order_task()
 
         # 2. 取消所有未完成的策略委托
+        self.stop_loss_task.check_and_update_manual_live_algo_order()
         self.stop_loss_task.check_and_update_auto_spot_live_algo_order()
         self.stop_loss_task.process_new_auto_stop_loss_task()
 

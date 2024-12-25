@@ -47,26 +47,33 @@ class SpotAlgoOrderRecord(Base):
         }
 
     @classmethod
-    def insert(cls, data: Dict) -> bool:
-        """插入记录
-        Args:
-            data: 记录数据字典
-        Returns:
-            bool: 插入是否成功
-        """
+    def insert_or_update(cls, data: Dict) -> bool:
         try:
-            # 添加创建和更新时间
             current_time = datetime.now().replace(microsecond=0)
-            data['create_time'] = current_time
             data['update_time'] = current_time
 
-            record = cls(**data)
-            session.add(record)
+            # Check if record exists by ordId or algoId
+            existing_record = None
+            if data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == data['ordId']).first()
+            elif data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
+
+            if existing_record:
+                # Update existing record
+                for key, value in data.items():
+                    setattr(existing_record, key, value)
+            else:
+                # Insert new record
+                data['create_time'] = current_time
+                record = cls(**data)
+                session.add(record)
+
             session.commit()
             return True
         except Exception as e:
             session.rollback()
-            print(f"Insert failed: {e}")
+            print(f"Insert/Update failed: {e}")
             return False
 
     @classmethod
