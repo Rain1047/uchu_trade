@@ -60,11 +60,9 @@ class SpotAlgoOrderRecord(Base):
                 existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
 
             if existing_record:
-                # Update existing record
                 for key, value in data.items():
                     setattr(existing_record, key, value)
             else:
-                # Insert new record
                 data['create_time'] = current_time
                 record = cls(**data)
                 session.add(record)
