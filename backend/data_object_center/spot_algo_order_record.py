@@ -24,6 +24,7 @@ class SpotAlgoOrderRecord(Base):
     algoId = Column(String, comment='止损订单id')
     ordId = Column(String, comment='限价订单id')
     status = Column(String, comment='订单状态')
+    exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
 
@@ -40,6 +41,7 @@ class SpotAlgoOrderRecord(Base):
             'algoId': self.algoId,
             'ordId': self.ordId,
             'status': self.status,
+            'exec_source': self.exec_source,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
         }
@@ -255,11 +257,12 @@ class SpotAlgoOrderRecord(Base):
             return None
 
     @classmethod
-    def list_live_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None)
+            SpotAlgoOrderRecord.ordId.isnot(None),
+            SpotAlgoOrderRecord.exec_source == 'auto'
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -269,11 +272,12 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_algo_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None)
+            SpotAlgoOrderRecord.ordId.is_(None),
+            SpotAlgoOrderRecord.exec_source == 'auto'
         ]
         try:
             results = session.query(cls).filter(*filters).all()

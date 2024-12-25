@@ -26,7 +26,7 @@ class SpotLimitOrderTask:
     # [限价委托主任务] 检查并更新自动限价委托
     def check_and_update_auto_live_limit_order(self):
         # 1. get all unfinished orders
-        live_order_list = SpotAlgoOrderRecord.list_live_spot_orders()
+        live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_orders()
         if len(live_order_list) > 0:
             for live_order in live_order_list:
                 ordId = live_order.get('ordId')
