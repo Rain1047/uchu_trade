@@ -106,12 +106,6 @@ class SpotAlgoOrderRecord(Base):
 
     @classmethod
     def list_by_ccy_and_status(cls, ccy: str, status: str) -> List[Dict]:
-        """根据币种查询记录列表
-        Args:
-            ccy: 币种
-        Returns:
-            Dict[str, List[Dict]]: 包含记录列表的字典
-        """
         filters = [
             SpotAlgoOrderRecord.ccy == ccy,
             SpotAlgoOrderRecord.status == status,
