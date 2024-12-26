@@ -269,6 +269,20 @@ class SpotTradeConfig(Base):
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]
 
+    @classmethod
+    def list_configs_by_ccy_and_type(cls, ccy: str, type_: str) -> List[Dict]:
+        """获取币种配置"""
+        try:
+            configs = session.query(cls).filter(
+                cls.ccy == ccy,
+                cls.type == type_,
+                cls.is_del == '0'
+            ).all()
+            return [config.to_dict() for config in configs]
+        except Exception as e:
+            print(f"Query configs failed: {e}")
+            return []
+
 
 if __name__ == '__main__':
     swap = SpotTradeConfig()
