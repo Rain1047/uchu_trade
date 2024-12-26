@@ -64,12 +64,45 @@ export const useBalance = () => {
         }
     }, [fetchBalances]);
 
+    const saveTradeConfig = async (ccy, type, configs) => {
+        try {
+            const response = await fetch('/api/balance/save_config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configs.map(config => ({
+                    ...config,
+                    ccy,
+                    type
+                })))
+            });
+            const data = await response.json();
+            return data.success;
+        } catch (error) {
+            console.error('Save config failed:', error);
+            return false;
+        }
+    };
+
+    const fetchTradeConfigs = async (ccy, type) => {
+        try {
+            const response = await fetch(`/api/balance/list_configs/${ccy}/${type}`);
+            const data = await response.json();
+            return data.success ? data.data : [];
+        } catch (error) {
+            console.error('Fetch configs failed:', error);
+            return [];
+        }
+    };
+
+
     return {
         balances,
         loading,
         error,
         fetchBalances,
         toggleAutoConfig,
-        saveAutoConfig
+        saveAutoConfig,
+        saveTradeConfig,
+        fetchTradeConfigs
     };
 };
