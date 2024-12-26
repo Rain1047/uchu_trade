@@ -2,16 +2,11 @@ import logging
 
 from backend.schedule_center.tasks.trade_tasks.spot_limit_order_task import SpotLimitOrderTask
 from backend.schedule_center.tasks.trade_tasks.spot_stop_loss_task import SpotStopLossTask
-from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
-from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
-
 logger = logging.getLogger(__name__)
 
 
 class SpotMainTask:
     def __init__(self):
-        self.okx_balance_service = OKXBalanceService()
-        self.okx_algo_order_service = OKXAlgoOrderService()
         self.stop_loss_task = SpotStopLossTask()
         self.limit_order_task = SpotLimitOrderTask()
 
