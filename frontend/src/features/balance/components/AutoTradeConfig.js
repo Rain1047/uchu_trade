@@ -5,10 +5,11 @@ import {
   Typography,
   Button,
   Grid,
-  Switch,
+  // Switch,
   FormControlLabel,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import Switch from '@mui/material/Switch';
 
 const useStyles = makeStyles((theme) => ({
   switchBase: {

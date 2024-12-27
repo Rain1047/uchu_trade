@@ -5,7 +5,7 @@ import {
   Container,
   IconButton,
   Paper,
-  Switch,
+  // Switch,
   Table,
   TableBody,
   TableCell,
@@ -26,6 +26,7 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from '@material-ui/icons';
+import Switch from '@mui/material/Switch';
 import { useStyles } from './styles';
 import {useStrategyApi} from "../../hooks/useStrategyApi";
 import { Alert } from '@material-ui/lab';
