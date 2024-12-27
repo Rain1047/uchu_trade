@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Table,
   TableBody,
@@ -7,7 +8,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  // Switch,
   Button,
   Drawer,
   Box,
@@ -26,8 +26,10 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   drawer: {
-    width: '700px', // 侧拉框宽度
-    padding: theme.spacing(3),
+    width: '1400px', // 设置固定宽度
+  },
+  drawerPaper: {
+    width: '1400px', // 设置 Drawer 的宽度
   },
 }));
 
@@ -35,15 +37,26 @@ export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeConfig, setActiveConfig] = useState({ ccy: null });
+  const [configData, setConfigData] = useState([]); // 存储当前配置数据
+  const [isStopLoss, setIsStopLoss] = useState(true); // true 为止损，false 为限价
 
   const handleEditClick = (ccy) => {
-    setActiveConfig({ ccy });
-    setDrawerOpen(true);
+    const configType = isStopLoss ? 'stop_loss' : 'limit_order';
+    setActiveConfig({ ccy, config_type: configType });
+    fetchConfigData(ccy, configType);
   };
 
   const handleDrawerClose = () => {
     setDrawerOpen(false);
     setActiveConfig({ ccy: null });
+  };
+
+  const handleSwitchChange = () => {
+    const newConfigType = !isStopLoss ? 'stop_loss' : 'limit_order';
+    setIsStopLoss((prev) => !prev);
+    if (activeConfig.ccy) {
+      fetchConfigData(activeConfig.ccy, newConfigType); // 切换时重新加载数据
+    }
   };
 
   const handleSwitchToggle = (ccy, switchType, currentValue) => {
@@ -54,6 +67,26 @@ export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
       onSwitchToggle(ccy, null, newValue); // 更新止损开关
     }
   };
+
+  const handleSave = (updatedConfigs) => {
+    console.log('保存的配置:', updatedConfigs);
+    setDrawerOpen(false);
+  };
+
+  const fetchConfigData = async (ccy, configType) => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/balance/list_balance_configs', {
+        params: { ccy, config_type: configType },
+      });
+      setConfigData(response.data.data || []); // 假设后端返回的配置数据在 data.data 中
+      setDrawerOpen(true);
+    } catch (error) {
+      console.error('获取配置数据失败:', error);
+      alert('无法加载配置数据，请稍后重试。');
+    }
+  };
+
+
 
   return (
     <TableContainer component={Paper}>
@@ -120,26 +153,22 @@ export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
       </Table>
 
       {/* 侧拉框 */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={handleDrawerClose}
-        classes={{ paper: classes.drawer }}
-      >
-        <Typography variant="h6" gutterBottom>
-          编辑配置 - {activeConfig.ccy}
-        </Typography>
-        <AutoTradeConfig
-          ccy={activeConfig.ccy}
-          onSave={(configs) => {
-            onConfigSave(configs);
-            handleDrawerClose();
-          }}
-          onClose={handleDrawerClose}
-          existingConfigs={
-            data.find((item) => item.ccy === activeConfig.ccy)?.auto_config_list || []
-          }
-        />
+      <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <Box width="1400px" p={3}>
+          <Typography variant="h6">
+            {activeConfig.config_type === 'stop_loss' ? '止损配置' : '限价配置'} - {activeConfig.ccy}
+          </Typography>
+          {configData.length > 0 ? (
+            <AutoTradeConfig
+              ccy={activeConfig.ccy}
+              onSave={handleSave}
+              onClose={() => setDrawerOpen(false)}
+              existingConfigs={configData}
+            />
+          ) : (
+            <Typography color="textSecondary">当前无配置</Typography>
+          )}
+        </Box>
       </Drawer>
     </TableContainer>
   );
