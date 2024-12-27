@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Query
 import logging
 
 from backend.controller_center.balance.balance_request import TradeConfig
@@ -46,6 +46,25 @@ def save_config(config_list: List[TradeConfig]):
         return {
             "success": True,
             "data": result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get("/list_balance_configs")
+async def list_balance_configs(
+    ccy: str = Query(..., description="币种"),
+    config_type: str = Query(..., description="配置类型: stop_loss 或 limit_order"),
+    ):
+    try:
+        balance_service = BalanceService()
+        configs = balance_service.list_trade_configs(ccy, config_type)
+        return {
+            "success": True,
+            "data": configs
         }
     except Exception as e:
         return {
