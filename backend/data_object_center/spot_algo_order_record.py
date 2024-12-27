@@ -60,11 +60,9 @@ class SpotAlgoOrderRecord(Base):
                 existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
 
             if existing_record:
-                # Update existing record
                 for key, value in data.items():
                     setattr(existing_record, key, value)
             else:
-                # Insert new record
                 data['create_time'] = current_time
                 record = cls(**data)
                 session.add(record)
@@ -108,12 +106,6 @@ class SpotAlgoOrderRecord(Base):
 
     @classmethod
     def list_by_ccy_and_status(cls, ccy: str, status: str) -> List[Dict]:
-        """根据币种查询记录列表
-        Args:
-            ccy: 币种
-        Returns:
-            Dict[str, List[Dict]]: 包含记录列表的字典
-        """
         filters = [
             SpotAlgoOrderRecord.ccy == ccy,
             SpotAlgoOrderRecord.status == status,

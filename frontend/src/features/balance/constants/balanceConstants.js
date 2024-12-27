@@ -11,7 +11,7 @@
 // API 端点配置
 export const API_ENDPOINTS = {
   LIST_BALANCE: 'http://127.0.0.1:8000/api/balance/list_balance',
-  AUTO_CONFIG: 'http://127.0.0.1:8000/api/balance/auto_config',
+  SAVE_CONFIG: 'http://127.0.0.1:8000/api/balance/save_config',
   TOGGLE_SWITCH: 'http://127.0.0.1:8000/api/balance/toggle_switch',
   LIST_POSITIONS: 'http://127.0.0.1:8000/api/balance/list_positions',
   LIST_ORDERS: 'http://127.0.0.1:8000/api/balance/list_orders'
@@ -70,9 +70,7 @@ export const ORDER_STATUS = {
 export const TRADE_INDICATORS = [
     { value: 'SMA', label: 'SMA' },
     { value: 'EMA', label: 'EMA' },
-    { value: 'MACD', label: 'MACD' },
-    { value: 'RSI', label: 'RSI' },
-    { value: 'BOLL', label: 'BOLL' }
+    { value: 'USDT', label: 'USDT'}
 ];
 
 export const POSITION_SIDES = {

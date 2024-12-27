@@ -1,21 +1,12 @@
 import logging
 
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
-from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.schedule_center.tasks.trade_tasks.spot_limit_order_task import SpotLimitOrderTask
 from backend.schedule_center.tasks.trade_tasks.spot_stop_loss_task import SpotStopLossTask
-from backend.service_center.okx_service.okx_algo_order_service import OKXAlgoOrderService
-from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
-from backend.service_center.okx_service.okx_order_service import OKXOrderService
-
 logger = logging.getLogger(__name__)
 
 
 class SpotMainTask:
     def __init__(self):
-        self.okx_balance_service = OKXBalanceService()
-        self.okx_order_service = OKXOrderService()
-        self.okx_algo_order_service = OKXAlgoOrderService()
         self.stop_loss_task = SpotStopLossTask()
         self.limit_order_task = SpotLimitOrderTask()
 

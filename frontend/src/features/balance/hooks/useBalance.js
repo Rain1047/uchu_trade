@@ -48,21 +48,42 @@ export const useBalance = () => {
         }
     }, [fetchBalances]);
 
-    const saveAutoConfig = useCallback(async (ccy, type, configs) => {
+
+    const saveTradeConfig = useCallback(async (ccy, type, configs) => {
         try {
-            const response = await fetch(API_ENDPOINTS.AUTO_CONFIG, {
+            const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ccy, type, configs }),
+                body: JSON.stringify(configs.map(config => ({
+                    ...config,
+                    ccy,
+                    type
+                })))
             });
-            await handleApiResponse(response, '保存配置失败');
+            const { success, data, message } = await response.json();
+            if (!success) {
+                throw new Error(message || '保存配置失败');
+            }
             await fetchBalances();
             return true;
-        } catch (err) {
-            console.error('保存配置失败:', err);
+        } catch (error) {
+            console.error('保存配置失败:', error);
             return false;
         }
     }, [fetchBalances]);
+
+
+    const fetchTradeConfigs = async (ccy, type) => {
+        try {
+            const response = await fetch(`/api/balance/list_configs/${ccy}/${type}`);
+            const data = await response.json();
+            return data.success ? data.data : [];
+        } catch (error) {
+            console.error('Fetch configs failed:', error);
+            return [];
+        }
+    };
+
 
     return {
         balances,
@@ -70,6 +91,7 @@ export const useBalance = () => {
         error,
         fetchBalances,
         toggleAutoConfig,
-        saveAutoConfig
+        saveTradeConfig,
+        fetchTradeConfigs
     };
 };
