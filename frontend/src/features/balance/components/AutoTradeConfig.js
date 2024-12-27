@@ -99,65 +99,82 @@ export const AutoTradeConfig = ({
     };
 
     const handleConfigChange = (index, field, value) => {
-        const newConfigs = [...configs];
-        newConfigs[index] = {
-            ...newConfigs[index],
+        const updatedConfigs = [...configs];
+        updatedConfigs[index] = {
+            ...configs[index],
             [field]: value
         };
-        setConfigs(newConfigs);
+        setConfigs(updatedConfigs);
     };
 
+    // AutoTradeConfig.js
+    const handleSave = () => {
+        const configsToSave = configs.map(config => ({
+            type: type,
+            indicator: config.indicator,
+            interval: config.interval,
+            percentage: config.percentage || '',
+            amount: config.amount || '',
+            ccy: ccy
+        }));
+
+        onSave(configsToSave);
+    };
+
+
     const ConfigItem = ({ config, index }) => (
-        <Box className={classes.configItem}>
-            <Box className={classes.fieldsContainer}>
-                <TextField
-                    select
-                    label="指标"
-                    value={config.indicator || ''}
-                    onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    style={{ width: '120px' }}
-                >
-                    {TRADE_INDICATORS.map(indicator => (
-                        <MenuItem key={indicator.value} value={indicator.value}>
-                            {indicator.label}
-                        </MenuItem>
-                    ))}
-                </TextField>
+    <Box className={classes.configItem}>
+        <Box className={classes.fieldsContainer}>
+            <TextField
+                select
+                label="指标"
+                value={config.indicator || ''}
+                onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
+                variant="outlined"
+                size="small"
+                style={{width: '120px'}}
+            >
+                {TRADE_INDICATORS.map(indicator => (
+                    <MenuItem key={indicator.value} value={indicator.value}>
+                        {indicator.label}
+                    </MenuItem>
+                ))}
+            </TextField>
 
-                <TextField
-                    label="间隔"
-                    value={config.interval || ''}
-                    onChange={(e) => handleConfigChange(index, 'interval', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    style={{ width: '100px' }}
-                />
+            <TextField
+                label="指标值"
+                defaultValue={config.interval || ''}
+                onBlur={(e) => handleConfigChange(index, 'interval', e.target.value)}
+                variant="outlined"
+                size="small"
+                type="number"
+                style={{width: '100px'}}
+                inputProps={{
+                    step: "any"
+                }}
+            />
 
-                <TextField
-                    label="金额"
-                    value={config.amount || ''}
-                    onChange={(e) => handleConfigChange(index, 'amount', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    style={{ width: '120px' }}
-                />
-            </Box>
-
-            <Tooltip title="删除">
-                <IconButton
-                    size="small"
-                    onClick={() => handleRemoveConfig(index)}
-                    style={{ marginLeft: 'auto' }}
-                >
-                    <DeleteIcon />
-                </IconButton>
-            </Tooltip>
+            <TextField
+                label="金额"
+                defaultValue={config.amount || ''}
+                onBlur={(e) => handleConfigChange(index, 'amount', e.target.value)}
+                variant="outlined"
+                size="small"
+                type="number"
+                style={{width: '120px'}}
+                inputProps={{
+                    step: "any"
+                }}
+            />
         </Box>
-    );
+
+        <Tooltip title="删除">
+            <IconButton size="small" onClick={() => handleRemoveConfig(index)} style={{marginLeft: 'auto'}}>
+                <DeleteIcon />
+            </IconButton>
+        </Tooltip>
+    </Box>
+);
 
     return (
         <>
@@ -211,7 +228,7 @@ export const AutoTradeConfig = ({
                     取消
                 </Button>
                 <Button
-                    onClick={() => onSave(configs)}
+                    onClick={handleSave}
                     color="primary"
                     variant="contained"
                 >

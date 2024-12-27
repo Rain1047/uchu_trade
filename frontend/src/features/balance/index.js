@@ -25,7 +25,7 @@ const BalanceList = () => {
     const classes = useStyles();
     const [refreshing, setRefreshing] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-    const { balances, loading, error, fetchBalances, toggleAutoConfig, saveAutoConfig } = useBalance();
+    const { balances, loading, error, fetchBalances, toggleAutoConfig, saveTradeConfig } = useBalance();
 
     useEffect(() => {
         fetchBalances();
@@ -50,11 +50,19 @@ const BalanceList = () => {
             showMessage('更新失败', 'error');
         }
     };
+    const [configDialog, setConfigDialog] = useState({ open: false, type: null, ccy: null });
 
-    const handleConfigSave = async (ccy, type, configs) => {
-        const success = await saveAutoConfig(ccy, type, configs);
+    const handleConfigClose = () => {
+      setConfigDialog({ open: false, type: null, ccy: null });
+    };
+
+
+    const handleConfigSave = async (configs) => {
+        const success = await saveTradeConfig(configDialog.ccy, configDialog.type, configs);
         if (success) {
             showMessage('配置已保存');
+            handleConfigClose();
+            fetchBalances();
         } else {
             showMessage('保存失败', 'error');
         }
