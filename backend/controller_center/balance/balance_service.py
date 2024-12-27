@@ -31,8 +31,6 @@ class BalanceService:
         return self.okx_balance_service.list_account_balance()
 
 
-
-
 if __name__ == '__main__':
     balance_service = BalanceService()
     request = UpdateAccountBalanceSwitchRequest(ccy="ETH-USDT", type="limit_order", switch="true")

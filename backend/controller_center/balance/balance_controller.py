@@ -39,7 +39,8 @@ def get_balance_list():
 @router.post("/save_config")
 def save_config(config_list: List[TradeConfig]):
     try:
-        config_list = [config.dict() for config in config_list]
+        config_list = [config for config in config_list]
+        print(config_list)
         balance_service = BalanceService()
         result = balance_service.save_update_balance_config(config_list)
         return {

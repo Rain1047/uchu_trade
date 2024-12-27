@@ -8,18 +8,11 @@ import {
     DialogActions,
     Typography,
     IconButton,
-    TextField,
-    MenuItem,
     Divider,
-    Tooltip,
 } from '@material-ui/core';
-import {
-    Add as AddIcon,
-    Delete as DeleteIcon,
-    Close as CloseIcon
-} from '@material-ui/icons';
+import { Add as AddIcon, Close as CloseIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import { TRADE_INDICATORS } from '../constants/balanceConstants';
+import ConfigItem from './ConfigItem'; // 导入 ConfigItem
 
 const useStyles = makeStyles((theme) => ({
     dialogTitle: {
@@ -62,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
     limitOrderIndicator: {
         backgroundColor: theme.palette.success.dark,
         color: theme.palette.success.contrastText,
-    }
+    },
 }));
 
 export const AutoTradeConfig = ({
@@ -70,11 +63,11 @@ export const AutoTradeConfig = ({
     ccy,
     onSave,
     onClose,
-    existingConfigs = []
+    existingConfigs = [],
 }) => {
     const classes = useStyles();
     const [configs, setConfigs] = useState(
-        existingConfigs.filter(config => config.type === type)
+        existingConfigs.filter((config) => config.type === type)
     );
 
     const getTypeLabel = () => {
@@ -84,10 +77,12 @@ export const AutoTradeConfig = ({
     const getInitialConfig = () => ({
         type,
         indicator: '',
-        interval: '',
+        indicator_val: '',
+        target_price: '',
         percentage: '',
         amount: '',
-        ccy
+        exec_nums: '1',
+        ccy,
     });
 
     const handleAddConfig = () => {
@@ -102,79 +97,14 @@ export const AutoTradeConfig = ({
         const updatedConfigs = [...configs];
         updatedConfigs[index] = {
             ...configs[index],
-            [field]: value
+            [field]: value,
         };
         setConfigs(updatedConfigs);
     };
 
-    // AutoTradeConfig.js
     const handleSave = () => {
-        const configsToSave = configs.map(config => ({
-            type: type,
-            indicator: config.indicator,
-            interval: config.interval,
-            percentage: config.percentage || '',
-            amount: config.amount || '',
-            ccy: ccy
-        }));
-
-        onSave(configsToSave);
+        onSave(configs);
     };
-
-
-    const ConfigItem = ({ config, index }) => (
-    <Box className={classes.configItem}>
-        <Box className={classes.fieldsContainer}>
-            <TextField
-                select
-                label="指标"
-                value={config.indicator || ''}
-                onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
-                variant="outlined"
-                size="small"
-                style={{width: '120px'}}
-            >
-                {TRADE_INDICATORS.map(indicator => (
-                    <MenuItem key={indicator.value} value={indicator.value}>
-                        {indicator.label}
-                    </MenuItem>
-                ))}
-            </TextField>
-
-            <TextField
-                label="指标值"
-                defaultValue={config.interval || ''}
-                onBlur={(e) => handleConfigChange(index, 'interval', e.target.value)}
-                variant="outlined"
-                size="small"
-                type="number"
-                style={{width: '100px'}}
-                inputProps={{
-                    step: "any"
-                }}
-            />
-
-            <TextField
-                label="金额"
-                defaultValue={config.amount || ''}
-                onBlur={(e) => handleConfigChange(index, 'amount', e.target.value)}
-                variant="outlined"
-                size="small"
-                type="number"
-                style={{width: '120px'}}
-                inputProps={{
-                    step: "any"
-                }}
-            />
-        </Box>
-
-        <Tooltip title="删除">
-            <IconButton size="small" onClick={() => handleRemoveConfig(index)} style={{marginLeft: 'auto'}}>
-                <DeleteIcon />
-            </IconButton>
-        </Tooltip>
-    </Box>
-);
 
     return (
         <>
@@ -186,8 +116,8 @@ export const AutoTradeConfig = ({
                     <Box
                         ml={2}
                         className={`${classes.typeIndicator} ${
-                            type === 'stop_loss' 
-                                ? classes.stopLossIndicator 
+                            type === 'stop_loss'
+                                ? classes.stopLossIndicator
                                 : classes.limitOrderIndicator
                         }`}
                     >
@@ -206,6 +136,9 @@ export const AutoTradeConfig = ({
                             key={index}
                             config={config}
                             index={index}
+                            handleConfigChange={handleConfigChange}
+                            handleRemoveConfig={handleRemoveConfig}
+                            classes={classes}
                         />
                     ))}
 
@@ -224,14 +157,8 @@ export const AutoTradeConfig = ({
             <Divider />
 
             <DialogActions>
-                <Button onClick={onClose}>
-                    取消
-                </Button>
-                <Button
-                    onClick={handleSave}
-                    color="primary"
-                    variant="contained"
-                >
+                <Button onClick={onClose}>取消</Button>
+                <Button onClick={handleSave} color="primary" variant="contained">
                     保存
                 </Button>
             </DialogActions>

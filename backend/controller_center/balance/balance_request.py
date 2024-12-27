@@ -8,9 +8,13 @@ class UpdateAccountBalanceSwitchRequest(BaseModel):
 
 
 class TradeConfig(BaseModel):
+    ccy: str
     type: str
     indicator: str
-    interval: str
+    indicator_val: str
     percentage: str | None
     amount: str | None
-    ccy: str
+    switch: str | None
+    exec_nums: str | None
+    target_price: str | None
+
