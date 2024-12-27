@@ -1,8 +1,9 @@
 from typing import List, Dict, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 import logging
 
+from backend.controller_center.balance.balance_request import TradeConfig
 from backend.controller_center.balance.balance_service import BalanceService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
@@ -36,10 +37,9 @@ def get_balance_list():
 
 
 @router.post("/save_config")
-def save_config(config_list: List[Dict[str, Any]]):
+def save_config(config_list: List[TradeConfig]):
     try:
-        if not config_list:
-            raise HTTPException(status_code=400, detail="Invalid request body")
+        config_list = [config.dict() for config in config_list]
         balance_service = BalanceService()
         result = balance_service.save_update_balance_config(config_list)
         return {
@@ -51,6 +51,7 @@ def save_config(config_list: List[Dict[str, Any]]):
             "success": False,
             "message": str(e)
         }
+
 
 @router.get("/list_configs/{ccy}/{type}")
 def list_configs(ccy: str, type_: str):

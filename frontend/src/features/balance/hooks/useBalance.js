@@ -48,25 +48,10 @@ export const useBalance = () => {
         }
     }, [fetchBalances]);
 
-    const saveAutoConfig = useCallback(async (ccy, type, configs) => {
-        try {
-            const response = await fetch(API_ENDPOINTS.AUTO_CONFIG, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ccy, type, configs }),
-            });
-            await handleApiResponse(response, '保存配置失败');
-            await fetchBalances();
-            return true;
-        } catch (err) {
-            console.error('保存配置失败:', err);
-            return false;
-        }
-    }, [fetchBalances]);
 
-    const saveTradeConfig = async (ccy, type, configs) => {
+    const saveTradeConfig = useCallback(async (ccy, type, configs) => {
         try {
-            const response = await fetch('/api/balance/save_config', {
+            const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(configs.map(config => ({
@@ -75,13 +60,18 @@ export const useBalance = () => {
                     type
                 })))
             });
-            const data = await response.json();
-            return data.success;
+            const { success, data, message } = await response.json();
+            if (!success) {
+                throw new Error(message || '保存配置失败');
+            }
+            await fetchBalances();
+            return true;
         } catch (error) {
-            console.error('Save config failed:', error);
+            console.error('保存配置失败:', error);
             return false;
         }
-    };
+    }, [fetchBalances]);
+
 
     const fetchTradeConfigs = async (ccy, type) => {
         try {
@@ -101,7 +91,6 @@ export const useBalance = () => {
         error,
         fetchBalances,
         toggleAutoConfig,
-        saveAutoConfig,
         saveTradeConfig,
         fetchTradeConfigs
     };
