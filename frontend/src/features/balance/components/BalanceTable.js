@@ -111,7 +111,7 @@ export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
                   color="primary"
                   onClick={() => handleEditClick(row.ccy)}
                 >
-                  编辑
+                  查看&编辑
                 </Button>
               </TableCell>
             </TableRow>
