@@ -7,13 +7,14 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Switch,
+  // Switch,
   Button,
   Drawer,
   Box,
   Typography,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import Switch from '@mui/material/Switch';
 import { formatNumber } from '../utils/balanceUtils';
 import { AutoTradeConfig } from './AutoTradeConfig';
 
@@ -66,7 +67,7 @@ export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
             <TableCell align="right">总收益率</TableCell>
             <TableCell align="center">限价</TableCell>
             <TableCell align="center">止损</TableCell>
-            <TableCell align="center">编辑配置</TableCell>
+            <TableCell align="center">查看&编辑配置</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
