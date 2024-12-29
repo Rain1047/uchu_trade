@@ -13,9 +13,11 @@ class BalanceService:
 
     def __init__(self):
         self.okx_balance_service = OKXBalanceService()
+
     """
     balance service
     """
+
     @staticmethod
     def update_account_balance_switch(request: UpdateAccountBalanceSwitchRequest) -> bool:
         return AccountBalance.update_switch(ccy=SymbolFormatUtils.get_base_symbol(request.ccy),
@@ -34,8 +36,10 @@ class BalanceService:
     def list_account_balance(self):
         return self.okx_balance_service.list_account_balance()
 
-    def list_configs_execute_history(self, config_execute_history_request: TradeConfigExecuteHistory):
+    @staticmethod
+    def list_config_execute_records(config_execute_history_request: TradeConfigExecuteHistory):
         return SpotAlgoOrderRecord.list_spot_algo_order_record_by_conditions(config_execute_history_request)
+
 
 if __name__ == '__main__':
     balance_service = BalanceService()

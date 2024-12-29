@@ -106,11 +106,11 @@ def list_configs(ccy: str, type_: str):
         }
 
 
-@router.post("/list_configs_execute_history")
-def list_configs_execute_history(config_execute_history_request: TradeConfigExecuteHistory):
+@router.post("/list_config_execute_records")
+def list_config_execute_records(config_execute_history_request: TradeConfigExecuteHistory):
     try:
         balance_service = BalanceService()
-        configs = balance_service.list_configs_execute_history(config_execute_history_request)
+        configs = balance_service.list_config_execute_records(config_execute_history_request)
         return {
             "success": True,
             "data": configs
