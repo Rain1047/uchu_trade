@@ -18,3 +18,4 @@ class TradeConfig(BaseModel):
     exec_nums: str | None
     target_price: str | None
 
+
