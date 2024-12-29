@@ -8,6 +8,7 @@ class UpdateAccountBalanceSwitchRequest(BaseModel):
 
 
 class TradeConfig(BaseModel):
+    id: int | None
     ccy: str
     type: str
     indicator: str
@@ -18,3 +19,33 @@ class TradeConfig(BaseModel):
     exec_nums: str | None
     target_price: str | None
 
+    def to_dict(self):
+        return {
+            'int': self.id,
+            'ccy': self.ccy,
+            'type': self.type,
+            'indicator': self.indicator,
+            'indicator_val': self.indicator_val,
+            'target_price': self.target_price,
+            'percentage': self.percentage,
+            'amount': self.amount,
+            'switch': self.switch,
+            'exec_nums': self.exec_nums,
+            'is_del': '0'
+        }
+
+
+class TradeConfigExecuteHistory(BaseModel):
+    ccy: str
+    type: str
+    status: str
+    create_time: str
+
+    def to_dict(self):
+        return {
+            'ccy': self.ccy,
+            'type': self.type,
+            'indicator': self.indicator,
+            'status': self.status,
+            'create_time': self.create_time
+        }

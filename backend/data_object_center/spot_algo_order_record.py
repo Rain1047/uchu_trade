@@ -5,6 +5,7 @@ from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
+from backend.controller_center.balance.balance_request import TradeConfigExecuteHistory
 from backend.data_object_center.enum_obj import EnumOrderState
 
 Base = declarative_base()
@@ -314,6 +315,24 @@ class SpotAlgoOrderRecord(Base):
         except Exception as e:
             print(f"Query failed: {e}")
             return []
+
+    @classmethod
+    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeConfigExecuteHistory):
+        filters = []
+        if config_execute_history_request.ccy:
+            filters.append(SpotAlgoOrderRecord.ccy == config_execute_history_request.ccy)
+        if config_execute_history_request.type:
+            filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
+        if config_execute_history_request.status:
+            filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
+        if config_execute_history_request.create_time:
+            try:
+                # 将字符串日期转换为 datetime 对象
+                create_time_dt = datetime.strptime(config_execute_history_request.create_time, "%Y-%m-%d")
+                filters.append(SpotAlgoOrderRecord.create_time >= create_time_dt)
+            except ValueError as e:
+                raise ValueError(f"日期格式错误: {e}")
+        return session.query(cls).filter(*filters).all()
 
 
 if __name__ == '__main__':

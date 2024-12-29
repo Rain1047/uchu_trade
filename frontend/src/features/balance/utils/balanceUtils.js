@@ -8,6 +8,27 @@ export const formatBalance = (balance) => {
     return parseFloat(balance).toFixed(4);
 };
 
+export const formatPercentage = (value) => {
+  if (!value) return '0%';
+  const percentage = parseFloat(value) * 100;
+  return `${percentage.toFixed(2)}%`;
+};
+
+export const validateConfig = (config) => {
+  const requiredFields = ['indicator'];
+  if (config.indicator === 'USDT') {
+    requiredFields.push('target_price');
+  } else {
+    requiredFields.push('indicator_val');
+  }
+  requiredFields.push(config.percentage ? 'percentage' : 'amount');
+
+  return requiredFields.every(field => {
+    const value = config[field];
+    return value !== undefined && value !== null && value !== '';
+  });
+};
+
 
 export const formatNumber = (value, precision = 4) => {
     if (!value) return '0';

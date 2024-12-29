@@ -129,20 +129,20 @@ class OKXBalanceService:
         # 2. 获取列表结果并转换为可修改的字典列表
         balance_list = [dict(balance) for balance in AccountBalance.list_all()]
 
-        # 3. 通过币种获取自动交易配置
-        for balance in balance_list:
-            ccy = balance.get('ccy')
-            balance['limit_order_spot_trade_configs'] = (SpotTradeConfig
-                                                         .list_by_ccy_and_type(ccy=ccy,
-                                                                               type=EnumAutoTradeConfigType.LIMIT_ORDER.value))
-            balance['stop_loss_spot_trade_configs'] = (SpotTradeConfig
-                                                       .list_by_ccy_and_type(ccy=ccy,
-                                                                             type=EnumAutoTradeConfigType.STOP_LOSS.value))
-            balance['live_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                       .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.LIVE.value))
-
-            balance['filled_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                         .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.FILLED.value))
+        # # 3. 通过币种获取自动交易配置
+        # for balance in balance_list:
+        #     ccy = balance.get('ccy')
+        #     balance['limit_order_spot_trade_configs'] = (SpotTradeConfig
+        #                                                  .list_by_ccy_and_type(ccy=ccy,
+        #                                                                        type=EnumAutoTradeConfigType.LIMIT_ORDER.value))
+        #     balance['stop_loss_spot_trade_configs'] = (SpotTradeConfig
+        #                                                .list_by_ccy_and_type(ccy=ccy,
+        #                                                                      type=EnumAutoTradeConfigType.STOP_LOSS.value))
+        #     balance['live_spot_algo_order_records'] = (SpotAlgoOrderRecord
+        #                                                .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.LIVE.value))
+        #
+        #     balance['filled_spot_algo_order_records'] = (SpotAlgoOrderRecord
+        #                                                  .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.FILLED.value))
 
         # print(balance_list)
         return balance_list

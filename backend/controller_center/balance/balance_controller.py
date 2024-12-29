@@ -1,9 +1,10 @@
 from typing import List, Dict, Any
 
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Query
 import logging
 
-from backend.controller_center.balance.balance_request import TradeConfig
+from backend.controller_center.balance.balance_request import TradeConfig, UpdateAccountBalanceSwitchRequest, \
+    TradeConfigExecuteHistory
 from backend.controller_center.balance.balance_service import BalanceService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
@@ -36,16 +37,51 @@ def get_balance_list():
         }
 
 
-@router.post("/save_config")
-def save_config(config_list: List[TradeConfig]):
+@router.post("/update_account_balance_config_switch")
+def update_config_switch(request: UpdateAccountBalanceSwitchRequest):
     try:
-        config_list = [config for config in config_list]
-        print(config_list)
         balance_service = BalanceService()
-        result = balance_service.save_update_balance_config(config_list)
+        result = balance_service.update_account_balance_switch(request)
         return {
             "success": True,
             "data": result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.post("/save_config")
+def save_config(config_list: List[TradeConfig]):
+    try:
+        config_list = [config.to_dict() for config in config_list]
+        print(config_list)
+        balance_service = BalanceService()
+        result = balance_service.batch_create_or_update_balance_configs(config_list)
+        return {
+            "success": True,
+            "data": result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@router.get("/list_balance_configs")
+async def list_balance_configs(
+        ccy: str = Query(..., description="币种"),
+        config_type: str = Query(..., description="配置类型: stop_loss 或 limit_order"),
+):
+    try:
+        balance_service = BalanceService()
+        configs = balance_service.list_trade_configs(ccy, config_type)
+        return {
+            "success": True,
+            "data": configs
         }
     except Exception as e:
         return {
@@ -69,6 +105,21 @@ def list_configs(ccy: str, type_: str):
             "message": str(e)
         }
 
+
+@router.post("/list_configs_execute_history")
+def list_configs_execute_history(config_execute_history_request: TradeConfigExecuteHistory):
+    try:
+        balance_service = BalanceService()
+        configs = balance_service.list_configs_execute_history(config_execute_history_request)
+        return {
+            "success": True,
+            "data": configs
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
 
 if __name__ == '__main__':
     get_balance_list()
