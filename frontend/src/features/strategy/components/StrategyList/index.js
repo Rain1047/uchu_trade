@@ -30,6 +30,7 @@ import Switch from '@mui/material/Switch';
 import { useStyles } from './styles';
 import {useStrategyApi} from "../../hooks/useStrategyApi";
 import { Alert } from '@material-ui/lab';
+import {styled} from "@mui/material/styles";
 
 
 const StrategyList = ({ onAdd, onEdit, onView }) => {
@@ -46,6 +47,18 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
     message: '',
     severity: 'success'
   });
+
+  const GreenSwitch = styled(Switch)({
+  '& .MuiSwitch-switchBase.Mui-checked': {
+    color: '#2EE5AC',
+    '&:hover': {
+      backgroundColor: 'rgba(46, 229, 172, 0.08)',
+    },
+  },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+    backgroundColor: '#2EE5AC',
+  },
+});
 
   // 添加刷新函数
   const refreshList = async () => {
@@ -184,7 +197,7 @@ const StrategyList = ({ onAdd, onEdit, onView }) => {
                   <TableCell>{strategy.trade_pair}</TableCell>
                   <TableCell>{strategy.time_frame}</TableCell>
                   <TableCell align="center">
-                    <Switch
+                    <GreenSwitch
                       checked={strategy.switch === 1}
                       onChange={() => handleStatusChange(strategy.id, strategy.switch === 1)}
                       color="primary"

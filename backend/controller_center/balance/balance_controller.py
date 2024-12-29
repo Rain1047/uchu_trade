@@ -3,7 +3,8 @@ from typing import List, Dict, Any
 from fastapi import APIRouter, HTTPException, Body, Query
 import logging
 
-from backend.controller_center.balance.balance_request import TradeConfig, UpdateAccountBalanceSwitchRequest
+from backend.controller_center.balance.balance_request import TradeConfig, UpdateAccountBalanceSwitchRequest, \
+    TradeConfigExecuteHistory
 from backend.controller_center.balance.balance_service import BalanceService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
@@ -104,6 +105,21 @@ def list_configs(ccy: str, type_: str):
             "message": str(e)
         }
 
+
+@router.post("/list_configs_execute_history")
+def list_configs_execute_history(config_execute_history_request: TradeConfigExecuteHistory):
+    try:
+        balance_service = BalanceService()
+        configs = balance_service.list_configs_execute_history(config_execute_history_request)
+        return {
+            "success": True,
+            "data": configs
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
 
 if __name__ == '__main__':
     get_balance_list()

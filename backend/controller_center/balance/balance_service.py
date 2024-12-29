@@ -2,8 +2,10 @@ from typing import List, Any, Dict
 
 from backend._utils import SymbolFormatUtils
 from backend.data_object_center.account_balance import AccountBalance
+from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
-from backend.controller_center.balance.balance_request import UpdateAccountBalanceSwitchRequest, TradeConfig
+from backend.controller_center.balance.balance_request import UpdateAccountBalanceSwitchRequest, TradeConfig, \
+    TradeConfigExecuteHistory
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
 
@@ -32,6 +34,8 @@ class BalanceService:
     def list_account_balance(self):
         return self.okx_balance_service.list_account_balance()
 
+    def list_configs_execute_history(self, config_execute_history_request: TradeConfigExecuteHistory):
+        return SpotAlgoOrderRecord.list_spot_algo_order_record_by_conditions(config_execute_history_request)
 
 if __name__ == '__main__':
     balance_service = BalanceService()
