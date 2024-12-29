@@ -28,6 +28,22 @@
     - 顶部标题"配置详情" 和关闭按钮
     - 标题下方为 切换按钮 "限价" 和 "止损" 限价对应"limit_order"状态，止损对应"stop_loss"状态
     - 资产配置列表，内容来源为请求GET http://localhost:8000/api/balance/list_configs/ETH/{type}?type_=stop_loss
+    - 列表每行包含以下列：
+      - 符号（EMA、SMA、USDT）"indicator"
+      - 符号值（数字，整数）"indicator_val"
+      - 目标价格（数字，整数）"target_price"
+      - 百分比值（百分比，整数）"percentage"
+      - 数量（数字，整数）"amount"
+      - 开关按钮（开&关）"switch" 为0时显示开，为1时显示关
+      - 操作（删除按钮）
+    - 列的最下面有新增按钮，点击之后，可以新增一行配置
+    - 最下方有保存按钮，点击之后，请求POST http://127.0.0.1:8000/api/balance/save_config
+      - save_config时，实现批量Upsert（更新+插入）功能：
+      - 输入校验：检查必填字段
+      - 更新逻辑：
+        * 有ID -> 更新现有记录
+        * 无ID -> 创建新记录
+        * 未包含 -> 软删除(is_del=1)
 
 样式要求
 - 基于material深色主题进行设计

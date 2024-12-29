@@ -10,11 +10,10 @@
 
 // API 端点配置
 export const API_ENDPOINTS = {
-  LIST_BALANCE: 'http://127.0.0.1:8000/api/balance/list_balance',
-  SAVE_CONFIG: 'http://127.0.0.1:8000/api/balance/save_config',
-  TOGGLE_SWITCH: 'http://127.0.0.1:8000/api/balance/toggle_switch',
-  LIST_POSITIONS: 'http://127.0.0.1:8000/api/balance/list_positions',
-  LIST_ORDERS: 'http://127.0.0.1:8000/api/balance/list_orders'
+  LIST_BALANCE: 'http://localhost:8000/api/balance/list_balance',
+  UPDATE_SWITCH: 'http://127.0.0.1:8000/api/balance/update_account_balance_config_switch',
+  LIST_CONFIGS: 'http://localhost:8000/api/balance/list_configs',
+  SAVE_CONFIG: 'http://localhost:8000/api/balance/save_config'
 };
 
 

@@ -48,6 +48,55 @@ export const useBalance = () => {
         }
     }, [fetchBalances]);
 
+    const updateSwitch = useCallback(async (ccy, type, switchValue) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.UPDATE_SWITCH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ccy,
+          type,
+          switch: switchValue.toString()
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchBalances();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Switch toggle failed:', error);
+      return false;
+    }
+  }, [fetchBalances]);
+
+    const fetchConfigs = useCallback(async (ccy, type) => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.LIST_CONFIGS}/${ccy}/${type}?type_=${type}`);
+      const data = await response.json();
+      return data.success ? data.data : [];
+    } catch (error) {
+      console.error('Failed to fetch configs:', error);
+      return [];
+    }
+  }, []);
+
+  const saveConfigs = useCallback(async (configs) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configs)
+      });
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error('Failed to save configs:', error);
+      return false;
+    }
+  }, []);
+
 
     const saveTradeConfig = useCallback(async (ccy, type, configs) => {
         try {
@@ -90,8 +139,8 @@ export const useBalance = () => {
         loading,
         error,
         fetchBalances,
-        toggleAutoConfig,
-        saveTradeConfig,
-        fetchTradeConfigs
+        updateSwitch,
+        fetchConfigs,
+        saveConfigs
     };
 };

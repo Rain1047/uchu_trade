@@ -201,3 +201,30 @@ curl -X 'GET' \
   ]
 }
 ```
+
+http://localhost:8000/api/balance/save_config
+
+请求体
+```json
+[
+  {
+    "ccy": "ETH",
+    "type": "limit_order",
+    "indicator": "EMA",
+    "indicator_val": "120",
+    "percentage": "",
+    "amount": "1000",
+    "switch": "0",
+    "exec_nums": "1",
+    "target_price": ""
+  }
+]
+```
+
+返回
+```json
+{
+  "success": true,
+  "data": null
+}
+```
