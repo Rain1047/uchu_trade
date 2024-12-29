@@ -13,6 +13,7 @@
 - 限价（开关按钮）limit_order_switch为"true"时显示开，为"false"时显示关
 - 止损（开关按钮）stop_loss_switch为"true"时显示开，为"false"时显示关
 - 操作（查看&编辑按钮）
+- 历史记录（交易历史按钮）
 
 表格对应请求 GET http://localhost:8000/api/balance/list_balance
 具体请求和返回结果：见 [balance-prompt] api 
@@ -49,3 +50,7 @@
 - 基于material深色主题进行设计
 - 保持代码整体的风格
 
+- 新增历史记录（交易历史按钮）
+- 交易历史按钮使用镂空样式，hover时有背景色变化
+- 点击按钮后，需要侧拉弹出一个侧边栏，侧边栏内容包含：
+  - 

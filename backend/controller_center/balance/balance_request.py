@@ -34,3 +34,18 @@ class TradeConfig(BaseModel):
             'is_del': '0'
         }
 
+
+class TradeConfigExecuteHistory(BaseModel):
+    ccy: str
+    type: str
+    status: str
+    create_time: str
+
+    def to_dict(self):
+        return {
+            'ccy': self.ccy,
+            'type': self.type,
+            'indicator': self.indicator,
+            'status': self.status,
+            'create_time': self.create_time
+        }

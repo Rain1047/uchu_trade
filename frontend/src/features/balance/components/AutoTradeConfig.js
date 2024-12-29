@@ -33,13 +33,10 @@ const GreenButton = styled(Button)({
 
 // 自定义深色主题下拉框
 const DarkSelect = styled(Select)(({ theme }) => ({
-  // 主输入框样式
   '& .MuiSelect-select': {
-    color: '#fff', // 选中的文字颜色为白色
+    color: '#fff',
   },
-  // 背景色
   backgroundColor: '#1E1E1E',
-  // 边框样式
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
@@ -49,7 +46,6 @@ const DarkSelect = styled(Select)(({ theme }) => ({
   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
     borderColor: '#2EE5AC',
   },
-  // 图标颜色
   '& .MuiSelect-icon': {
     color: '#fff',
   },
@@ -66,7 +62,7 @@ const DarkInputLabel = styled(InputLabel)({
 // 自定义深色主题输入框
 const DarkTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
-    color: '#fff', // 输入文字为白色
+    color: '#fff',
     backgroundColor: '#1E1E1E',
     '& fieldset': {
       borderColor: 'rgba(255, 255, 255, 0.12)',
@@ -84,31 +80,23 @@ const DarkTextField = styled(TextField)({
       color: '#2EE5AC',
     },
   },
+  '&.Mui-disabled .MuiOutlinedInput-root': {
+    color: 'rgba(255, 255, 255, 0.3)',
+  },
 });
 
 export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
   const [activeType, setActiveType] = useState('limit');
   const [configs, setConfigs] = useState([{
     indicator: 'SMA',
-    indicatorValue: '-1',
-    percentage: '-1',
+    indicator_val: '-1',
+    target_price: '',
+    percentage: '',
     amount: '1',
+    exec_nums: 1,
   }]);
+  const [loading, setLoading] = useState(false);
 
-  const handleTypeChange = (type) => {
-    setActiveType(type);
-  };
-
-  const handleAddConfig = () => {
-    setConfigs([...configs, {
-      type: 'SMA',
-      value: '-1',
-      amount: '1',
-      enabled: true
-    }]);
-  };
-
-  // Menu Props for custom dropdown styling
   const menuProps = {
     PaperProps: {
       sx: {
@@ -129,8 +117,70 @@ export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
     },
   };
 
+  const fetchConfigs = async (type) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/balance/list_configs/${ccy}/${type}?type_=${type}`);
+      const result = await response.json();
+      if (result.success) {
+        setConfigs(result.data.filter(config => config.is_del === '0'));
+      }
+    } catch (error) {
+      console.error('Failed to fetch configs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfigs(activeType);
+  }, [activeType, ccy]);
+
+
+  const handleTypeChange = (type) => {
+    setActiveType(type);
+  };
+
+  const handleConfigChange = (index, field, value) => {
+    const newConfigs = [...configs];
+    const config = { ...newConfigs[index] };
+
+    // 处理百分比和数量互斥
+    if (field === 'percentage' && value) {
+      config.amount = '';
+    }
+    if (field === 'amount' && value) {
+      config.percentage = '';
+    }
+
+    config[field] = value;
+    newConfigs[index] = config;
+    setConfigs(newConfigs);
+  };
+
+  const handleAddConfig = () => {
+    setConfigs([...configs, {
+      ccy,
+      type: activeType,
+      indicator: 'SMA',
+      indicator_val: null,
+      target_price: null,
+      percentage: null,
+      amount: null,
+      switch: '0',
+      exec_nums: 1,
+      is_del: '0'
+    }]);
+  };
+
   const handleRemoveConfig = (index) => {
-    setConfigs(configs.filter((_, i) => i !== index));
+    const newConfigs = [...configs];
+    if (newConfigs[index].id) {
+      newConfigs[index] = { ...newConfigs[index], is_del: '1' };
+      setConfigs(newConfigs);
+    } else {
+      setConfigs(configs.filter((_, i) => i !== index));
+    }
   };
 
   return (
@@ -148,87 +198,121 @@ export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
       {/* Type Toggle */}
       <Box sx={{ mb: 4 }}>
         <GreenButton
-          className={activeType === 'limit' ? 'active' : ''}
-          onClick={() => handleTypeChange('limit')}
+          className={activeType === 'limit_order' ? 'active' : ''}
+          onClick={() => handleTypeChange('limit_order')}
           sx={{ mr: 1 }}
         >
           限价
         </GreenButton>
         <GreenButton
-          className={activeType === 'stop' ? 'active' : ''}
-          onClick={() => handleTypeChange('stop')}
+          className={activeType === 'stop_loss' ? 'active' : ''}
+          onClick={() => handleTypeChange('stop_loss')}
         >
           止损
         </GreenButton>
       </Box>
 
       {/* Config List */}
-      <Box sx={{ p: 3 }}>
-      {configs.map((config, index) => (
-        <Box
-          key={index}
-          sx={{
-            display: 'flex',
-            gap: 2,
-            mb: 2,
-            p: 2,
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: 1,
-          }}
-        >
-          <FormControl sx={{ minWidth: 120 }}>
-            <DarkInputLabel>指标</DarkInputLabel>
-            <DarkSelect
-              value={config.indicator}
-              label="指标"
-              MenuProps={menuProps}
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        {configs.map((config, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: 'flex',
+              gap: 2,
+              mb: 2,
+              p: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: 1,
+              alignItems: 'center',
+            }}
+          >
+            <FormControl sx={{ minWidth: 120 }}>
+              <DarkInputLabel>指标</DarkInputLabel>
+              <DarkSelect
+                value={config.indicator}
+                label="指标"
+                onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
+                MenuProps={menuProps}
+              >
+                <MenuItem value="SMA">SMA</MenuItem>
+                <MenuItem value="EMA">EMA</MenuItem>
+                <MenuItem value="USDT">USDT</MenuItem>
+              </DarkSelect>
+            </FormControl>
+
+            <DarkTextField
+              label={config.indicator === 'USDT' ? "目标价格" : "指标值"}
+              value={(config.indicator === 'USDT' ? config.target_price : config.indicator_val) || ''}
+              onChange={(e) => handleConfigChange(
+                index,
+                config.indicator === 'USDT' ? 'target_price' : 'indicator_val',
+                e.target.value
+              )}
+              type="number"
+              sx={{ width: 120 }}
+            />
+
+            <DarkTextField
+              label="百分比"
+              value={config.percentage || ''}
+              onChange={(e) => handleConfigChange(index, 'percentage', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+              disabled={!!config.amount}
+            />
+
+            <DarkTextField
+              label="数量"
+              value={config.amount || ''}
+              onChange={(e) => handleConfigChange(index, 'amount', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+              disabled={!!config.percentage}
+            />
+
+            <DarkTextField
+              label="执行次数"
+              value={config.exec_nums || 1}
+              onChange={(e) => handleConfigChange(index, 'exec_nums', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+            />
+
+            <IconButton
+              onClick={() => handleRemoveConfig(index)}
+              sx={{
+                color: '#fff',
+                '&:hover': {
+                  color: '#ff4444',
+                },
+              }}
             >
-              <MenuItem value="SMA">SMA</MenuItem>
-              <MenuItem value="EMA">EMA</MenuItem>
-              <MenuItem value="USDT">USDT</MenuItem>
-            </DarkSelect>
-          </FormControl>
-
-          <DarkTextField
-            label="指标值"
-            value={config.indicatorValue}
-            type="number"
-          />
-
-          <DarkTextField
-            label="百分比"
-            value={config.percentage}
-            type="number"
-          />
-
-          <DarkTextField
-            label="数量"
-            value={config.amount}
-            type="number"
-          />
-        </Box>
-      ))}
-    </Box>
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        ))}
+      </Box>
 
       {/* Add Config Button */}
       <GreenButton
         fullWidth
         startIcon={<AddIcon />}
         onClick={handleAddConfig}
-        sx={{ mb: 3 }}
+        sx={{ my: 3 }}
       >
         添加配置
       </GreenButton>
 
       {/* Action Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 'auto' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <GreenButton onClick={onClose}>
           取消
         </GreenButton>
         <GreenButton
           className="active"
           onClick={() => {
-            onSave?.(configs);
+            onSave?.(configs.filter(config => config.is_del === '0'));
             onClose();
           }}
         >

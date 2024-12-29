@@ -5,13 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[现货下单主链路开发]">
-      <change afterPath="$PROJECT_DIR$/frontend/src/features/balance/utils/theme.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/AutoTradeConfig.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/AutoTradeConfig.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceHeader.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceHeader.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceTable.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/strategy/components/StrategyList/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/strategy/components/StrategyList/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/[balance-prompt]design.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/[balance-prompt]design.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +106,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735465737185</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="[现货下单主链路开发]">
+      <option name="closed" value="true" />
+      <created>1735468887939</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1735468887939</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
