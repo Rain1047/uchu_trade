@@ -6,11 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[现货下单主链路开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main_controller.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,7 +115,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735472875654</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="[现货下单主链路开发]">
+      <option name="closed" value="true" />
+      <created>1735476130486</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1735476130486</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
