@@ -335,7 +335,7 @@ class SpotAlgoOrderRecord(Base):
             except ValueError as e:
                 raise ValueError(f"日期格式错误: {e}")
 
-        return session.query(cls).filter(*filters).all()
+        return session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.create_time.desc()).all()
 
 
 if __name__ == '__main__':
