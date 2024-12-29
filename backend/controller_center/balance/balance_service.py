@@ -16,7 +16,9 @@ class BalanceService:
     """
     @staticmethod
     def update_account_balance_switch(request: UpdateAccountBalanceSwitchRequest) -> bool:
-        return AccountBalance.update_switch(ccy=request.ccy, type=request.type, switch=request.switch)
+        return AccountBalance.update_switch(ccy=SymbolFormatUtils.get_base_symbol(request.ccy),
+                                            type=request.type,
+                                            switch=request.switch)
 
     @staticmethod
     def save_update_balance_config(config_list: List[Dict[str, Any]]) -> bool:
