@@ -40,12 +40,13 @@ class TradeConfigExecuteHistory(BaseModel):
     type: str
     status: str
     create_time: str
+    exec_source: str
 
     def to_dict(self):
         return {
             'ccy': self.ccy,
             'type': self.type,
-            'indicator': self.indicator,
+            'exec_source': self.exec_source,
             'status': self.status,
             'create_time': self.create_time
         }

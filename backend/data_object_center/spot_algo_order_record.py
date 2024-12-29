@@ -325,6 +325,8 @@ class SpotAlgoOrderRecord(Base):
             filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
         if config_execute_history_request.status:
             filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
+        if config_execute_history_request.exec_source:
+            filters.append(SpotAlgoOrderRecord.exec_source == config_execute_history_request.exec_source)
         if config_execute_history_request.create_time:
             try:
                 # 将字符串日期转换为 datetime 对象
@@ -332,6 +334,7 @@ class SpotAlgoOrderRecord(Base):
                 filters.append(SpotAlgoOrderRecord.create_time >= create_time_dt)
             except ValueError as e:
                 raise ValueError(f"日期格式错误: {e}")
+
         return session.query(cls).filter(*filters).all()
 
 
