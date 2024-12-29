@@ -1,217 +1,239 @@
-import React, { useState } from 'react';
+// components/AutoTradeConfig.js
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Button,
-  FormControlLabel,
-  TextField,
-  Grid,
   IconButton,
-} from '@material-ui/core';
-import Switch from '@mui/material/Switch';
-import { Add as AddIcon, Delete as DeleteIcon } from '@material-ui/icons';
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import { Close as CloseIcon, Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 
-export const AutoTradeConfig = ({ ccy, onSave, onClose, existingConfigs }) => {
-  const [isStopLoss, setIsStopLoss] = useState(true); // true 为止损，false 为限价
-  const [stopLossConfigs, setStopLossConfigs] = useState(
-    existingConfigs.stop_loss_spot_trade_configs || []
-  );
-  const [limitOrderConfigs, setLimitOrderConfigs] = useState(
-    existingConfigs.limit_order_spot_trade_configs || []
-  );
-  const [newConfig, setNewConfig] = useState(null); // 用于存储新增配置的表单内容
+// 自定义绿色主题按钮
+const GreenButton = styled(Button)({
+  color: '#2EE5AC',
+  borderColor: '#2EE5AC',
+  '&:hover': {
+    borderColor: '#2EE5AC',
+    backgroundColor: 'rgba(46, 229, 172, 0.08)',
+  },
+  '&.active': {
+    backgroundColor: '#2EE5AC',
+    color: '#000000',
+    '&:hover': {
+      backgroundColor: '#27CC98',
+    },
+  }
+});
 
-  // 切换止损/限价模式
-  const handleModeChange = () => {
-    setIsStopLoss((prev) => !prev);
+// 自定义深色主题下拉框
+const DarkSelect = styled(Select)(({ theme }) => ({
+  // 主输入框样式
+  '& .MuiSelect-select': {
+    color: '#fff', // 选中的文字颜色为白色
+  },
+  // 背景色
+  backgroundColor: '#1E1E1E',
+  // 边框样式
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#2EE5AC',
+  },
+  // 图标颜色
+  '& .MuiSelect-icon': {
+    color: '#fff',
+  },
+}));
+
+// 自定义深色主题输入标签
+const DarkInputLabel = styled(InputLabel)({
+  color: 'rgba(255, 255, 255, 0.7)',
+  '&.Mui-focused': {
+    color: '#2EE5AC',
+  },
+});
+
+// 自定义深色主题输入框
+const DarkTextField = styled(TextField)({
+  '& .MuiOutlinedInput-root': {
+    color: '#fff', // 输入文字为白色
+    backgroundColor: '#1E1E1E',
+    '& fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#2EE5AC',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+    '&.Mui-focused': {
+      color: '#2EE5AC',
+    },
+  },
+});
+
+export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
+  const [activeType, setActiveType] = useState('limit');
+  const [configs, setConfigs] = useState([{
+    indicator: 'SMA',
+    indicatorValue: '-1',
+    percentage: '-1',
+    amount: '1',
+  }]);
+
+  const handleTypeChange = (type) => {
+    setActiveType(type);
   };
 
-  // 删除配置（仅前端显示删除）
-  const handleDeleteConfig = (index) => {
-    if (isStopLoss) {
-      setStopLossConfigs((prev) => prev.filter((_, i) => i !== index));
-    } else {
-      setLimitOrderConfigs((prev) => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  // 新增配置
   const handleAddConfig = () => {
-    setNewConfig({
-      id: null,
-      ccy,
-      type: isStopLoss ? 'stop_loss' : 'limit_order',
-      indicator: '',
-      indicator_val: '',
-      target_price: '',
-      percentage: '',
-      amount: '',
-      switch: '0',
-      exec_nums: 1,
-      is_del: '0',
-    });
+    setConfigs([...configs, {
+      type: 'SMA',
+      value: '-1',
+      amount: '1',
+      enabled: true
+    }]);
   };
 
-  // 保存新增配置
-  const handleSaveNewConfig = () => {
-    if (newConfig) {
-      if (isStopLoss) {
-        setStopLossConfigs((prev) => [...prev, newConfig]);
-      } else {
-        setLimitOrderConfigs((prev) => [...prev, newConfig]);
-      }
-      setNewConfig(null);
-    }
+  // Menu Props for custom dropdown styling
+  const menuProps = {
+    PaperProps: {
+      sx: {
+        bgcolor: '#1E1E1E',
+        '& .MuiMenuItem-root': {
+          color: '#fff',
+          '&:hover': {
+            bgcolor: 'rgba(46, 229, 172, 0.08)',
+          },
+          '&.Mui-selected': {
+            bgcolor: 'rgba(46, 229, 172, 0.16)',
+            '&:hover': {
+              bgcolor: 'rgba(46, 229, 172, 0.24)',
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const handleRemoveConfig = (index) => {
+    setConfigs(configs.filter((_, i) => i !== index));
   };
 
   return (
-    <Box>
-      {/* 配置模式选择开关 */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h6">{isStopLoss ? '止损配置' : '限价配置'}</Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={!isStopLoss}
-              onChange={handleModeChange}
-              color="primary"
-            />
-          }
-          label={isStopLoss ? '止损' : '限价'}
-        />
+    <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h6" sx={{ color: '#fff' }}>
+          配置详情 - {ccy}
+        </Typography>
+        <IconButton onClick={onClose} sx={{ color: '#fff' }}>
+          <CloseIcon />
+        </IconButton>
       </Box>
 
-      {/* 配置列表 */}
-      <Box mb={3}>
-        {isStopLoss ? (
-          stopLossConfigs.length > 0 ? (
-            stopLossConfigs.map((config, index) => (
-              <Box
-                key={index}
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                mb={2}
-              >
-                <Typography>
-                  指标: {config.indicator || '无'}, 值: {config.indicator_val || '无'}, 金额:{' '}
-                  {config.amount || '无'}
-                </Typography>
-                <IconButton onClick={() => handleDeleteConfig(index)}>
-                  <DeleteIcon color="error" />
-                </IconButton>
-              </Box>
-            ))
-          ) : (
-            <Typography color="textSecondary">当前无止损配置</Typography>
-          )
-        ) : limitOrderConfigs.length > 0 ? (
-          limitOrderConfigs.map((config, index) => (
-            <Box
-              key={index}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              mb={2}
-            >
-              <Typography>
-                指标: {config.indicator || '无'}, 值: {config.indicator_val || '无'}, 金额:{' '}
-                {config.amount || '无'}
-              </Typography>
-              <IconButton onClick={() => handleDeleteConfig(index)}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Box>
-          ))
-        ) : (
-          <Typography color="textSecondary">当前无限价配置</Typography>
-        )}
+      {/* Type Toggle */}
+      <Box sx={{ mb: 4 }}>
+        <GreenButton
+          className={activeType === 'limit' ? 'active' : ''}
+          onClick={() => handleTypeChange('limit')}
+          sx={{ mr: 1 }}
+        >
+          限价
+        </GreenButton>
+        <GreenButton
+          className={activeType === 'stop' ? 'active' : ''}
+          onClick={() => handleTypeChange('stop')}
+        >
+          止损
+        </GreenButton>
       </Box>
 
-      {/* 新增配置表单 */}
-      {newConfig && (
-        <Box mb={3}>
-          <Typography variant="subtitle1">新增配置</Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="指标"
-                value={newConfig.indicator}
-                onChange={(e) =>
-                  setNewConfig((prev) => ({ ...prev, indicator: e.target.value }))
-                }
-                variant="outlined"
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="指标值"
-                value={newConfig.indicator_val}
-                onChange={(e) =>
-                  setNewConfig((prev) => ({ ...prev, indicator_val: e.target.value }))
-                }
-                variant="outlined"
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="金额"
-                value={newConfig.amount}
-                onChange={(e) =>
-                  setNewConfig((prev) => ({ ...prev, amount: e.target.value }))
-                }
-                variant="outlined"
-              />
-            </Grid>
-          </Grid>
-          <Box display="flex" justifyContent="flex-end" mt={2}>
-            <Button
-              onClick={() => setNewConfig(null)}
-              variant="outlined"
-              style={{ marginRight: 16 }}
+      {/* Config List */}
+      <Box sx={{ p: 3 }}>
+      {configs.map((config, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            gap: 2,
+            mb: 2,
+            p: 2,
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: 1,
+          }}
+        >
+          <FormControl sx={{ minWidth: 120 }}>
+            <DarkInputLabel>指标</DarkInputLabel>
+            <DarkSelect
+              value={config.indicator}
+              label="指标"
+              MenuProps={menuProps}
             >
-              取消
-            </Button>
-            <Button color="primary" variant="contained" onClick={handleSaveNewConfig}>
-              保存
-            </Button>
-          </Box>
-        </Box>
-      )}
+              <MenuItem value="SMA">SMA</MenuItem>
+              <MenuItem value="EMA">EMA</MenuItem>
+              <MenuItem value="USDT">USDT</MenuItem>
+            </DarkSelect>
+          </FormControl>
 
-      {/* 添加配置按钮 */}
-      {!newConfig && (
-        <Box display="flex" justifyContent="center" mb={3}>
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={handleAddConfig}
-          >
-            添加配置
-          </Button>
-        </Box>
-      )}
+          <DarkTextField
+            label="指标值"
+            value={config.indicatorValue}
+            type="number"
+          />
 
-      {/* 操作按钮 */}
-      <Box mt={3} display="flex" justifyContent="flex-end">
-        <Button onClick={onClose} variant="outlined" style={{ marginRight: 16 }}>
+          <DarkTextField
+            label="百分比"
+            value={config.percentage}
+            type="number"
+          />
+
+          <DarkTextField
+            label="数量"
+            value={config.amount}
+            type="number"
+          />
+        </Box>
+      ))}
+    </Box>
+
+      {/* Add Config Button */}
+      <GreenButton
+        fullWidth
+        startIcon={<AddIcon />}
+        onClick={handleAddConfig}
+        sx={{ mb: 3 }}
+      >
+        添加配置
+      </GreenButton>
+
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 'auto' }}>
+        <GreenButton onClick={onClose}>
           取消
-        </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={() =>
-            onSave({
-              stop_loss_spot_trade_configs: stopLossConfigs,
-              limit_order_spot_trade_configs: limitOrderConfigs,
-            })
-          }
+        </GreenButton>
+        <GreenButton
+          className="active"
+          onClick={() => {
+            onSave?.(configs);
+            onClose();
+          }}
         >
           保存
-        </Button>
+        </GreenButton>
       </Box>
     </Box>
   );
