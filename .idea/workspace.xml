@@ -5,21 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[现货下单主链路开发]">
+      <change afterPath="$PROJECT_DIR$/frontend/src/features/balance/utils/theme.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/constants/balanceConstants.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/constants/balanceConstants.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/hooks/useBalance.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/hooks/useBalance.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/utils/balanceUtils.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/utils/balanceUtils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prompt/[balance-prompt]api.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/[balance-prompt]api.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prompt/[balance-prompt]design.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/[balance-prompt]design.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/AutoTradeConfig.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/AutoTradeConfig.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceHeader.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceHeader.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/components/BalanceTable.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/balance/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/balance/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -91,7 +96,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735449578172</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="[现货下单主链路开发]">
+      <option name="closed" value="true" />
+      <created>1735465737185</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1735465737185</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
