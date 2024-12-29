@@ -55,10 +55,10 @@ def update_config_switch(request: UpdateAccountBalanceSwitchRequest):
 @router.post("/save_config")
 def save_config(config_list: List[TradeConfig]):
     try:
-        config_list = [config for config in config_list]
+        config_list = [config.to_dict() for config in config_list]
         print(config_list)
         balance_service = BalanceService()
-        result = balance_service.save_update_balance_config(config_list)
+        result = balance_service.batch_create_or_update_balance_configs(config_list)
         return {
             "success": True,
             "data": result
