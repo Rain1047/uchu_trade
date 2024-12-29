@@ -1,6 +1,7 @@
 [balance-prompt] api
 
-表格对应请求：
+http://localhost:8000/api/balance/list_balance
+
 ```
 curl -X 'GET' \
   'http://localhost:8000/api/balance/list_balance' \
@@ -130,6 +131,72 @@ curl -X 'GET' \
       "total_pnl_ratio": "-0.380948270321365",
       "limit_order_switch": "false",
       "stop_loss_switch": "false"
+    }
+  ]
+}
+```
+
+http://127.0.0.1:8000/api/balance/update_account_balance_config_switch
+
+```
+curl -X 'POST' \
+  'http://localhost:8000/api/balance/update_account_balance_config_switch' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ccy": "ETH",
+  "type": "limit_order",
+  "switch": "true"
+}'
+```
+
+返回结果
+```json
+{
+  "success": true,
+  "data": true
+}
+```
+
+
+http://localhost:8000/api/balance/list_configs/ETH/{type}?type_=stop_loss
+
+```
+curl -X 'GET' \
+  'http://localhost:8000/api/balance/list_configs/ETH/{type}?type_=stop_loss' \
+  -H 'accept: application/json'
+```
+
+返回结果
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 4,
+      "ccy": "ETH",
+      "type": "stop_loss",
+      "indicator": "USDT",
+      "indicator_val": null,
+      "target_price": 2000,
+      "percentage": null,
+      "amount": 1000,
+      "switch": "0",
+      "exec_nums": 1,
+      "is_del": "0"
+    },
+    {
+      "id": 5,
+      "ccy": "ETH",
+      "type": "stop_loss",
+      "indicator": "EMA",
+      "indicator_val": "200",
+      "target_price": null,
+      "percentage": 30,
+      "amount": null,
+      "switch": "0",
+      "exec_nums": 1,
+      "is_del": "0"
     }
   ]
 }

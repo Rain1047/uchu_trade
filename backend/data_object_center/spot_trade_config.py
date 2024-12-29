@@ -25,6 +25,21 @@ class SpotTradeConfig(Base):
     exec_nums = Column(Integer, comment='执行次数')
     is_del = Column(String, comment='是否删除')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'ccy': self.ccy,
+            'type': self.type,
+            'indicator': self.indicator,
+            'indicator_val': self.indicator_val,
+            'target_price': self.target_price,
+            'percentage': self.percentage,
+            'amount': self.amount,
+            'switch': self.switch,
+            'exec_nums': self.exec_nums,
+            'is_del': self.is_del
+        }
+
     @staticmethod
     def list_all() -> List[Dict]:
         filters = [

@@ -14,19 +14,20 @@
 - 止损（开关按钮）stop_loss_switch为"true"时显示开，为"false"时显示关
 - 操作（查看&编辑按钮）
 
-表格对应请求：
-```
-curl -X 'GET' \
-  'http://localhost:8000/api/balance/list_balance' \
-  -H 'accept: application/json'
-```
-返回结果：见 [balance-prompt] api 
+表格对应请求 GET http://localhost:8000/api/balance/list_balance
+具体请求和返回结果：见 [balance-prompt] api 
 
 交互要求：
 - 刷新按钮点击时重新加载数据 
 - 限价和止损为可切换的开关按钮
-  - 点击按钮之后，需要请求
+  - 点击按钮之后，请求POST http://127.0.0.1:8000/api/balance/update_account_balance_config_switch
+  - 具体请求和返回结果：见 [balance-prompt] api 
+  
 - "查看&编辑"按钮使用镂空样式，hover时有背景色变化
+  - 点击按钮后，需要侧拉弹出一个侧边栏，侧边栏内容包含：
+    - 顶部标题"配置详情" 和关闭按钮
+    - 标题下方为 切换按钮 "限价" 和 "止损" 限价对应"limit_order"状态，止损对应"stop_loss"状态
+    - 资产配置列表，内容来源为请求GET http://localhost:8000/api/balance/list_configs/ETH/{type}?type_=stop_loss
 
 样式要求
 - 基于material深色主题进行设计
