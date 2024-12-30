@@ -80,8 +80,16 @@ const DarkTextField = styled(TextField)({
       color: '#2EE5AC',
     },
   },
-  '&.Mui-disabled .MuiOutlinedInput-root': {
-    color: 'rgba(255, 255, 255, 0.3)',
+  '&.Mui-disabled': {
+    '& .MuiOutlinedInput-root': {
+      color: '#fff',
+    },
+    '& .MuiInputLabel-root': {
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
+    '& .MuiOutlinedInput-input': {
+      WebkitTextFillColor: '#fff',
+    },
   },
 });
 
