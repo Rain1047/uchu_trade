@@ -177,40 +177,40 @@ export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
     setConfigs(configs.filter((_, i) => i !== index));
   };
 
-    const handleSave = async () => {
-     try {
-       const response = await fetch('http://localhost:8000/api/balance/save_config', {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({
-           config_list: configs.filter(config => config.is_del !== '1').map(config => ({
-             id: config.id || null,
-             ccy,
-             type: activeType,
-             indicator: config.indicator,
-             indicator_val: config.indicator === 'USDT' ? '' : String(config.indicator_val || ''),
-             target_price: config.indicator === 'USDT' ? String(config.target_price || '') : '',
-             percentage: config.percentage ? String(config.percentage) : '',
-             amount: config.amount ? String(config.amount) : '',
-             switch: String(config.switch || '0'),
-             exec_nums: String(config.exec_nums || '1')
-           })),
-           type: activeType
-         })
-       });
+  const handleSave = async () => {
+   try {
+     const response = await fetch('http://localhost:8000/api/balance/save_config', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+         config_list: configs.filter(config => config.is_del !== '1').map(config => ({
+           id: config.id || null,
+           ccy,
+           type: activeType,
+           indicator: config.indicator,
+           indicator_val: config.indicator === 'USDT' ? '' : String(config.indicator_val || ''),
+           target_price: config.indicator === 'USDT' ? String(config.target_price || '') : '',
+           percentage: config.percentage ? String(config.percentage) : '',
+           amount: config.amount ? String(config.amount) : '',
+           switch: String(config.switch || '0'),
+           exec_nums: String(config.exec_nums || '1')
+         })),
+         type: activeType
+       })
+     });
 
-       if (response.ok) {
-         const result = await response.json();
-         if (result.success) {
-           onClose();
-         }
+     if (response.ok) {
+       const result = await response.json();
+       if (result.success) {
+         onClose();
        }
-     } catch (error) {
-       console.error('Save failed:', error);
      }
-    };
+   } catch (error) {
+     console.error('Save failed:', error);
+   }
+  };
 
   return (
     <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', color: '#fff' }}>
