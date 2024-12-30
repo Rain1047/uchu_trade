@@ -90,7 +90,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
     setConfigDrawer({
       open: true,
       ccy,
-      type
+      type: 'limit_order'
     });
   };
 
@@ -98,7 +98,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
     setConfigDrawer({
       open: false,
       ccy: null,
-      type: null
+      type: 'limit_order'
     });
   };
 
@@ -189,6 +189,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
         {configDrawer.open && (
           <AutoTradeConfig
             ccy={configDrawer.ccy}
+            initialType={configDrawer.type}
             onClose={handleDrawerClose}
             onSave={onConfigSave}
           />

@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -50,3 +52,8 @@ class TradeConfigExecuteHistory(BaseModel):
             'status': self.status,
             'create_time': self.create_time
         }
+
+
+class ConfigUpdateRequest(BaseModel):
+    config_list: List[TradeConfig]
+    type: str

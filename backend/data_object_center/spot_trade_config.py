@@ -131,9 +131,10 @@ class SpotTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def batch_create_or_update(config_list: List[Dict[str, Any]]):
+    def batch_create_or_update(config_list: List[Dict[str, Any]], config_type: str):
         try:
-            if not config_list:
+            if not config_list or not config_type:
+                print("Invalid parameters")
                 return
 
             ccy = config_list[0].get('ccy')
@@ -141,7 +142,14 @@ class SpotTradeConfig(Base):
             # 1. 获取数据库中当前ccy的所有未删除记录
             existing_configs = session.query(SpotTradeConfig).filter(
                 SpotTradeConfig.ccy == ccy,
-                SpotTradeConfig.is_del == 0
+                SpotTradeConfig.is_del == 0,
+                SpotTradeConfig.type == config_type
+            ).all()
+
+            not_update_configs = session.query(SpotTradeConfig).filter(
+                SpotTradeConfig.ccy == ccy,
+                SpotTradeConfig.is_del == 0,
+                SpotTradeConfig.type != config_type
             ).all()
 
             # 2. 创建现有配置的id集合,用于后续比对
@@ -180,11 +188,12 @@ class SpotTradeConfig(Base):
                     )
                     session.add(new_config)
 
-            # 4. 将未在新配置中出现的旧记录标记为删除
+            # 4. 将未在新配置中出现的当前类型的旧记录标记为删除
             to_delete_ids = existing_ids - processed_ids
             if to_delete_ids:
                 session.query(SpotTradeConfig).filter(
-                    SpotTradeConfig.id.in_(to_delete_ids)
+                    SpotTradeConfig.id.in_(to_delete_ids),
+                    SpotTradeConfig.type == config_type  # 只删除当前类型的配置
                 ).update({
                     'is_del': 1
                 }, synchronize_session='fetch')

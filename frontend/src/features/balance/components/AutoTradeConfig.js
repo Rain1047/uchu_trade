@@ -85,16 +85,17 @@ const DarkTextField = styled(TextField)({
   },
 });
 
-export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
-  const [activeType, setActiveType] = useState('limit');
-  const [configs, setConfigs] = useState([{
-    indicator: 'SMA',
-    indicator_val: '-1',
-    target_price: '',
-    percentage: '',
-    amount: '1',
-    exec_nums: 1,
-  }]);
+export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
+  const [activeType, setActiveType] = useState(initialType);
+  // const [configs, setConfigs] = useState([{
+  //   indicator: 'SMA',
+  //   indicator_val: '-1',
+  //   target_price: '',
+  //   percentage: '',
+  //   amount: '1',
+  //   exec_nums: 1,
+  // }]);
+  const [configs, setConfigs] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const menuProps = {
@@ -163,25 +164,60 @@ export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
       ccy,
       type: activeType,
       indicator: 'SMA',
-      indicator_val: null,
-      target_price: null,
-      percentage: null,
-      amount: null,
+      indicator_val: '',
+      target_price: '',
+      percentage: '',
+      amount: '',
       switch: '0',
-      exec_nums: 1,
+      exec_nums: '1', // 改为字符串
       is_del: '0'
     }]);
   };
 
   const handleRemoveConfig = (index) => {
-    const newConfigs = [...configs];
-    if (newConfigs[index].id) {
-      newConfigs[index] = { ...newConfigs[index], is_del: '1' };
-      setConfigs(newConfigs);
-    } else {
-      setConfigs(configs.filter((_, i) => i !== index));
-    }
-  };
+      const newConfigs = [...configs];
+      if (newConfigs[index].id) {
+        newConfigs[index] = { ...newConfigs[index], is_del: '1' };
+        setConfigs(newConfigs);
+      } else {
+        setConfigs(configs.filter((_, i) => i !== index));
+      }
+    };
+
+    const handleSave = async () => {
+     try {
+       const response = await fetch('http://localhost:8000/api/balance/save_config', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           config_list: configs.filter(config => config.is_del !== '1').map(config => ({
+             id: config.id || 0,
+             ccy,
+             type: activeType,
+             indicator: config.indicator,
+             indicator_val: config.indicator === 'USDT' ? null : String(config.indicator_val || ''),
+             target_price: config.indicator === 'USDT' ? String(config.target_price || '') : null,
+             percentage: config.percentage ? String(config.percentage) : null,
+             amount: config.amount ? String(config.amount) : null,
+             switch: String(config.switch || '0'),
+             exec_nums: String(config.exec_nums || '1')
+           })),
+           type: activeType
+         })
+       });
+
+       if (response.ok) {
+         const result = await response.json();
+         if (result.success) {
+           onClose();
+         }
+       }
+     } catch (error) {
+       console.error('Save failed:', error);
+     }
+    };
 
   return (
     <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -311,10 +347,7 @@ export const AutoTradeConfig = ({ ccy, onClose, onSave }) => {
         </GreenButton>
         <GreenButton
           className="active"
-          onClick={() => {
-            onSave?.(configs.filter(config => config.is_del === '0'));
-            onClose();
-          }}
+          onClick={handleSave}
         >
           保存
         </GreenButton>
