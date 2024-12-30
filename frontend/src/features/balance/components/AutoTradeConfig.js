@@ -59,10 +59,9 @@ const DarkInputLabel = styled(InputLabel)({
   },
 });
 
-// 自定义深色主题输入框
 const DarkTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
-    color: '#fff',
+    color: '#fff !important',
     backgroundColor: '#1E1E1E',
     '& fieldset': {
       borderColor: 'rgba(255, 255, 255, 0.12)',
@@ -75,34 +74,26 @@ const DarkTextField = styled(TextField)({
     },
   },
   '& .MuiInputLabel-root': {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.7) !important',
     '&.Mui-focused': {
-      color: '#2EE5AC',
+      color: '#2EE5AC !important',
     },
   },
   '&.Mui-disabled': {
     '& .MuiOutlinedInput-root': {
-      color: '#fff',
+      color: '#fff !important',
     },
     '& .MuiInputLabel-root': {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: 'rgba(255, 255, 255, 0.7) !important',
     },
     '& .MuiOutlinedInput-input': {
-      WebkitTextFillColor: '#fff',
+      WebkitTextFillColor: '#fff !important',
     },
   },
 });
 
 export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
   const [activeType, setActiveType] = useState(initialType);
-  // const [configs, setConfigs] = useState([{
-  //   indicator: 'SMA',
-  //   indicator_val: '-1',
-  //   target_price: '',
-  //   percentage: '',
-  //   amount: '1',
-  //   exec_nums: 1,
-  // }]);
   const [configs, setConfigs] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -183,14 +174,8 @@ export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
   };
 
   const handleRemoveConfig = (index) => {
-      const newConfigs = [...configs];
-      if (newConfigs[index].id) {
-        newConfigs[index] = { ...newConfigs[index], is_del: '1' };
-        setConfigs(newConfigs);
-      } else {
-        setConfigs(configs.filter((_, i) => i !== index));
-      }
-    };
+    setConfigs(configs.filter((_, i) => i !== index));
+  };
 
     const handleSave = async () => {
      try {
@@ -201,14 +186,14 @@ export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
          },
          body: JSON.stringify({
            config_list: configs.filter(config => config.is_del !== '1').map(config => ({
-             id: config.id || 0,
+             id: config.id || null,
              ccy,
              type: activeType,
              indicator: config.indicator,
-             indicator_val: config.indicator === 'USDT' ? null : String(config.indicator_val || ''),
-             target_price: config.indicator === 'USDT' ? String(config.target_price || '') : null,
-             percentage: config.percentage ? String(config.percentage) : null,
-             amount: config.amount ? String(config.amount) : null,
+             indicator_val: config.indicator === 'USDT' ? '' : String(config.indicator_val || ''),
+             target_price: config.indicator === 'USDT' ? String(config.target_price || '') : '',
+             percentage: config.percentage ? String(config.percentage) : '',
+             amount: config.amount ? String(config.amount) : '',
              switch: String(config.switch || '0'),
              exec_nums: String(config.exec_nums || '1')
            })),
@@ -228,7 +213,7 @@ export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
     };
 
   return (
-    <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', color: '#fff' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h6" sx={{ color: '#fff' }}>
