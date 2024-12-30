@@ -132,6 +132,7 @@ class SpotTradeConfig(Base):
 
     @staticmethod
     def batch_create_or_update(config_list: List[Dict[str, Any]], config_type: str):
+        print(config_list)
         try:
             if not config_list or not config_type:
                 print("Invalid parameters")
@@ -146,14 +147,9 @@ class SpotTradeConfig(Base):
                 SpotTradeConfig.type == config_type
             ).all()
 
-            not_update_configs = session.query(SpotTradeConfig).filter(
-                SpotTradeConfig.ccy == ccy,
-                SpotTradeConfig.is_del == 0,
-                SpotTradeConfig.type != config_type
-            ).all()
-
             # 2. 创建现有配置的id集合,用于后续比对
             existing_ids = {config.id for config in existing_configs}
+            updating_ids = {config.get('id') for config in config_list}
             processed_ids = set()
 
             # 3. 遍历新配置列表,执行新增或更新
