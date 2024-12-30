@@ -23,7 +23,7 @@ class TradeConfig(BaseModel):
 
     def to_dict(self):
         return {
-            'int': self.id,
+            'id': self.id,
             'ccy': self.ccy,
             'type': self.type,
             'indicator': self.indicator,
