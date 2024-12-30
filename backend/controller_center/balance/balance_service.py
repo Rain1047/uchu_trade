@@ -25,8 +25,9 @@ class BalanceService:
                                             switch=request.switch)
 
     @staticmethod
-    def batch_create_or_update_balance_configs(config_list: List[Dict[str, Any]]) -> bool:
-        return SpotTradeConfig.batch_create_or_update(config_list)
+    def batch_create_or_update_balance_configs(config_list: List[Dict[str, Any]],
+                                               config_type: str) -> bool:
+        return SpotTradeConfig.batch_create_or_update(config_list, config_type)
 
     @staticmethod
     def list_trade_configs(ccy: str, type_: str) -> List[Dict]:
