@@ -1,15 +1,15 @@
 import logging
-from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumTradeExecuteType, \
-    EnumOrderState, EnumExecSource
+from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, \
+    EnumOrderState
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
+from backend.service_center.okx_service.okx_order_service import OKXOrderService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,7 @@ class SpotLimitOrderTask:
         self.trade = OKXAPIWrapper().trade_api
         self.okx_balance_service = OKXBalanceService()
         self.okx_ticker_service = OKXTickerService()
+        self.okx_record_service = OKXOrderService()
 
     # [限价委托主任务] 检查并更新自动限价委托
     def check_and_update_auto_live_order(self):
@@ -112,37 +113,9 @@ class SpotLimitOrderTask:
         )
         if result and result.get('code') == '0':
             result = result.get('data')[0]
-            self.save_or_update_limit_order_result(config, result, exec_source=EnumExecSource.AUTO.value)
+            self.okx_record_service.save_or_update_limit_order_result(config, result)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
-
-    @staticmethod
-    def save_or_update_limit_order_result(config: dict, result: dict, exec_source: str):
-
-        # 转换时间戳为datetime对象 (timestamp是毫秒)
-        c_time = result.get('cTime')
-        u_time = result.get('uTime')
-        print(c_time)
-
-        stop_loss_data = {
-            'ccy': config.get('ccy') if exec_source == EnumExecSource.AUTO.value
-            else SymbolFormatUtils.get_base_symbol(result.get('instId')),
-            'type': EnumTradeExecuteType.LIMIT_ORDER.value,
-            'config_id': config.get('id') if exec_source == EnumExecSource.AUTO.value else '',
-            'sz': config.get('sz') if exec_source == EnumExecSource.AUTO.value else
-            result.get('sz'),
-            'amount': config.get('amount') if exec_source == EnumExecSource.AUTO.value else
-            float(result.get('sz')) * float(result.get('px')),
-            'target_price': config.get('target_price') if exec_source == EnumExecSource.AUTO.value else
-            result.get('px'),
-            'ordId': result.get('ordId'),
-            'status': result.get('state'),
-            'exec_source': exec_source,
-            'uTime': u_time,
-            'cTime': c_time
-        }
-        success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
-        print(f"Insert limit order: {'success' if success else 'failed'}")
 
     def update_limit_order_status(self):
         live_order_list = SpotAlgoOrderRecord.list_by_status(EnumOrderState.LIVE.value)
@@ -165,19 +138,16 @@ class SpotLimitOrderTask:
                     if latest_order.get('data')[0].get('state') != EnumOrderState.LIVE.value:
                         SpotAlgoOrderRecord.update_status_by_ord_id(manual_live_order.get('ordId'),
                                                                     latest_order.get('data')[0].get('state'))
-        # [调用接口] 获取所有未完成的订单
+        # [调用接口] 获取所有未完成的订单, 并保存
         order_list_result = self.trade.get_order_list(
             instType="SPOT", state=EnumOrderState.LIVE.value, ordType="market,limit")
         if order_list_result and order_list_result.get('code') == '0':
             order_list = order_list_result.get('data')
             if len(order_list) > 0:
                 for order in order_list:
-                    self.save_or_update_limit_order_result(config={}, result=order,
-                                                           exec_source=EnumExecSource.MANUAL.value)
+                    self.okx_record_service.save_or_update_limit_order_result(config={}, result=order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
-
-
 
 
 if __name__ == '__main__':
