@@ -55,7 +55,17 @@ class SpotOrderRecordService:
                         else:
                             SpotAlgoOrderRecord.update_status_by_order(history_order)
                 elif history_order.get('side') == EnumSide.SELL.value:
-                    pass
+                    current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                    if not current_order:
+                        history_order['type'] = EnumTradeExecuteType.STOP_LOSS.value \
+                            if history_order.get('algoId') \
+                            else EnumTradeExecuteType.MARKET_SELL.value
+                        self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
+                    else:
+                        if current_order.get('status') == history_order.get('state'):
+                            continue
+                        else:
+                            SpotAlgoOrderRecord.update_status_by_order(history_order)
 
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
