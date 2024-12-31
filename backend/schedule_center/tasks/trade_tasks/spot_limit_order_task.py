@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
@@ -117,6 +118,12 @@ class SpotLimitOrderTask:
 
     @staticmethod
     def save_or_update_limit_order_result(config: dict, result: dict, exec_source: str):
+
+        # 转换时间戳为datetime对象 (timestamp是毫秒)
+        c_time = result.get('cTime')
+        u_time = result.get('uTime')
+        print(c_time)
+
         stop_loss_data = {
             'ccy': config.get('ccy') if exec_source == EnumExecSource.AUTO.value
             else SymbolFormatUtils.get_base_symbol(result.get('instId')),
@@ -130,7 +137,9 @@ class SpotLimitOrderTask:
             result.get('px'),
             'ordId': result.get('ordId'),
             'status': EnumOrderState.LIVE.value,
-            'exec_source': exec_source
+            'exec_source': exec_source,
+            'uTime': u_time,
+            'cTime': c_time
         }
         success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
         print(f"Insert limit order: {'success' if success else 'failed'}")
@@ -164,6 +173,22 @@ class SpotLimitOrderTask:
             if len(order_list) > 0:
                 for order in order_list:
                     self.save_or_update_limit_order_result(config={}, result=order,
+                                                           exec_source=EnumExecSource.MANUAL.value)
+        else:
+            logger.info("check_and_update_manual_live_order@no manual live spot orders.")
+
+        # [调用接口] 获取历史订单
+        history_order_list = self.trade.get_orders_history_archive(
+            instType="SPOT", state=EnumOrderState.FILLED.value, ordType="market,limit"
+        )
+        if history_order_list and history_order_list.get('code') == '0':
+            history_order_list = history_order_list.get('data')
+            if len(history_order_list) > 0:
+                for history_order in history_order_list:
+                    print(history_order)
+                    history_order['sz'] = history_order.get('accFillSz')
+                    history_order['px'] = history_order.get('avgPx')
+                    self.save_or_update_limit_order_result(config={}, result=history_order,
                                                            exec_source=EnumExecSource.MANUAL.value)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
