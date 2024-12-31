@@ -16,7 +16,7 @@ from backend.service_center.okx_service.okx_ticker_service import OKXTickerServi
 logger = logging.getLogger(__name__)
 
 
-class SpotOrderRecordTask:
+class SpotOrderRecordService:
     def __init__(self):
         self.kline_reader = KlineDataReader()
         self.trade = OKXAPIWrapper().trade_api
@@ -49,7 +49,7 @@ class SpotOrderRecordTask:
 
 
 if __name__ == '__main__':
-    sp = SpotOrderRecordTask()
+    sp = SpotOrderRecordService()
     history = sp.trade.get_orders_history_archive(
         instType="SPOT", ordType="limit,market",
         instId="ETH-USDT"
