@@ -167,7 +167,7 @@ class SpotStopLossTask:
                                                                      latest_algo_order.get('data')[0].get('state'))
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(
-            instType="SPOT", ordType="conditional,oco")
+            instType="SPOT", ordType="conditional")
         if algo_order_list_result and algo_order_list_result.get('code') == '0':
             algo_order_list = algo_order_list_result.get('data')
             if len(algo_order_list) > 0:
