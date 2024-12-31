@@ -33,16 +33,39 @@ class SpotOrderRecordService:
                 and history_order_list.get('data')) and len(history_order_list.get('data')) > 0:
             history_order_list = history_order_list.get('data')
             for history_order in history_order_list:
+                history_order['ccy'] = SymbolFormatUtils.get_base_symbol(history_order.get('instId'))
+                # todo add column accFillSz and avgPx
+                history_order['sz'] = history_order.get('accFillSz')
+                history_order['px'] = history_order.get('avgPx')
                 # 处理买入的订单
                 if history_order.get('side') == EnumSide.BUY.value:
-                    history_order['ccy'] = SymbolFormatUtils.get_base_symbol(history_order.get('instId'))
-                    # todo add column accFillSz and avgPx
-                    history_order['sz'] = history_order.get('accFillSz')
-                    history_order['px'] = history_order.get('avgPx')
-                    self.okx_record_service.save_or_update_limit_order_result(config=None, result=history_order)
-
+                    # 判断订单是否已存在
+                    current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                    # 如果不存在, 则新增并保存
+                    if not current_order:
+                        history_order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value \
+                            if history_order.get('ordType') == EnumOrdType.LIMIT.value \
+                            else EnumTradeExecuteType.MARKET_BUY.value
+                        self.okx_record_service.save_or_update_limit_order_result(None, history_order)
+                    # 如果已经存在，则判状态是否改变，未改变则不修改
+                    else:
+                        if current_order.get('status') == history_order.get('state'):
+                            continue
+                        # 如果状态改变，则判断自动 or 手动
+                        else:
+                            SpotAlgoOrderRecord.update_status_by_order(history_order)
                 elif history_order.get('side') == EnumSide.SELL.value:
-                    pass
+                    current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                    if not current_order:
+                        history_order['type'] = EnumTradeExecuteType.STOP_LOSS.value \
+                            if history_order.get('algoId') \
+                            else EnumTradeExecuteType.MARKET_SELL.value
+                        self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
+                    else:
+                        if current_order.get('status') == history_order.get('state'):
+                            continue
+                        else:
+                            SpotAlgoOrderRecord.update_status_by_order(history_order)
 
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")

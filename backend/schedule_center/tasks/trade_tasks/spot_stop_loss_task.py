@@ -9,6 +9,7 @@ from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, Enu
     EnumTradeExecuteType, EnumExecSource
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
+from backend.service_center.okx_service.okx_order_service import OKXOrderService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
 
 logger = logging.getLogger(__name__)
@@ -22,13 +23,14 @@ class SpotStopLossTask:
         self.trade = OKXAPIWrapper().trade_api
         self.okx_balance_service = OKXBalanceService()
         self.okx_ticker_service = OKXTickerService()
+        self.okx_record_service = OKXOrderService()
 
-    def check_and_update_auto_spot_live_algo_order(self):
+    def check_and_update_auto_live_stop_loss_orders(self):
         # 1. get all unfinished algo orders
-        live_algo_order_list = SpotAlgoOrderRecord.list_live_auto_spot_algo_orders()
-        if len(live_algo_order_list) > 0:
-            for live_algo_order in live_algo_order_list:
-                algoId = live_algo_order.get('algoId')
+        live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_auto_stop_loss_orders()
+        if len(live_stop_loss_order_list) > 0:
+            for live_stop_loss_order in live_stop_loss_order_list:
+                algoId = live_stop_loss_order.get('algoId')
                 # 2. check algo order status
                 latest_algo_order_result = self.trade.get_algo_order(algoId=algoId)
                 if latest_algo_order_result and latest_algo_order_result.get('code') == '0':
@@ -38,11 +40,11 @@ class SpotStopLossTask:
                         SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.CANCELED.value)
                     if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
                         SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
-                        SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
+                        SpotTradeConfig.minus_exec_nums(id=live_stop_loss_order.get('config_id'))
                     elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
                         logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
                         spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
-                            live_algo_order.get('config_id'))
+                            live_stop_loss_order.get('config_id'))
                         if spot_trade_config:
                             self.update_stop_loss_order(spot_trade_config, latest_algo_order)
                     else:
@@ -113,26 +115,25 @@ class SpotStopLossTask:
         )
         if result and result.get('code') == '0':
             result = result.get('data')[0]
-            self.save_stop_loss_result(config, result, exec_source=EnumExecSource.AUTO.value)
+            self.save_stop_loss_result(config, result)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
 
     @staticmethod
-    def save_stop_loss_result(config: dict, result: dict, exec_source: str):
+    def save_stop_loss_result(config: dict, result: dict):
         stop_loss_data = {
-            'ccy': config.get('ccy') if exec_source == EnumExecSource.AUTO.value else
+            'ccy': config.get('ccy') if config else
             SymbolFormatUtils.get_base_symbol(result.get('instId')),
             'type': EnumTradeExecuteType.STOP_LOSS.value,
-            'config_id': config.get('id') if exec_source == EnumExecSource.AUTO.value else '',
-            'sz': config.get('sz') if exec_source == EnumExecSource.AUTO.value else
-            result.get('sz'),
-            'amount': config.get('amount') if exec_source == EnumExecSource.AUTO.value else
+            'config_id': config.get('id') if config else '',
+            'sz': config.get('sz') if config else result.get('sz'),
+            'amount': config.get('amount') if config else
             str(float(result.get('sz')) * float(result.get('slTriggerPx'))),
-            'target_price': config.get('target_price') if exec_source == EnumExecSource.AUTO.value else
+            'target_price': config.get('target_price') if config else
             result.get('slTriggerPx'),
             'algoId': result.get('algoId'),
             'status': EnumAlgoOrderState.LIVE.value,
-            'exec_source': exec_source
+            'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
         }
         success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")
@@ -155,25 +156,30 @@ class SpotStopLossTask:
                 print(config)
                 self.execute_stop_loss_task(config)
 
-    def check_and_update_manual_live_algo_order(self):
-        # [查看数据库] 获取所有未完成的订单
-        manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
-        if len(manual_live_stop_loss_order_list) > 0:
-            for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
-                latest_algo_order = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
-                if latest_algo_order and latest_algo_order.get('code') == '0':
-                    if latest_algo_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
-                        SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_stop_loss_order.get('algoId'),
-                                                                     latest_algo_order.get('data')[0].get('state'))
+    def check_and_update_manual_live_stop_loss_orders(self):
+        # # [查看数据库] 获取所有未完成的订单
+        # manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
+        # if len(manual_live_stop_loss_order_list) > 0:
+        #     for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
+        #         latest_algo_order = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
+        #         if latest_algo_order and latest_algo_order.get('code') == '0':
+        #             if latest_algo_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
+        #                 SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_stop_loss_order.get('algoId'),
+        #                                                              latest_algo_order.get('data')[0].get('state'))
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(
-            instType="SPOT", ordType="conditional,oco")
+            instType="SPOT", ordType="conditional")
         if algo_order_list_result and algo_order_list_result.get('code') == '0':
             algo_order_list = algo_order_list_result.get('data')
             if len(algo_order_list) > 0:
                 for algo_order in algo_order_list:
-                    self.save_stop_loss_result(config={}, result=algo_order,
-                                               exec_source=EnumExecSource.MANUAL.value)
+                    if algo_order.get('side') != EnumSide.SELL.value:
+                        continue
+                    algo_order = SpotAlgoOrderRecord.get_by_algo_id(algo_order.get('algoId'))
+                    if algo_order:
+                        continue
+                    else:
+                        self.okx_record_service.save_or_update_limit_order_result(config={}, result=algo_order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
@@ -193,4 +199,4 @@ if __name__ == '__main__':
     #     "percentage": "5"
     # }
     stop_loss_executor = SpotStopLossTask()
-    stop_loss_executor.check_and_update_manual_live_algo_order()
+    stop_loss_executor.check_and_update_manual_live_stop_loss_orders()

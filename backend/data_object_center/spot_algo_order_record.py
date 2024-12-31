@@ -278,11 +278,11 @@ class SpotAlgoOrderRecord(Base):
             return None
 
     @classmethod
-    def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
-            SpotAlgoOrderRecord.exec_source == 'auto'
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.AUTO.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -306,12 +306,11 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_auto_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None),
-            SpotAlgoOrderRecord.exec_source == 'auto'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.AUTO.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -354,6 +353,21 @@ class SpotAlgoOrderRecord(Base):
                 raise ValueError(f"日期格式错误: {e}")
 
         return session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.create_time.desc()).all()
+
+    @classmethod
+    def update_status_by_order(cls, order: dict) -> bool:
+            try:
+                result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
+                    'status': order.get('state'),
+                    'update_time': datetime.now(),
+                    'uTime': order.get('uTime'),
+                })
+                session.commit()
+                return result > 0
+            except Exception as e:
+                session.rollback()
+                print(f"Update failed: {e}")
+                return False
 
 
 if __name__ == '__main__':
