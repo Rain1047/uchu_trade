@@ -5,15 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
+      <change afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_order_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_record_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/enum_obj.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/enum_obj.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_trade_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_trade_config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_limit_order_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_limit_order_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_order_record_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_order_record_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -301,7 +297,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735625942337</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735626978386</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1735626978386</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
