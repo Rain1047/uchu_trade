@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -21,7 +23,7 @@ class TradeConfig(BaseModel):
 
     def to_dict(self):
         return {
-            'int': self.id,
+            'id': self.id,
             'ccy': self.ccy,
             'type': self.type,
             'indicator': self.indicator,
@@ -40,12 +42,18 @@ class TradeConfigExecuteHistory(BaseModel):
     type: str
     status: str
     create_time: str
+    exec_source: str
 
     def to_dict(self):
         return {
             'ccy': self.ccy,
             'type': self.type,
-            'indicator': self.indicator,
+            'exec_source': self.exec_source,
             'status': self.status,
             'create_time': self.create_time
         }
+
+
+class ConfigUpdateRequest(BaseModel):
+    config_list: List[TradeConfig]
+    type: str

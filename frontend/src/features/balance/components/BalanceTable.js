@@ -90,7 +90,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
     setConfigDrawer({
       open: true,
       ccy,
-      type
+      type: 'limit_order'
     });
   };
 
@@ -98,7 +98,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
     setConfigDrawer({
       open: false,
       ccy: null,
-      type: null
+      type: 'limit_order'
     });
   };
 
@@ -115,7 +115,8 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
               <StyledTableCell align="right">总收益率</StyledTableCell>
               <StyledTableCell align="center">限价</StyledTableCell>
               <StyledTableCell align="center">止损</StyledTableCell>
-              <StyledTableCell align="center">查看&编辑</StyledTableCell>
+              <StyledTableCell align="center">编辑配置</StyledTableCell>
+              <StyledTableCell align="center">执行记录</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -154,7 +155,17 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
                     size="small"
                     onClick={() => handleConfigOpen(row.ccy)}
                   >
-                    查看&编辑
+                    编辑配置
+                  </GreenButton>
+                </StyledTableCell>
+
+                <StyledTableCell align="center">
+                  <GreenButton
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleConfigOpen(row.ccy)}
+                  >
+                    执行记录
                   </GreenButton>
                 </StyledTableCell>
               </StyledTableRow>
@@ -178,6 +189,7 @@ export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
         {configDrawer.open && (
           <AutoTradeConfig
             ccy={configDrawer.ccy}
+            initialType={configDrawer.type}
             onClose={handleDrawerClose}
             onSave={onConfigSave}
           />

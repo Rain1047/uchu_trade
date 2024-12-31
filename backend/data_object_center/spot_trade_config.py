@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
+from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -131,9 +131,11 @@ class SpotTradeConfig(Base):
             session.close()
 
     @staticmethod
-    def batch_create_or_update(config_list: List[Dict[str, Any]]):
+    def batch_create_or_update(config_list: List[Dict[str, Any]], config_type: str):
+        print(config_list)
         try:
-            if not config_list:
+            if not config_list or not config_type:
+                print("Invalid parameters")
                 return
 
             ccy = config_list[0].get('ccy')
@@ -141,11 +143,13 @@ class SpotTradeConfig(Base):
             # 1. 获取数据库中当前ccy的所有未删除记录
             existing_configs = session.query(SpotTradeConfig).filter(
                 SpotTradeConfig.ccy == ccy,
-                SpotTradeConfig.is_del == 0
+                SpotTradeConfig.is_del == 0,
+                SpotTradeConfig.type == config_type
             ).all()
 
             # 2. 创建现有配置的id集合,用于后续比对
             existing_ids = {config.id for config in existing_configs}
+            updating_ids = {config.get('id') for config in config_list}
             processed_ids = set()
 
             # 3. 遍历新配置列表,执行新增或更新
@@ -180,11 +184,12 @@ class SpotTradeConfig(Base):
                     )
                     session.add(new_config)
 
-            # 4. 将未在新配置中出现的旧记录标记为删除
+            # 4. 将未在新配置中出现的当前类型的旧记录标记为删除
             to_delete_ids = existing_ids - processed_ids
             if to_delete_ids:
                 session.query(SpotTradeConfig).filter(
-                    SpotTradeConfig.id.in_(to_delete_ids)
+                    SpotTradeConfig.id.in_(to_delete_ids),
+                    SpotTradeConfig.type == config_type  # 只删除当前类型的配置
                 ).update({
                     'is_del': 1
                 }, synchronize_session='fetch')
@@ -269,7 +274,7 @@ class SpotTradeConfig(Base):
         filters = [cls.is_del == 0,
                    cls.switch == '0',
                    cls.exec_nums > 0,
-                   cls.type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                   cls.type == EnumTradeExecuteType.LIMIT_ORDER.value
                    ]
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]
@@ -279,7 +284,7 @@ class SpotTradeConfig(Base):
         filters = [cls.is_del == 0,
                    cls.switch == '0',
                    cls.exec_nums > 0,
-                   cls.type == EnumAutoTradeConfigType.STOP_LOSS.value
+                   cls.type == EnumTradeExecuteType.STOP_LOSS.value
                    ]
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]

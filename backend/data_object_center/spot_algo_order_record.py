@@ -6,7 +6,7 @@ from datetime import datetime
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
 from backend.controller_center.balance.balance_request import TradeConfigExecuteHistory
-from backend.data_object_center.enum_obj import EnumOrderState
+from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -28,6 +28,8 @@ class SpotAlgoOrderRecord(Base):
     exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
+    cTime = Column(DateTime, comment='订单创建时间')
+    uTime = Column(DateTime, comment='订单更新时间')
 
     def to_dict(self) -> Dict:
         """转换为字典格式"""
@@ -43,29 +45,48 @@ class SpotAlgoOrderRecord(Base):
             'ordId': self.ordId,
             'status': self.status,
             'exec_source': self.exec_source,
+            'cTime': self.cTime.strftime('%Y-%m-%d %H:%M:%S') if self.cTime else None,
+            'uTime': self.uTime.strftime('%Y-%m-%d %H:%M:%S') if self.uTime else None,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
-            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None,
         }
 
     @classmethod
     def insert_or_update(cls, data: Dict) -> bool:
         try:
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            data['update_time'] = current_time
+            # 获取有效字段
+            valid_fields = {column.name for column in cls.__table__.columns}
 
-            # Check if record exists by ordId or algoId
+            # 过滤并准备数据
+            processed_data = {}
+            for key in valid_fields:
+                if key in data:
+                    processed_data[key] = data[key]
+
+            # 设置当前时间
+            current_time = datetime.now()
+            processed_data['update_time'] = current_time
+
+            # 处理时间戳
+            if processed_data.get('cTime'):
+                processed_data['cTime'] = datetime.fromtimestamp(int(processed_data['cTime']) / 1000)
+            if processed_data.get('uTime'):
+                processed_data['uTime'] = datetime.fromtimestamp(int(processed_data['uTime']) / 1000)
+
+            # 检查记录是否存在
             existing_record = None
-            if data.get('ordId'):
-                existing_record = session.query(cls).filter(cls.ordId == data['ordId']).first()
-            elif data.get('algoId'):
-                existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
+            if processed_data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == processed_data['ordId']).first()
+            elif processed_data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == processed_data['algoId']).first()
 
+            # 更新或插入记录
             if existing_record:
-                for key, value in data.items():
+                for key, value in processed_data.items():
                     setattr(existing_record, key, value)
             else:
-                data['create_time'] = current_time
-                record = cls(**data)
+                processed_data['create_time'] = current_time
+                record = cls(**processed_data)
                 session.add(record)
 
             session.commit()
@@ -260,8 +281,7 @@ class SpotAlgoOrderRecord(Base):
     def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
             SpotAlgoOrderRecord.exec_source == 'auto'
         ]
         try:
@@ -272,12 +292,11 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_manual_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -302,12 +321,11 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_manual_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_spot_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -325,6 +343,8 @@ class SpotAlgoOrderRecord(Base):
             filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
         if config_execute_history_request.status:
             filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
+        if config_execute_history_request.exec_source:
+            filters.append(SpotAlgoOrderRecord.exec_source == config_execute_history_request.exec_source)
         if config_execute_history_request.create_time:
             try:
                 # 将字符串日期转换为 datetime 对象
@@ -332,8 +352,63 @@ class SpotAlgoOrderRecord(Base):
                 filters.append(SpotAlgoOrderRecord.create_time >= create_time_dt)
             except ValueError as e:
                 raise ValueError(f"日期格式错误: {e}")
-        return session.query(cls).filter(*filters).all()
+
+        return session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.create_time.desc()).all()
 
 
 if __name__ == '__main__':
-    pass
+    data = {
+        'type': 'manual',
+        'sz': '3.846136',
+        'algoClOrdId': '',
+        'algoId': '',
+        'attachAlgoClOrdId': '',
+        'attachAlgoOrds': [],
+        'px': '136.94',
+        'cTime': '1726336347482',
+        'cancelSource': '',
+        'cancelSourceReason': '',
+        'category': 'normal',
+        'ccy': '',
+        'clOrdId': '',
+        'fee': '-0.003846136',
+        'feeCcy': 'SOL',
+        'fillPx': '136.94',
+        'fillSz': '3.846136',
+        'fillTime': '1726336347484',
+        'instId': 'SOL-USDT',
+        'instType': 'SPOT',
+        'isTpLimit': 'false',
+        'lever': '',
+        'linkedAlgoOrd': {'algoId': ''},
+        'ordId': '1806367530105946112',
+        'ordType': 'market',
+        'pnl': '0',
+        'posSide': '',
+        'pxType': '',
+        'pxUsd': '',
+        'pxVol': '',
+        'quickMgnType': '',
+        'rebate': '0',
+        'rebateCcy': 'USDT',
+        'reduceOnly': 'false',
+        'side': 'buy',
+        'slOrdPx': '',
+        'slTriggerPx': '',
+        'slTriggerPxType': '',
+        'source': '',
+        'state': 'filled',
+        'stpId': '',
+        'stpMode': 'cancel_maker',
+        'tag': '',
+        'tdMode': 'cash',
+        'tgtCcy': 'quote_ccy',
+        'tpOrdPx': '',
+        'tpTriggerPx': '',
+        'tpTriggerPxType': '',
+        'tradeId': '172891248',
+        'uTime': '1726336347485'
+    }
+
+    # result = SpotAlgoOrderRecord.insert_or_update(data)
+    # print("Insert/Update result:", result)

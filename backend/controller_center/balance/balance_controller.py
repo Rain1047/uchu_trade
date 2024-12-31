@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Body, Query
 import logging
 
 from backend.controller_center.balance.balance_request import TradeConfig, UpdateAccountBalanceSwitchRequest, \
-    TradeConfigExecuteHistory
+    TradeConfigExecuteHistory, ConfigUpdateRequest
 from backend.controller_center.balance.balance_service import BalanceService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
@@ -54,12 +54,14 @@ def update_config_switch(request: UpdateAccountBalanceSwitchRequest):
 
 
 @router.post("/save_config")
-def save_config(config_list: List[TradeConfig]):
+def save_config(config_update_request: ConfigUpdateRequest):
     try:
+        config_list = config_update_request.config_list
         config_list = [config.to_dict() for config in config_list]
         print(config_list)
         balance_service = BalanceService()
-        result = balance_service.batch_create_or_update_balance_configs(config_list)
+        result = balance_service.batch_create_or_update_balance_configs(config_list,
+                                                                        config_type=config_update_request.type)
         return {
             "success": True,
             "data": result
@@ -106,11 +108,11 @@ def list_configs(ccy: str, type_: str):
         }
 
 
-@router.post("/list_configs_execute_history")
-def list_configs_execute_history(config_execute_history_request: TradeConfigExecuteHistory):
+@router.post("/list_config_execute_records")
+def list_config_execute_records(config_execute_history_request: TradeConfigExecuteHistory):
     try:
         balance_service = BalanceService()
-        configs = balance_service.list_configs_execute_history(config_execute_history_request)
+        configs = balance_service.list_config_execute_records(config_execute_history_request)
         return {
             "success": True,
             "data": configs

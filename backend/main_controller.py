@@ -18,12 +18,11 @@ okx = OKXAPIWrapper()
 
 app = FastAPI()
 
-app.include_router(trade_router, prefix="/api/trade")
-app.include_router(strategy_router, prefix="/api/strategy")
-app.include_router(balance_router, prefix="/api/balance")
-app.include_router(backtest_router, prefix="/api/backtest")
-
-app.include_router(strategy_files_router, prefix="/api/strategy-files")
+app.include_router(trade_router, prefix="/api/trade", tags=["trade"])
+app.include_router(strategy_router, prefix="/api/strategy", tags=["strategy"])
+app.include_router(balance_router, prefix="/api/balance", tags=["balance"])
+app.include_router(backtest_router, prefix="/api/backtest", tags=["backtest"])
+app.include_router(strategy_files_router, prefix="/api/strategy-files", tags=["strategy-files"])
 
 # 配置 CORS
 app.add_middleware(

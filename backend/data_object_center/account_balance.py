@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from backend._constants import okx_constants
 from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
+from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -289,8 +289,8 @@ class AccountBalance(Base):
         """
         try:
             update_field = (
-                'stop_loss_switch' if type == EnumAutoTradeConfigType.STOP_LOSS.value
-                else 'limit_order_switch' if type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                'stop_loss_switch' if type == EnumTradeExecuteType.STOP_LOSS.value
+                else 'limit_order_switch' if type == EnumTradeExecuteType.LIMIT_ORDER.value
                 else None
             )
 
