@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
+from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -274,7 +274,7 @@ class SpotTradeConfig(Base):
         filters = [cls.is_del == 0,
                    cls.switch == '0',
                    cls.exec_nums > 0,
-                   cls.type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                   cls.type == EnumTradeExecuteType.LIMIT_ORDER.value
                    ]
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]
@@ -284,7 +284,7 @@ class SpotTradeConfig(Base):
         filters = [cls.is_del == 0,
                    cls.switch == '0',
                    cls.exec_nums > 0,
-                   cls.type == EnumAutoTradeConfigType.STOP_LOSS.value
+                   cls.type == EnumTradeExecuteType.STOP_LOSS.value
                    ]
         results = session.query(cls).filter(*filters).all()
         return [result.to_dict() for result in results]
