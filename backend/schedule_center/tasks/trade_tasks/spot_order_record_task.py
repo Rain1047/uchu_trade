@@ -39,13 +39,20 @@ class SpotOrderRecordService:
                     # todo add column accFillSz and avgPx
                     history_order['sz'] = history_order.get('accFillSz')
                     history_order['px'] = history_order.get('avgPx')
-                    # 如果为限价订单
-                    if history_order.get('ordType') == EnumOrdType.LIMIT.value:
-                        history_order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
-                    if history_order.get('ordType') == EnumOrdType.MARKET.value:
-                        history_order['type'] = EnumTradeExecuteType.MARKET_BUY.value
-
-                    self.okx_record_service.save_or_update_limit_order_result(config=None, result=history_order)
+                    # 判断订单是否已存在
+                    current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                    # 如果不存在, 则新增并保存
+                    if not current_order:
+                        history_order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value \
+                            if history_order.get('ordType') == EnumOrdType.LIMIT.value \
+                            else EnumTradeExecuteType.MARKET_BUY.value
+                        self.okx_record_service.save_or_update_limit_order_result(None, history_order)
+                    # 如果已经存在，则判状态是否改变，未改变则不修改
+                    elif current_order.get('status') == history_order.get('state'):
+                        continue
+                    # 如果状态改变，则判断自动 or 手动
+                    elif current_order.get('exec_source') == EnumExecSource.AUTO.value:
+                        SpotAlgoOrderRecord.update_status_by_order(history_order)
 
                 elif history_order.get('side') == EnumSide.SELL.value:
                     pass
