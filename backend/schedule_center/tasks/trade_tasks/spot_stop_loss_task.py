@@ -157,13 +157,13 @@ class SpotStopLossTask:
 
     def check_and_update_manual_live_algo_order(self):
         # [查看数据库] 获取所有未完成的订单
-        manual_live_algo_order_list = SpotAlgoOrderRecord.list_live_manual_spot_algo_orders()
-        if len(manual_live_algo_order_list) > 0:
-            for manual_live_algo_order in manual_live_algo_order_list:
-                latest_algo_order = self.trade.get_algo_order(algoId=manual_live_algo_order.get('algoId'))
+        manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
+        if len(manual_live_stop_loss_order_list) > 0:
+            for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
+                latest_algo_order = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
                 if latest_algo_order and latest_algo_order.get('code') == '0':
                     if latest_algo_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
-                        SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_algo_order.get('algoId'),
+                        SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_stop_loss_order.get('algoId'),
                                                                      latest_algo_order.get('data')[0].get('state'))
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(

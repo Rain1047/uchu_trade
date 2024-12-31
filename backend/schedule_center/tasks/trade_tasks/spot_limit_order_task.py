@@ -60,7 +60,6 @@ class SpotLimitOrderTask:
         limit_order_configs = SpotTradeConfig().get_effective_and_unfinished_limit_order_configs()
         if len(limit_order_configs) > 0:
             for config in limit_order_configs:
-                print(config)
                 self.execute_limit_order_task(config)
 
     # [限价委托方法] 更新生效中的限价委托
