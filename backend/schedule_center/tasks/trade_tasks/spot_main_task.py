@@ -1,7 +1,7 @@
 import logging
 
 from backend.schedule_center.tasks.trade_tasks.spot_limit_order_task import SpotLimitOrderTask
-from backend.schedule_center.tasks.trade_tasks.spot_order_record_task import SpotOrderRecordTask
+from backend.schedule_center.tasks.trade_tasks.spot_order_record_task import SpotOrderRecordService
 from backend.schedule_center.tasks.trade_tasks.spot_stop_loss_task import SpotStopLossTask
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ class SpotMainTask:
     def __init__(self):
         self.stop_loss_task = SpotStopLossTask()
         self.limit_order_task = SpotLimitOrderTask()
-        self.spot_record_task = SpotOrderRecordTask()
+        self.spot_record_task = SpotOrderRecordService()
 
     # [调度主任务] 根据配置进行止盈止损、限价委托
     def execute_spot_main_task(self):

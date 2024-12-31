@@ -1,3 +1,4 @@
+from backend._utils import SymbolFormatUtils
 from backend.data_object_center.enum_obj import EnumTradeExecuteType, EnumExecSource
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 
@@ -6,7 +7,7 @@ class OKXOrderService:
     @staticmethod
     def save_or_update_limit_order_result(config: dict | None, result: dict):
         stop_loss_data = {
-            'ccy': result.get('ccy'),
+            'ccy': result.get('ccy') if result.get('ccy') else SymbolFormatUtils.get_base_symbol(result.get('instId')),
             'type': EnumTradeExecuteType.LIMIT_ORDER.value if config else EnumTradeExecuteType.MARKET_BUY.value,
             'config_id': config.get('id') if config else '',
             'sz': result.get('sz'),

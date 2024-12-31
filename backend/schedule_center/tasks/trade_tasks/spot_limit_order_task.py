@@ -130,26 +130,31 @@ class SpotLimitOrderTask:
                     SpotAlgoOrderRecord.update_status_by_ord_id(live_order.get('ordId'), latest_status)
 
     def check_and_update_manual_live_limit_orders(self):
-        # [查看数据库] 获取所有未完成的订单，更新其状态
-        manual_live_order_list = SpotAlgoOrderRecord.list_live_manual_limit_orders()
-        if len(manual_live_order_list) > 0:
-            for manual_live_order in manual_live_order_list:
-                latest_order = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(manual_live_order.get('ccy')),
-                                                    ordId=manual_live_order.get('ordId'))
-                if latest_order and latest_order.get('code') == '0':
-                    if latest_order.get('data')[0].get('state') != EnumOrderState.LIVE.value:
-                        SpotAlgoOrderRecord.update_status_by_ord_id(manual_live_order.get('ordId'),
-                                                                    latest_order.get('data')[0].get('state'))
-        # [调用接口] 获取所有未完成的订单, 并保存
+        # # [查看数据库] 获取所有未完成的订单，更新其状态
+        # manual_live_order_list = SpotAlgoOrderRecord.list_live_manual_limit_orders()
+        # if len(manual_live_order_list) > 0:
+        #     for manual_live_order in manual_live_order_list:
+        #         latest_order = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(manual_live_order.get('ccy')),
+        #                                             ordId=manual_live_order.get('ordId'))
+        #         if latest_order and latest_order.get('code') == '0':
+        #             if latest_order.get('data')[0].get('state') != EnumOrderState.LIVE.value:
+        #                 SpotAlgoOrderRecord.update_status_by_ord_id(manual_live_order.get('ordId'),
+        #                                                             latest_order.get('data')[0].get('state'))
+
+        # [调用接口] 获取所有未完成的限价购买订单, 并保存
         live_order_list_result = self.trade.get_order_list(
-            instType="SPOT", state=EnumOrderState.LIVE.value, ordType="market,limit")
+            instType="SPOT", state=EnumOrderState.LIVE.value, ordType="limit")
         if live_order_list_result and live_order_list_result.get('code') == '0':
             live_order_list = live_order_list_result.get('data')
             if len(live_order_list) > 0:
                 for live_order in live_order_list:
-                    if self.check_is_auto_order(live_order.get('ordId')):
+                    if live_order.get('side') != EnumSide.BUY.value:
                         continue
-                    self.okx_record_service.save_or_update_limit_order_result(config={}, result=live_order)
+                    order = SpotAlgoOrderRecord.get_by_ord_id(live_order.get('ordId'))
+                    if order:
+                        continue
+                    else:
+                        self.okx_record_service.save_or_update_limit_order_result(config={}, result=live_order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
@@ -160,6 +165,11 @@ class SpotLimitOrderTask:
             return True
         else:
             return False
+
+    @staticmethod
+    def check_order_exists(ordId: str):
+        order = SpotAlgoOrderRecord.get_by_ord_id(ordId)
+        return order
 
 
 if __name__ == '__main__':
