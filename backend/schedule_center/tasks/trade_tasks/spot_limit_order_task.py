@@ -28,7 +28,7 @@ class SpotLimitOrderTask:
         self.okx_record_service = OKXOrderService()
 
     # [限价委托主任务] 检查并更新自动限价委托
-    def check_and_update_auto_live_limit_order(self):
+    def check_and_update_auto_live_limit_orders(self):
         # 1. get all unfinished orders
         auto_live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_limit_orders()
         if len(auto_live_order_list) > 0:
