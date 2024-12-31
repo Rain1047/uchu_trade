@@ -306,7 +306,7 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_auto_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,

@@ -8,7 +8,7 @@ class OKXOrderService:
     def save_or_update_limit_order_result(config: dict | None, result: dict):
         stop_loss_data = {
             'ccy': result.get('ccy') if result.get('ccy') else SymbolFormatUtils.get_base_symbol(result.get('instId')),
-            'type': EnumTradeExecuteType.LIMIT_ORDER.value if config else EnumTradeExecuteType.MARKET_BUY.value,
+            'type': result.get('type'),
             'config_id': config.get('id') if config else '',
             'sz': result.get('sz'),
             'amount': config.get('amount') if config else
