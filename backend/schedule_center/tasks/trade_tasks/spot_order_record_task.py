@@ -39,6 +39,12 @@ class SpotOrderRecordService:
                     # todo add column accFillSz and avgPx
                     history_order['sz'] = history_order.get('accFillSz')
                     history_order['px'] = history_order.get('avgPx')
+                    # 如果为限价订单
+                    if history_order.get('ordType') == EnumOrdType.LIMIT.value:
+                        history_order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
+                    if history_order.get('ordType') == EnumOrdType.MARKET.value:
+                        history_order['type'] = EnumTradeExecuteType.MARKET_BUY.value
+
                     self.okx_record_service.save_or_update_limit_order_result(config=None, result=history_order)
 
                 elif history_order.get('side') == EnumSide.SELL.value:

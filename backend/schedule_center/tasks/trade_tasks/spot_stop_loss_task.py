@@ -27,10 +27,10 @@ class SpotStopLossTask:
 
     def check_and_update_auto_live_stop_loss_orders(self):
         # 1. get all unfinished algo orders
-        live_algo_order_list = SpotAlgoOrderRecord.list_live_auto_spot_algo_orders()
-        if len(live_algo_order_list) > 0:
-            for live_algo_order in live_algo_order_list:
-                algoId = live_algo_order.get('algoId')
+        live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_auto_stop_loss_orders()
+        if len(live_stop_loss_order_list) > 0:
+            for live_stop_loss_order in live_stop_loss_order_list:
+                algoId = live_stop_loss_order.get('algoId')
                 # 2. check algo order status
                 latest_algo_order_result = self.trade.get_algo_order(algoId=algoId)
                 if latest_algo_order_result and latest_algo_order_result.get('code') == '0':
@@ -40,11 +40,11 @@ class SpotStopLossTask:
                         SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.CANCELED.value)
                     if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
                         SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
-                        SpotTradeConfig.minus_exec_nums(id=live_algo_order.get('config_id'))
+                        SpotTradeConfig.minus_exec_nums(id=live_stop_loss_order.get('config_id'))
                     elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
                         logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
                         spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
-                            live_algo_order.get('config_id'))
+                            live_stop_loss_order.get('config_id'))
                         if spot_trade_config:
                             self.update_stop_loss_order(spot_trade_config, latest_algo_order)
                     else:

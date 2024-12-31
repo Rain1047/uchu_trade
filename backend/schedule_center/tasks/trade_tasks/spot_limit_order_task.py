@@ -6,7 +6,7 @@ from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, \
-    EnumOrderState, EnumExecSource
+    EnumOrderState, EnumExecSource, EnumTradeExecuteType
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_order_service import OKXOrderService
@@ -107,6 +107,7 @@ class SpotLimitOrderTask:
         )
         if result and result.get('code') == '0':
             result = result.get('data')[0]
+            result['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
             self.okx_record_service.save_or_update_limit_order_result(config, result)
         SpotTradeConfig.minus_exec_nums(config)
         print(result)
@@ -146,6 +147,7 @@ class SpotLimitOrderTask:
                     if order:
                         continue
                     else:
+                        order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
                         self.okx_record_service.save_or_update_limit_order_result(config={}, result=live_order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
