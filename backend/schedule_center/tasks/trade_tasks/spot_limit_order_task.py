@@ -136,7 +136,7 @@ class SpotLimitOrderTask:
             'target_price': config.get('target_price') if exec_source == EnumExecSource.AUTO.value else
             result.get('px'),
             'ordId': result.get('ordId'),
-            'status': EnumOrderState.LIVE.value,
+            'status': result.get('state'),
             'exec_source': exec_source,
             'uTime': u_time,
             'cTime': c_time
@@ -177,21 +177,7 @@ class SpotLimitOrderTask:
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
-        # [调用接口] 获取历史订单
-        history_order_list = self.trade.get_orders_history_archive(
-            instType="SPOT", state=EnumOrderState.FILLED.value, ordType="market,limit"
-        )
-        if history_order_list and history_order_list.get('code') == '0':
-            history_order_list = history_order_list.get('data')
-            if len(history_order_list) > 0:
-                for history_order in history_order_list:
-                    print(history_order)
-                    history_order['sz'] = history_order.get('accFillSz')
-                    history_order['px'] = history_order.get('avgPx')
-                    self.save_or_update_limit_order_result(config={}, result=history_order,
-                                                           exec_source=EnumExecSource.MANUAL.value)
-        else:
-            logger.info("check_and_update_manual_live_order@no manual live spot orders.")
+
 
 
 if __name__ == '__main__':

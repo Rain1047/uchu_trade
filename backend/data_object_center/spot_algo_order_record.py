@@ -54,33 +54,39 @@ class SpotAlgoOrderRecord(Base):
     @classmethod
     def insert_or_update(cls, data: Dict) -> bool:
         try:
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-            # 处理 cTime 和 uTime
-            if data.get('cTime'):
-                data['cTime'] = datetime.strptime(data['cTime'], '%Y-%m-%d %H:%M:%S')
-            if data.get('uTime'):
-                data['uTime'] = datetime.strptime(data['uTime'], '%Y-%m-%d %H:%M:%S')
-            data['update_time'] = current_time
-
             # 获取有效字段
             valid_fields = {column.name for column in cls.__table__.columns}
-            filtered_data = {key: value for key, value in data.items() if key in valid_fields}
+
+            # 过滤并准备数据
+            processed_data = {}
+            for key in valid_fields:
+                if key in data:
+                    processed_data[key] = data[key]
+
+            # 设置当前时间
+            current_time = datetime.now()
+            processed_data['update_time'] = current_time
+
+            # 处理时间戳
+            if processed_data.get('cTime'):
+                processed_data['cTime'] = datetime.fromtimestamp(int(processed_data['cTime']) / 1000)
+            if processed_data.get('uTime'):
+                processed_data['uTime'] = datetime.fromtimestamp(int(processed_data['uTime']) / 1000)
 
             # 检查记录是否存在
             existing_record = None
-            if filtered_data.get('ordId'):
-                existing_record = session.query(cls).filter(cls.ordId == filtered_data['ordId']).first()
-            elif filtered_data.get('algoId'):
-                existing_record = session.query(cls).filter(cls.algoId == filtered_data['algoId']).first()
+            if processed_data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == processed_data['ordId']).first()
+            elif processed_data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == processed_data['algoId']).first()
 
             # 更新或插入记录
             if existing_record:
-                for key, value in filtered_data.items():
+                for key, value in processed_data.items():
                     setattr(existing_record, key, value)
             else:
-                filtered_data['create_time'] = current_time
-                record = cls(**filtered_data)
+                processed_data['create_time'] = current_time
+                record = cls(**processed_data)
                 session.add(record)
 
             session.commit()
@@ -355,6 +361,7 @@ class SpotAlgoOrderRecord(Base):
 
 if __name__ == '__main__':
     data = {
+        'type': 'manual',
         'sz': '3.846136',
         'algoClOrdId': '',
         'algoId': '',
