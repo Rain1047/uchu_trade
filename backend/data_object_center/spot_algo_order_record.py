@@ -6,7 +6,7 @@ from datetime import datetime
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
 from backend.controller_center.balance.balance_request import TradeConfigExecuteHistory
-from backend.data_object_center.enum_obj import EnumOrderState
+from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
@@ -281,8 +281,7 @@ class SpotAlgoOrderRecord(Base):
     def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
             SpotAlgoOrderRecord.exec_source == 'auto'
         ]
         try:
@@ -293,12 +292,11 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_manual_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
@@ -413,5 +411,5 @@ if __name__ == '__main__':
         'uTime': '1726336347485'
     }
 
-    result = SpotAlgoOrderRecord.insert_or_update(data)
-    print("Insert/Update result:", result)
+    # result = SpotAlgoOrderRecord.insert_or_update(data)
+    # print("Insert/Update result:", result)

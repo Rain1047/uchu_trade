@@ -27,22 +27,22 @@ class SpotOrderRecordTask:
     def save_update_spot_order_record(self):
         # [调用接口] 获取历史订单
         history_order_list = self.trade.get_orders_history_archive(
-            instType="SPOT", ordType="limit"
+            instType="SPOT", ordType="limit,market"
         )
-        if history_order_list and history_order_list.get('code') == '0':
+        if (history_order_list and history_order_list.get('code') == '0'
+                and history_order_list.get('data')) and len(history_order_list.get('data')) > 0:
             history_order_list = history_order_list.get('data')
-            if len(history_order_list) > 0:
-                for history_order in history_order_list:
-                    # 处理买入的订单
-                    if history_order.get('side') == EnumSide.BUY.value:
-                        history_order['ccy'] = SymbolFormatUtils.get_base_symbol(history_order.get('instId'))
-                        # todo add column accFillSz and avgPx
-                        history_order['sz'] = history_order.get('accFillSz')
-                        history_order['px'] = history_order.get('avgPx')
-                        self.okx_record_service.save_or_update_limit_order_result(config=None, result=history_order)
+            for history_order in history_order_list:
+                # 处理买入的订单
+                if history_order.get('side') == EnumSide.BUY.value:
+                    history_order['ccy'] = SymbolFormatUtils.get_base_symbol(history_order.get('instId'))
+                    # todo add column accFillSz and avgPx
+                    history_order['sz'] = history_order.get('accFillSz')
+                    history_order['px'] = history_order.get('avgPx')
+                    self.okx_record_service.save_or_update_limit_order_result(config=None, result=history_order)
 
-                    elif history_order.get('side') == EnumSide.SELL.value:
-                        pass
+                elif history_order.get('side') == EnumSide.SELL.value:
+                    pass
 
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
