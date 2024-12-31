@@ -192,9 +192,11 @@ class EnumSubType(Enum):
         return None
 
 
-class EnumAutoTradeConfigType(Enum):
+class EnumTradeExecuteType(Enum):
     STOP_LOSS = "stop_loss"
     LIMIT_ORDER = "limit_order"
+    MARKET_BUY = "market_buy"
+    MARKET_SELL = "market_sell"
 
 
 class EnumExecSource(Enum):

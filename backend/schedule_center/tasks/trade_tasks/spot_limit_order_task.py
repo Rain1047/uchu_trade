@@ -6,7 +6,7 @@ from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumAutoTradeConfigType, \
+from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumTradeExecuteType, \
     EnumOrderState, EnumExecSource
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
@@ -127,7 +127,7 @@ class SpotLimitOrderTask:
         stop_loss_data = {
             'ccy': config.get('ccy') if exec_source == EnumExecSource.AUTO.value
             else SymbolFormatUtils.get_base_symbol(result.get('instId')),
-            'type': EnumAutoTradeConfigType.LIMIT_ORDER.value,
+            'type': EnumTradeExecuteType.LIMIT_ORDER.value,
             'config_id': config.get('id') if exec_source == EnumExecSource.AUTO.value else '',
             'sz': config.get('sz') if exec_source == EnumExecSource.AUTO.value else
             result.get('sz'),
