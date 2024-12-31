@@ -28,8 +28,8 @@ class SpotAlgoOrderRecord(Base):
     exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
-    cTime = Column(String, comment='订单创建时间')
-    uTime = Column(String, comment='订单更新时间')
+    cTime = Column(DateTime, comment='订单创建时间')
+    uTime = Column(DateTime, comment='订单更新时间')
 
     def to_dict(self) -> Dict:
         """转换为字典格式"""
@@ -45,31 +45,42 @@ class SpotAlgoOrderRecord(Base):
             'ordId': self.ordId,
             'status': self.status,
             'exec_source': self.exec_source,
+            'cTime': self.cTime.strftime('%Y-%m-%d %H:%M:%S') if self.cTime else None,
+            'uTime': self.uTime.strftime('%Y-%m-%d %H:%M:%S') if self.uTime else None,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None,
-            'cTime': self.cTime,
-            'uTime': self.uTime
         }
 
     @classmethod
     def insert_or_update(cls, data: Dict) -> bool:
         try:
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            # 处理 cTime 和 uTime
+            if data.get('cTime'):
+                data['cTime'] = datetime.strptime(data['cTime'], '%Y-%m-%d %H:%M:%S')
+            if data.get('uTime'):
+                data['uTime'] = datetime.strptime(data['uTime'], '%Y-%m-%d %H:%M:%S')
             data['update_time'] = current_time
 
-            # Check if record exists by ordId or algoId
-            existing_record = None
-            if data.get('ordId'):
-                existing_record = session.query(cls).filter(cls.ordId == data['ordId']).first()
-            elif data.get('algoId'):
-                existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
+            # 获取有效字段
+            valid_fields = {column.name for column in cls.__table__.columns}
+            filtered_data = {key: value for key, value in data.items() if key in valid_fields}
 
+            # 检查记录是否存在
+            existing_record = None
+            if filtered_data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == filtered_data['ordId']).first()
+            elif filtered_data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == filtered_data['algoId']).first()
+
+            # 更新或插入记录
             if existing_record:
-                for key, value in data.items():
+                for key, value in filtered_data.items():
                     setattr(existing_record, key, value)
             else:
-                data['create_time'] = current_time
-                record = cls(**data)
+                filtered_data['create_time'] = current_time
+                record = cls(**filtered_data)
                 session.add(record)
 
             session.commit()
@@ -343,4 +354,57 @@ class SpotAlgoOrderRecord(Base):
 
 
 if __name__ == '__main__':
-    pass
+    data = {
+        'sz': '3.846136',
+        'algoClOrdId': '',
+        'algoId': '',
+        'attachAlgoClOrdId': '',
+        'attachAlgoOrds': [],
+        'px': '136.94',
+        'cTime': '1726336347482',
+        'cancelSource': '',
+        'cancelSourceReason': '',
+        'category': 'normal',
+        'ccy': '',
+        'clOrdId': '',
+        'fee': '-0.003846136',
+        'feeCcy': 'SOL',
+        'fillPx': '136.94',
+        'fillSz': '3.846136',
+        'fillTime': '1726336347484',
+        'instId': 'SOL-USDT',
+        'instType': 'SPOT',
+        'isTpLimit': 'false',
+        'lever': '',
+        'linkedAlgoOrd': {'algoId': ''},
+        'ordId': '1806367530105946112',
+        'ordType': 'market',
+        'pnl': '0',
+        'posSide': '',
+        'pxType': '',
+        'pxUsd': '',
+        'pxVol': '',
+        'quickMgnType': '',
+        'rebate': '0',
+        'rebateCcy': 'USDT',
+        'reduceOnly': 'false',
+        'side': 'buy',
+        'slOrdPx': '',
+        'slTriggerPx': '',
+        'slTriggerPxType': '',
+        'source': '',
+        'state': 'filled',
+        'stpId': '',
+        'stpMode': 'cancel_maker',
+        'tag': '',
+        'tdMode': 'cash',
+        'tgtCcy': 'quote_ccy',
+        'tpOrdPx': '',
+        'tpTriggerPx': '',
+        'tpTriggerPxType': '',
+        'tradeId': '172891248',
+        'uTime': '1726336347485'
+    }
+
+    result = SpotAlgoOrderRecord.insert_or_update(data)
+    print("Insert/Update result:", result)
