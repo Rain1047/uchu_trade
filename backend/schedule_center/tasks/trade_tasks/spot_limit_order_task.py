@@ -146,7 +146,7 @@ class SpotLimitOrderTask:
                     SpotAlgoOrderRecord.update_status_by_ord_id(live_order.get('ordId'), latest_status)
 
     def check_and_update_manual_live_order(self):
-        # [查看数据库] 获取所有未完成的订单
+        # [查看数据库] 获取所有未完成的订单，更新其状态
         manual_live_order_list = SpotAlgoOrderRecord.list_live_manual_spot_orders()
         if len(manual_live_order_list) > 0:
             for manual_live_order in manual_live_order_list:

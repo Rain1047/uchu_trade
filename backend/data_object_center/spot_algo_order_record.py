@@ -28,6 +28,8 @@ class SpotAlgoOrderRecord(Base):
     exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
+    cTime = Column(String, comment='订单创建时间')
+    uTime = Column(String, comment='订单更新时间')
 
     def to_dict(self) -> Dict:
         """转换为字典格式"""
@@ -44,7 +46,9 @@ class SpotAlgoOrderRecord(Base):
             'status': self.status,
             'exec_source': self.exec_source,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
-            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None,
+            'cTime': self.cTime,
+            'uTime': self.uTime
         }
 
     @classmethod
