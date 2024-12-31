@@ -321,12 +321,11 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_live_manual_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_spot_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
