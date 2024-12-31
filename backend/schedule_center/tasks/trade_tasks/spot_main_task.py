@@ -17,7 +17,7 @@ class SpotMainTask:
         # 1.1 检查并更新手动创建且生效中的限价委托单
         self.limit_order_task.check_and_update_manual_live_limit_orders()
         # 1.2 检查并更新自动创建且生效中的限价委托单
-        self.limit_order_task.check_and_update_auto_live_order()
+        self.limit_order_task.check_and_update_auto_live_limit_order()
         # 1.3 创建新的自动限价委托单
         self.limit_order_task.process_new_auto_limit_order_task()
 

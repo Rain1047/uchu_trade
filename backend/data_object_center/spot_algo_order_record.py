@@ -278,11 +278,11 @@ class SpotAlgoOrderRecord(Base):
             return None
 
     @classmethod
-    def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
             SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
-            SpotAlgoOrderRecord.exec_source == 'auto'
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.AUTO.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()

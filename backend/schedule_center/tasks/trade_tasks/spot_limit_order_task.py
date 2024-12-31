@@ -28,31 +28,24 @@ class SpotLimitOrderTask:
         self.okx_record_service = OKXOrderService()
 
     # [限价委托主任务] 检查并更新自动限价委托
-    def check_and_update_auto_live_order(self):
+    def check_and_update_auto_live_limit_order(self):
         # 1. get all unfinished orders
-        live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_orders()
-        if len(live_order_list) > 0:
-            for live_order in live_order_list:
-                ordId = live_order.get('ordId')
+        auto_live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_limit_orders()
+        if len(auto_live_order_list) > 0:
+            for auto_live_order in auto_live_order_list:
+                ordId = auto_live_order.get('ordId')
                 # 2. check order status
-                latest_order_result = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(live_order.get('ccy')),
+                latest_order_result = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(auto_live_order.get('ccy')),
                                                            ordId=ordId)
-                print(latest_order_result)
                 if latest_order_result and latest_order_result.get('code') == '0':
                     latest_order = latest_order_result.get('data')[0]
-                    print(f"ordId:{latest_order.get('ordId')} latest status is {latest_order.get('state')}.")
-                    if latest_order.get('state') == EnumOrderState.CANCELED.value:
-                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.CANCELED.value)
-                    if latest_order.get('state') == EnumOrderState.FILLED.value:
-                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, EnumOrderState.FILLED.value)
-                    elif latest_order.get('state') == EnumOrderState.LIVE.value:
-                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} is live")
-                        spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(live_order.get('config_id'))
-                        if spot_trade_config:
-                            self.update_limit_order(spot_trade_config, latest_order)
+                    if latest_order.get('state') in [EnumOrderState.CANCELED.value,
+                                                     EnumOrderState.FILLED.value]:
+                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, latest_order.get('state'))
                     else:
-                        logger.info(
-                            f"check_and_update_auto_spot_live_order@ {latest_order} is {latest_order.get('state')}.")
+                        continue
+                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} "
+                                f"is {latest_order.get('state')}.")
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
