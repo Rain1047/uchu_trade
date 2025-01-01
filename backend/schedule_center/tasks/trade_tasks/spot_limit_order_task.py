@@ -52,6 +52,7 @@ class SpotLimitOrderTask:
 
     def process_new_auto_limit_order_task(self):
         activate_limit_order_ccy_list = AccountBalance.list_activate_limit_order_ccy()
+        print(f"process_new_auto_limit_order_task@activate_limit_order_ccy_list: {activate_limit_order_ccy_list}")
         if len(activate_limit_order_ccy_list) > 0:
             for ccy in activate_limit_order_ccy_list:
                 limit_order_configs = SpotTradeConfig().get_effective_and_unfinished_limit_order_configs_by_ccy(ccy=ccy)
