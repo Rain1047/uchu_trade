@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend._constants import okx_constants
+from backend._constants import OKX_CONSTANTS
 from backend._utils import DatabaseUtils
 from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
@@ -217,7 +217,7 @@ class AccountBalance(Base):
     @staticmethod
     def reset_account_balance(response: dict):
         print(response)
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
             # 从response['data']中提取出每个币种的详细信息
             balance_data = response.get('data', [])
 
