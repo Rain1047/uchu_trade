@@ -33,11 +33,12 @@ class OKXOrderService:
             'sz': config.get('sz') if config else result.get('sz'),
             'amount': config.get('amount') if config else
             str(float(result.get('sz')) * float(result.get('slTriggerPx'))),
+            # TODO target_price 修改下
             'target_price': config.get('target_price') if config else
             result.get('slTriggerPx'),
             'ordId': result.get('ordId'),
             'algoId': result.get('algoId'),
-            'status': result.get('status'),
+            'status': result.get('state'),
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
         }
         success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
