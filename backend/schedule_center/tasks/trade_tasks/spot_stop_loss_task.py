@@ -1,5 +1,6 @@
 import logging
 
+from backend._constants import OKX_CONSTANTS
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
@@ -29,14 +30,16 @@ class SpotStopLossTask:
     def check_and_update_auto_live_stop_loss_orders(self):
         # 1. get all unfinished algo orders
         live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_auto_stop_loss_orders()
+        logger.info(f"check_and_update_auto_live_stop_loss_orders@live_stop_loss_order_list size:"
+                    f" {len(live_stop_loss_order_list)}")
         if len(live_stop_loss_order_list) > 0:
             for live_stop_loss_order in live_stop_loss_order_list:
                 algoId = live_stop_loss_order.get('algoId')
                 # 2. check algo order status
                 latest_algo_order_result = self.trade.get_algo_order(algoId=algoId)
-                if latest_algo_order_result and latest_algo_order_result.get('code') == '0':
+                if latest_algo_order_result and latest_algo_order_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
                     latest_algo_order = latest_algo_order_result.get('data')[0]
-                    print(f"algoId:{algoId} latest status is {latest_algo_order.get('state')}.")
+
                     if latest_algo_order.get('state') == EnumAlgoOrderState.CANCELED.value:
                         SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.CANCELED.value)
                     if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
@@ -51,6 +54,8 @@ class SpotStopLossTask:
                     else:
                         logger.info(
                             f"check_and_update_auto_spot_live_order@ {latest_algo_order} is {latest_algo_order.get('state')}.")
+                elif latest_algo_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
+                    SpotAlgoOrderRecord.mark_canceled_by_algoId(algoId)
         else:
             logger.info("check_and_update_auto_spot_live_algo_order@no auto live spot algo orders.")
 

@@ -25,8 +25,8 @@ class SpotMainTask:
 
         # # 2.1 检查并更新手动创建且生效中的自动止损单
         # self.stop_loss_task.check_and_update_manual_live_stop_loss_orders()
-        # # 2.2 检查并更新自动创建且生效中的自动止损单
-        # self.stop_loss_task.check_and_update_auto_live_stop_loss_orders()
+        # 2.2 检查并更新自动创建且生效中的自动止损单
+        self.stop_loss_task.check_and_update_auto_live_stop_loss_orders()
         # 2.3 创建新的自动止损单
         # self.stop_loss_task.process_new_auto_stop_loss_task()
 

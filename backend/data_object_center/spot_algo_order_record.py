@@ -406,6 +406,22 @@ class SpotAlgoOrderRecord(Base):
             print(f"Update failed: {e}")
             return False
 
+    @classmethod
+    def mark_canceled_by_algoId(cls, algoId):
+        try:
+            result = session.query(cls).filter(cls.algoId == algoId).update({
+                'status': EnumOrderState.CANCELED.value,
+                'update_time': datetime.now(),
+                'cTime': None,
+                'uTime': None,
+                'exec_price': ''
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            print(f"Update failed: {e}")
+            return False
+
 
 if __name__ == '__main__':
     data = {
