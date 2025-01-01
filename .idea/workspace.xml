@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
+      <change afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_spot_order_record_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_trade_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_trade_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/buy_order_processor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/order_processor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/order_processor_factory.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/sell_order_processor.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +56,11 @@
     "ts.external.directory.path": "/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/backend/service_center/okx_service" />
+    </key>
+  </component>
   <component name="RunManager" selected="Python.spot_main_task">
     <configuration name="main_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
@@ -514,7 +524,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735748185366</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735749544545</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1735749544545</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
