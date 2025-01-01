@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from backend._constants import okx_constants
+from backend._constants import OKX_CONSTANTS
 from backend._utils import DatabaseUtils
 
 Base = declarative_base()

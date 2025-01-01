@@ -22,6 +22,8 @@ class SpotAlgoOrderRecord(Base):
     sz = Column(String, comment='仓位')
     amount = Column(String, comment='金额/USDT')
     target_price = Column(String, comment='目标价格')
+    exec_price = Column(String, comment='执行价格')
+
     algoId = Column(String, comment='止损订单id')
     ordId = Column(String, comment='限价订单id')
     status = Column(String, comment='订单状态')
@@ -41,6 +43,7 @@ class SpotAlgoOrderRecord(Base):
             'sz': self.sz,
             'amount': self.amount,
             'target_price': self.target_price,
+            'exec_price': self.exec_price,
             'algoId': self.algoId,
             'ordId': self.ordId,
             'status': self.status,
@@ -356,18 +359,68 @@ class SpotAlgoOrderRecord(Base):
 
     @classmethod
     def update_status_by_order(cls, order: dict) -> bool:
-            try:
-                result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
-                    'status': order.get('state'),
-                    'update_time': datetime.now(),
-                    'uTime': order.get('uTime'),
-                })
-                session.commit()
-                return result > 0
-            except Exception as e:
-                session.rollback()
-                print(f"Update failed: {e}")
-                return False
+        try:
+            result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
+                'status': order.get('state'),
+                'update_time': datetime.now(),
+                'cTime': order.get('cTime'),
+                'uTime': order.get('uTime'),
+                'exec_price': order.get('avgPrice', '')
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update failed: {e}")
+            return False
+
+    @classmethod
+    def update_status_by_algo_order(cls, algo_order: dict):
+        try:
+            result = session.query(cls).filter(cls.ordId == algo_order.get('algoId')).update({
+                'status': algo_order.get('state'),
+                'update_time': datetime.now(),
+                'uTime': algo_order.get('uTime'),
+                'exec_price': algo_order.get('avgPrice')
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update failed: {e}")
+            return False
+
+    @classmethod
+    def mark_canceled_by_ordId(cls, ordId):
+        try:
+            result = session.query(cls).filter(cls.ordId == ordId).update({
+                'status': EnumOrderState.CANCELED.value,
+                'update_time': datetime.now(),
+                'cTime': None,
+                'uTime': None,
+                'exec_price': ''
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            print(f"Update failed: {e}")
+            return False
+
+    @classmethod
+    def mark_canceled_by_algoId(cls, algoId):
+        try:
+            result = session.query(cls).filter(cls.algoId == algoId).update({
+                'status': EnumOrderState.CANCELED.value,
+                'update_time': datetime.now(),
+                'cTime': None,
+                'uTime': None,
+                'exec_price': ''
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            print(f"Update failed: {e}")
+            return False
 
 
 if __name__ == '__main__':

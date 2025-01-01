@@ -240,7 +240,7 @@ class SpotTradeConfig(Base):
             return False
 
     @classmethod
-    def minus_exec_nums(cls, id) -> bool:
+    def minus_exec_nums(cls, id: int) -> bool:
         try:
             spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(id=id)
             if not spot_trade_config:
@@ -262,17 +262,17 @@ class SpotTradeConfig(Base):
             return False
 
     @classmethod
-    def get_effective_spot_config_by_id(cls, id):
-        filters = [cls.is_del == 0,
+    def get_effective_spot_config_by_id(cls, id: int):
+        filters = [cls.is_del == '0',
                    cls.id == id,
-                   cls.switch == '0']
+                   cls.exec_nums > 0]
         result = session.query(cls).filter(*filters).first()
         return result.to_dict() if result else None
 
     @classmethod
-    def get_effective_and_unfinished_limit_order_configs(cls) -> List[Dict]:
+    def get_effective_and_unfinished_limit_order_configs_by_ccy(cls, ccy: str) -> List[Dict]:
         filters = [cls.is_del == 0,
-                   cls.switch == '0',
+                   cls.ccy == ccy,
                    cls.exec_nums > 0,
                    cls.type == EnumTradeExecuteType.LIMIT_ORDER.value
                    ]
@@ -280,9 +280,9 @@ class SpotTradeConfig(Base):
         return [result.to_dict() for result in results]
 
     @classmethod
-    def get_effective_and_unfinished_stop_loss_configs(cls) -> List[Dict]:
+    def get_effective_and_unfinished_stop_loss_configs_by_ccy(cls, ccy: str) -> List[Dict]:
         filters = [cls.is_del == 0,
-                   cls.switch == '0',
+                   cls.ccy == ccy,
                    cls.exec_nums > 0,
                    cls.type == EnumTradeExecuteType.STOP_LOSS.value
                    ]
