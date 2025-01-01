@@ -270,9 +270,9 @@ class SpotTradeConfig(Base):
         return result.to_dict() if result else None
 
     @classmethod
-    def get_effective_and_unfinished_limit_order_configs(cls) -> List[Dict]:
+    def get_effective_and_unfinished_limit_order_configs_by_ccy(cls, ccy: str) -> List[Dict]:
         filters = [cls.is_del == 0,
-                   cls.switch == '0',
+                   cls.ccy == ccy,
                    cls.exec_nums > 0,
                    cls.type == EnumTradeExecuteType.LIMIT_ORDER.value
                    ]
@@ -280,9 +280,9 @@ class SpotTradeConfig(Base):
         return [result.to_dict() for result in results]
 
     @classmethod
-    def get_effective_and_unfinished_stop_loss_configs(cls) -> List[Dict]:
+    def get_effective_and_unfinished_stop_loss_configs_by_ccy(cls, ccy: str) -> List[Dict]:
         filters = [cls.is_del == 0,
-                   cls.switch == '0',
+                   cls.ccy == ccy,
                    cls.exec_nums > 0,
                    cls.type == EnumTradeExecuteType.STOP_LOSS.value
                    ]

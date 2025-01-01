@@ -4,6 +4,7 @@ from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
+from backend.data_object_center.account_balance import AccountBalance
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumAlgoOrdType, EnumSide, EnumAlgoOrderState, \
     EnumTradeExecuteType, EnumExecSource
@@ -81,43 +82,44 @@ class SpotStopLossTask:
 
     # [调度子任务] 止损委托
     def execute_stop_loss_task(self, config: dict):
-        ccy = config.get('ccy')
-        # 获取目标止损价格
-        target_price = config.get('target_price')
-        if not target_price:
-            # 计算目标止损价, 根据indicator获取实时价格
-            target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
-                config=config
-            )
-        print(f"target price: {target_price}")
-        # 获取目标止损仓位
-        target_amount = config.get('amount')
-        sz = ''
-        if not target_amount:
-            real_sz = self.okx_balance_service.get_real_account_balance(ccy=ccy)
-            pct = config.get('percentage')
-            sz = str(round(float(real_sz) * int(pct) / 100, 6))
-        else:
-            sz = str(round(float(target_amount) / float(target_price), 6))
-        config['sz'] = sz
-        config['amount'] = str(target_amount)
-        config['target_price'] = str(target_price)
-        print(f"sz: {sz}")
+        try:
+            ccy = config.get('ccy')
+            # 获取目标止损价格
+            target_price = config.get('target_price')
+            if not target_price:
+                # 计算目标止损价, 根据indicator获取实时价格
+                target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
+                    config=config
+                )
+            # 获取目标止损仓位
+            target_amount = config.get('amount')
+            sz = ''
+            if not target_amount:
+                real_sz = self.okx_balance_service.get_real_account_balance(ccy=ccy)
+                pct = config.get('percentage')
+                sz = str(round(float(real_sz) * int(pct) / 100, 6))
+            else:
+                sz = str(round(float(target_amount) / float(target_price), 6))
+            config['sz'] = sz
+            config['amount'] = str(target_amount)
+            config['target_price'] = str(target_price)
 
-        result = self.trade.place_algo_order(
-            instId=SymbolFormatUtils.get_usdt(ccy),
-            tdMode=EnumTdMode.CASH.value,
-            side=EnumSide.SELL.value,
-            ordType=EnumAlgoOrdType.CONDITIONAL.value,
-            sz=sz,
-            slTriggerPx=str(target_price),  # 止损触发价格
-            slOrdPx='-1'
-        )
-        if result and result.get('code') == '0':
-            result = result.get('data')[0]
-            self.save_stop_loss_result(config, result)
-        SpotTradeConfig.minus_exec_nums(config.get('id'))
-        print(result)
+            result = self.trade.place_algo_order(
+                instId=SymbolFormatUtils.get_usdt(ccy),
+                tdMode=EnumTdMode.CASH.value,
+                side=EnumSide.SELL.value,
+                ordType=EnumAlgoOrdType.CONDITIONAL.value,
+                sz=sz,
+                slTriggerPx=str(target_price),  # 止损触发价格
+                slOrdPx='-1'
+            )
+            if result and result.get('code') == '0':
+                result = result.get('data')[0]
+                self.save_stop_loss_result(config, result)
+            SpotTradeConfig.minus_exec_nums(config.get('id'))
+            print(f"execute_stop_loss_task@config: {config.get('id')} execute result: {result}")
+        except Exception as e:
+            print(f"execute_stop_loss_task@e_handle_trade_result error: {e}")
 
     @staticmethod
     def save_stop_loss_result(config: dict, result: dict):
@@ -150,11 +152,18 @@ class SpotStopLossTask:
                 print(f"{live_order.get('algoId')}: {latest_status}")
 
     def process_new_auto_stop_loss_task(self):
-        stop_loss_configs = SpotTradeConfig.get_effective_and_unfinished_stop_loss_configs()
-        if len(stop_loss_configs) > 0:
-            for config in stop_loss_configs:
-                print(config)
-                self.execute_stop_loss_task(config)
+        activate_stop_loss_ccy_list = AccountBalance.list_activate_stop_loss_ccy()
+        if len(activate_stop_loss_ccy_list) > 0:
+            for ccy in activate_stop_loss_ccy_list:
+                stop_loss_configs = SpotTradeConfig.get_effective_and_unfinished_stop_loss_configs_by_ccy(ccy)
+                if len(stop_loss_configs) > 0:
+                    for config in stop_loss_configs:
+                        print(f"process_new_auto_stop_loss_task@config: {config}")
+                        self.execute_stop_loss_task(config)
+                    print(f"process_new_auto_stop_loss_task@stop_loss_configs execute finished.")
+            print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list execute finished.")
+        else:
+            print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list is empty.")
 
     def check_and_update_manual_live_stop_loss_orders(self):
         # # [查看数据库] 获取所有未完成的订单

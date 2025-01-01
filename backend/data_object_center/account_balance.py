@@ -309,3 +309,25 @@ class AccountBalance(Base):
             session.rollback()
             print(f"Update switch failed: {e}")
             return False
+
+    @classmethod
+    def list_activate_limit_order_ccy(cls):
+        try:
+            balance_list = session.query(cls).filter(
+                cls.limit_order_switch == 'true'
+            ).all()
+            return [balance.ccy for balance in balance_list]
+        except Exception as e:
+            print(f"list_activate_limit_order_ccy@query failed: {e}")
+            return []
+
+    @classmethod
+    def list_activate_stop_loss_ccy(cls):
+        try:
+            balance_list = session.query(cls).filter(
+                cls.stop_loss_switch == 'true'
+            ).all()
+            return [balance.ccy for balance in balance_list]
+        except Exception as e:
+            print(f"list_activate_stop_loss_ccy@query failed: {e}")
+            return []
