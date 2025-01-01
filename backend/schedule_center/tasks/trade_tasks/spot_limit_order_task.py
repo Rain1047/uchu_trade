@@ -54,7 +54,6 @@ class SpotLimitOrderTask:
                     elif latest_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
                         # 订单不存在
                         SpotAlgoOrderRecord.mark_canceled_by_ordId(ordId)
-
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
