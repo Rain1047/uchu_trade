@@ -4,6 +4,7 @@ from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
+from backend.data_object_center.account_balance import AccountBalance
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, \
     EnumOrderState, EnumExecSource, EnumTradeExecuteType
@@ -50,10 +51,19 @@ class SpotLimitOrderTask:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
     def process_new_auto_limit_order_task(self):
-        limit_order_configs = SpotTradeConfig().get_effective_and_unfinished_limit_order_configs()
-        if len(limit_order_configs) > 0:
-            for config in limit_order_configs:
-                self.execute_limit_order_task(config)
+        activate_limit_order_ccy_list = AccountBalance.list_activate_limit_order_ccy()
+        if len(activate_limit_order_ccy_list) > 0:
+            for ccy in activate_limit_order_ccy_list:
+                limit_order_configs = SpotTradeConfig().get_effective_and_unfinished_limit_order_configs_by_ccy(ccy=ccy)
+                print(f"process_new_auto_limit_order_task@ccy {ccy} size: {len(limit_order_configs)}")
+                if len(limit_order_configs) > 0:
+                    for config in limit_order_configs:
+                        self.execute_limit_order_task(config)
+                    print(f"process_new_auto_limit_order_task@ccy {ccy} execute finished.")
+                else:
+                    print(f"process_new_auto_limit_order_task@ccy {ccy} hsa no limit order configs.")
+        else:
+            print("process_new_auto_limit_order_task@no activate limit order ccy.")
 
     # [限价委托方法] 更新生效中的限价委托
     def update_limit_order(self, spot_trade_config: dict, latest_order: dict):
@@ -78,43 +88,46 @@ class SpotLimitOrderTask:
 
     # [调度子任务] 根据配置进行限价委托
     def execute_limit_order_task(self, config: dict):
-        print(f"execute_limit_order_task@config: {config}")
-        ccy = config.get('ccy')
-        target_price = config.get('target_price')
-        if not target_price:
-            target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
-                config=config
-            )
+        try:
+            print(f"execute_limit_order_task@config: {config}")
+            ccy = config.get('ccy')
+            target_price = config.get('target_price')
+            if not target_price:
+                target_price = self.okx_ticker_service.get_target_indicator_latest_price_by_spot_config(
+                    config=config
+                )
 
-        target_amount = config.get('amount')
-        if not target_amount:
-            # 获取真实的账户余额 赎回赚币-划转到交易账户
-            real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
-            pct = config.get('percentage')
-            target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
-        sz = str(round(float(target_amount) / float(target_price), 6))
-        config['sz'] = sz
-        config['amount'] = str(target_amount)
-        config['target_price'] = str(target_price)
-        print(f"target amount: {target_amount}, target price: {target_price}, sz:{sz}")
-        result = self.trade.place_order(
-            instId=SymbolFormatUtils.get_usdt(ccy),
-            tdMode=EnumTdMode.CASH.value,
-            side=EnumSide.BUY.value,
-            ordType=EnumOrdType.LIMIT.value,
-            sz=sz,
-            px=target_price
-        )
-        if result and result.get('code') == '0':
-            result = result.get('data')[0]
-            result['instId'] = ccy
-            result['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
-            result['sz'] = sz
-            result['exec_source'] = EnumExecSource.AUTO.value
-            result['state'] = EnumOrderState.LIVE.value
-            self.okx_record_service.save_or_update_limit_order_result(config, result)
-        SpotTradeConfig.minus_exec_nums(int(config.get('id')))
-        print(result)
+            target_amount = config.get('amount')
+            if not target_amount:
+                # 获取真实的账户余额 赎回赚币-划转到交易账户
+                real_account_balance = self.okx_balance_service.get_real_account_balance(ccy="USDT")
+                pct = config.get('percentage')
+                target_amount = str(round(float(real_account_balance) * float(pct) / 100, 6))
+            sz = str(round(float(target_amount) / float(target_price), 6))
+            config['sz'] = sz
+            config['amount'] = str(target_amount)
+            config['target_price'] = str(target_price)
+            print(f"execute_limit_order_task@target amount: {target_amount}, target price: {target_price}, sz:{sz}")
+            result = self.trade.place_order(
+                instId=SymbolFormatUtils.get_usdt(ccy),
+                tdMode=EnumTdMode.CASH.value,
+                side=EnumSide.BUY.value,
+                ordType=EnumOrdType.LIMIT.value,
+                sz=sz,
+                px=target_price
+            )
+            if result and result.get('code') == '0':
+                result = result.get('data')[0]
+                result['instId'] = ccy
+                result['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
+                result['sz'] = sz
+                result['exec_source'] = EnumExecSource.AUTO.value
+                result['state'] = EnumOrderState.LIVE.value
+                self.okx_record_service.save_or_update_limit_order_result(config, result)
+            SpotTradeConfig.minus_exec_nums(int(config.get('id')))
+            print(f"execute_limit_order_task@execute config {config.get('id')} success.")
+        except Exception as e:
+            print(f"execute_limit_order_task@execute config {config.get('id')} failed. {e}")
 
     def update_limit_order_status(self):
         live_order_list = SpotAlgoOrderRecord.list_by_status(EnumOrderState.LIVE.value)
