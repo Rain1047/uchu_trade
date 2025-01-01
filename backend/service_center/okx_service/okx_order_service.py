@@ -41,7 +41,6 @@ class OKXOrderService:
             'sz': config.get('sz') if config else result.get('sz'),
             'amount': config.get('amount') if config else
             str(float(result.get('sz', '0')) * float(result.get('px', '0'))),
-            # TODO target_price 修改下
             'target_price': config.get('target_price') if config else
             result.get('px'),
             'exec_price': result.get('avgPx'),

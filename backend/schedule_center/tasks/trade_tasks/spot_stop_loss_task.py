@@ -172,15 +172,19 @@ class SpotStopLossTask:
             print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list is empty.")
 
     def check_and_update_manual_live_stop_loss_orders(self):
-        # # [查看数据库] 获取所有未完成的订单
-        # manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
-        # if len(manual_live_stop_loss_order_list) > 0:
-        #     for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
-        #         latest_algo_order = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
-        #         if latest_algo_order and latest_algo_order.get('code') == '0':
-        #             if latest_algo_order.get('data')[0].get('state') != EnumAlgoOrderState.LIVE.value:
-        #                 SpotAlgoOrderRecord.update_status_by_algo_id(manual_live_stop_loss_order.get('algoId'),
-        #                                                              latest_algo_order.get('data')[0].get('state'))
+        # [查看数据库] 获取所有未完成的订单
+        manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
+        if len(manual_live_stop_loss_order_list) > 0:
+            for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
+                latest_algo_order_result = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
+                if latest_algo_order_result:
+                    if latest_algo_order_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
+                        latest_algo_order = latest_algo_order_result.get('data')[0]
+                        if latest_algo_order.get('state') != EnumAlgoOrderState.LIVE.value:
+                            SpotAlgoOrderRecord.update_status_by_algo_order(latest_algo_order)
+                    elif latest_algo_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
+                        algoId = manual_live_stop_loss_order.get('algoId')
+
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(
             instType="SPOT", ordType="conditional")
