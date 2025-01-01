@@ -381,7 +381,7 @@ class SpotAlgoOrderRecord(Base):
                 'status': algo_order.get('state'),
                 'update_time': datetime.now(),
                 'uTime': algo_order.get('uTime'),
-                'exec_price': algo_order.get('avgPrice')
+                'exec_price': algo_order.get('avgPrice', '')
             })
             session.commit()
             return result > 0
