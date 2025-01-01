@@ -141,13 +141,14 @@ class SpotLimitOrderTask:
             live_order_list = live_order_list_result.get('data')
             if len(live_order_list) > 0:
                 for live_order in live_order_list:
+                    print(f"live order result: {live_order}")
                     if live_order.get('side') != EnumSide.BUY.value:
                         continue
                     order = SpotAlgoOrderRecord.get_by_ord_id(live_order.get('ordId'))
                     if order:
                         continue
                     else:
-                        order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
+                        live_order['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
                         self.okx_record_service.save_or_update_limit_order_result(config={}, result=live_order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")

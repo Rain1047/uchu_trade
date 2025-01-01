@@ -175,8 +175,8 @@ class SpotStopLossTask:
                 for algo_order in algo_order_list:
                     if algo_order.get('side') != EnumSide.SELL.value:
                         continue
-                    algo_order = SpotAlgoOrderRecord.get_by_algo_id(algo_order.get('algoId'))
-                    if algo_order:
+                    exist_algo_order = SpotAlgoOrderRecord.get_by_algo_id(algo_order.get('algoId'))
+                    if exist_algo_order:
                         continue
                     else:
                         self.okx_record_service.save_or_update_limit_order_result(config={}, result=algo_order)

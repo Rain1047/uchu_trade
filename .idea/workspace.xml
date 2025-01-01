@@ -7,8 +7,10 @@
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_limit_order_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_limit_order_task.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_order_record_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_order_record_task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/okx_order_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_order_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,6 +46,7 @@
     "Python.main_controller.executor": "Run",
     "Python.spot_algo_order_record.executor": "Run",
     "Python.spot_limit_order_task.executor": "Run",
+    "Python.spot_main_task.executor": "Run",
     "Python.spot_order_record_task.executor": "Run",
     "git-widget-placeholder": "master",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -120,6 +123,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="spot_main_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="uchu_trade" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="spot_order_record_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
@@ -146,6 +172,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.spot_order_record_task" />
+        <item itemvalue="Python.spot_main_task" />
         <item itemvalue="Python.spot_limit_order_task" />
         <item itemvalue="Python.spot_algo_order_record" />
         <item itemvalue="Python.main_controller" />
@@ -393,7 +420,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735696126111</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735696669399</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1735696669399</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -415,7 +450,8 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1735441214409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
-    <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735696557279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
+    <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
+    <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735702858620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_algo_order_record.coverage" NAME="spot_algo_order_record Coverage Results" MODIFIED="1735616883468" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_object_center" />
   </component>
