@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from backend._constants import okx_constants
+from backend._constants import OKX_CONSTANTS
 from backend._decorators import add_docstring, singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
@@ -72,7 +72,7 @@ class OKXBalanceService:
     def reset_funding_balance(self):
         # 1. 更新现有记录
         response = self.funding.get_balances()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
             FundingBalance.reset(response)
             return True
         else:
@@ -91,7 +91,7 @@ class OKXBalanceService:
     def reset_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
             AccountBalance.reset_account_balance(response)
             return True
         else:
@@ -120,7 +120,7 @@ class OKXBalanceService:
     def list_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
             AccountBalance.insert_or_update(response)
         else:
             print(response)

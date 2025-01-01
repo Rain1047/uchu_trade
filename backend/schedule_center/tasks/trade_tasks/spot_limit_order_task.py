@@ -32,21 +32,26 @@ class SpotLimitOrderTask:
     def check_and_update_auto_live_limit_orders(self):
         # 1. get all unfinished orders
         auto_live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_limit_orders()
+        print(f"check_and_update_auto_live_limit_orders@auto_live_order_list size: {len(auto_live_order_list)}")
         if len(auto_live_order_list) > 0:
             for auto_live_order in auto_live_order_list:
                 ordId = auto_live_order.get('ordId')
                 # 2. check order status
                 latest_order_result = self.trade.get_order(instId=SymbolFormatUtils.get_usdt(auto_live_order.get('ccy')),
                                                            ordId=ordId)
-                if latest_order_result and latest_order_result.get('code') == '0':
-                    latest_order = latest_order_result.get('data')[0]
-                    if latest_order.get('state') in [EnumOrderState.CANCELED.value,
-                                                     EnumOrderState.FILLED.value]:
-                        SpotAlgoOrderRecord.update_status_by_ord_id(ordId, latest_order.get('state'))
-                    else:
-                        continue
-                    logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} "
-                                f"is {latest_order.get('state')}.")
+                print(f"check_and_update_auto_live_limit_orders@latest_order_result: {latest_order_result}")
+                if latest_order_result:
+                    if latest_order_result.get('code') == '0':
+                        latest_order = latest_order_result.get('data')[0]
+                        if latest_order.get('state') in [EnumOrderState.CANCELED.value,
+                                                         EnumOrderState.FILLED.value]:
+                            SpotAlgoOrderRecord.update_status_by_order(latest_order)
+                        else:
+                            continue
+                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} "
+                                    f"is {latest_order.get('state')}.")
+                    else: logger.error(f"check_and_update_auto_live_limit_orders@get_order error: {latest_order_result}")
+
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
 

@@ -363,8 +363,9 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
                 'status': order.get('state'),
                 'update_time': datetime.now(),
+                'cTime': order.get('cTime'),
                 'uTime': order.get('uTime'),
-                'exec_price': order.get('avgPrice')
+                'exec_price': order.get('avgPrice', '')
             })
             session.commit()
             return result > 0

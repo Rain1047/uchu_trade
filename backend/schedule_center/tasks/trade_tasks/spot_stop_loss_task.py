@@ -189,7 +189,8 @@ class SpotStopLossTask:
                     if exist_algo_order:
                         continue
                     else:
-                        self.okx_record_service.save_or_update_limit_order_result(config={}, result=algo_order)
+                        algo_order['type'] = EnumTradeExecuteType.STOP_LOSS.value
+                        self.okx_record_service.save_or_update_limit_order_result(config=None, result=algo_order)
         else:
             logger.info("check_and_update_manual_live_order@no manual live spot orders.")
 
