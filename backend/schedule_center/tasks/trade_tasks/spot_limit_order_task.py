@@ -1,5 +1,6 @@
 import logging
 
+from backend._constants import OKX_CONSTANTS
 from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
@@ -41,7 +42,7 @@ class SpotLimitOrderTask:
                                                            ordId=ordId)
                 print(f"check_and_update_auto_live_limit_orders@latest_order_result: {latest_order_result}")
                 if latest_order_result:
-                    if latest_order_result.get('code') == '0':
+                    if latest_order_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
                         latest_order = latest_order_result.get('data')[0]
                         if latest_order.get('state') in [EnumOrderState.CANCELED.value,
                                                          EnumOrderState.FILLED.value]:
@@ -50,7 +51,9 @@ class SpotLimitOrderTask:
                             continue
                         logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} "
                                     f"is {latest_order.get('state')}.")
-                    else: logger.error(f"check_and_update_auto_live_limit_orders@get_order error: {latest_order_result}")
+                    elif latest_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
+                        # 订单不存在
+                        SpotAlgoOrderRecord.mark_canceled_by_ordId(ordId)
 
         else:
             logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
