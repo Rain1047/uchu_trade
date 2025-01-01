@@ -28,7 +28,7 @@ class SpotMainTask:
         # 2.3 创建新的自动止损单
         self.stop_loss_task.process_new_auto_stop_loss_task()
 
-        self.spot_record_task.save_update_spot_order_record()
+        # self.spot_record_task.save_update_spot_order_record()
 
 
 if __name__ == '__main__':

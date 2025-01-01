@@ -1,14 +1,10 @@
 import logging
-from datetime import datetime
 
-from backend._decorators import singleton
 from backend._utils import SymbolFormatUtils
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_center.kline_data.kline_data_reader import KlineDataReader
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumTradeExecuteType, \
-    EnumOrderState, EnumExecSource
-from backend.data_object_center.spot_trade_config import SpotTradeConfig
+from backend.data_object_center.enum_obj import EnumTdMode, EnumSide, EnumOrdType, EnumTradeExecuteType
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 from backend.service_center.okx_service.okx_order_service import OKXOrderService
 from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
@@ -24,15 +20,13 @@ class SpotOrderRecordService:
         self.okx_ticker_service = OKXTickerService()
         self.okx_record_service = OKXOrderService()
 
-
-
     def save_update_spot_order_record(self):
         # [调用接口] 获取历史订单
         history_order_list = self.trade.get_orders_history_archive(
             instType="SPOT", ordType="limit,market"
         )
         if (history_order_list and history_order_list.get('code') == '0'
-                and history_order_list.get('data')) and len(history_order_list.get('data')) > 0:
+            and history_order_list.get('data')) and len(history_order_list.get('data')) > 0:
             history_order_list = history_order_list.get('data')
             for history_order in history_order_list:
                 history_order['ccy'] = SymbolFormatUtils.get_base_symbol(history_order.get('instId'))
@@ -95,8 +89,9 @@ class SpotOrderRecordService:
 
 if __name__ == '__main__':
     sp = SpotOrderRecordService()
-    history = sp.trade.get_orders_history_archive(
-        instType="SPOT", ordType="limit,market",
-        instId="ETH-USDT"
-    )
-    print(history)
+    # history = sp.trade.get_orders_history_archive(
+    #     instType="SPOT", ordType="limit,market",
+    #     instId="ETH-USDT"
+    # )
+    # print(history)
+    sp.save_update_spot_order_record()
