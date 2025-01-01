@@ -116,7 +116,7 @@ class SpotStopLossTask:
         if result and result.get('code') == '0':
             result = result.get('data')[0]
             self.save_stop_loss_result(config, result)
-        SpotTradeConfig.minus_exec_nums(config)
+        SpotTradeConfig.minus_exec_nums(config.get('id'))
         print(result)
 
     @staticmethod
