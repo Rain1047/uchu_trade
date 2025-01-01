@@ -25,6 +25,7 @@ class OKXOrderService:
 
     @staticmethod
     def save_or_update_stop_loss_result(config: dict | None, result: dict):
+        print(result)
         stop_loss_data = {
             'ccy': config.get('ccy') if config else
             SymbolFormatUtils.get_base_symbol(result.get('instId')),
