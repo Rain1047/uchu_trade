@@ -6,6 +6,7 @@ from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecor
 class OKXOrderService:
     @staticmethod
     def save_or_update_limit_order_result(config: dict | None, result: dict):
+        print(f"insert result is {result}")
         stop_loss_data = {
             'ccy': result.get('ccy') if result.get('ccy') else SymbolFormatUtils.get_base_symbol(result.get('instId')),
             'type': result.get('type'),
@@ -14,6 +15,7 @@ class OKXOrderService:
             'amount': config.get('amount') if config else
             str(float(result.get('sz')) * float(result.get('px'))),
             'target_price': config.get('target_price') if config else result.get('px'),
+            'exec_price': result.get('avgPx'),
             'ordId': result.get('ordId'),
             'status': result.get('state'),
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
@@ -33,14 +35,17 @@ class OKXOrderService:
             'config_id': config.get('id') if config else '',
             'sz': config.get('sz') if config else result.get('sz'),
             'amount': config.get('amount') if config else
-            str(float(result.get('sz')) * float(result.get('slTriggerPx'))),
+            str(float(result.get('sz', '0')) * float(result.get('px', '0'))),
             # TODO target_price 修改下
             'target_price': config.get('target_price') if config else
-            result.get('slTriggerPx'),
+            result.get('px'),
+            'exec_price': result.get('avgPx'),
             'ordId': result.get('ordId'),
             'algoId': result.get('algoId'),
             'status': result.get('state'),
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
+            'uTime': result.get('uTime'),
+            'cTime': result.get('cTime')
         }
         success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
         print(f"Insert stop loss: {'success' if success else 'failed'}")

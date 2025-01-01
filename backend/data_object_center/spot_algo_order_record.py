@@ -22,6 +22,8 @@ class SpotAlgoOrderRecord(Base):
     sz = Column(String, comment='仓位')
     amount = Column(String, comment='金额/USDT')
     target_price = Column(String, comment='目标价格')
+    exec_price = Column(String, comment='执行价格')
+
     algoId = Column(String, comment='止损订单id')
     ordId = Column(String, comment='限价订单id')
     status = Column(String, comment='订单状态')
@@ -41,6 +43,7 @@ class SpotAlgoOrderRecord(Base):
             'sz': self.sz,
             'amount': self.amount,
             'target_price': self.target_price,
+            'exec_price': self.exec_price,
             'algoId': self.algoId,
             'ordId': self.ordId,
             'status': self.status,
@@ -361,6 +364,7 @@ class SpotAlgoOrderRecord(Base):
                 'status': order.get('state'),
                 'update_time': datetime.now(),
                 'uTime': order.get('uTime'),
+                'exec_price': order.get('avgPrice')
             })
             session.commit()
             return result > 0
@@ -376,6 +380,7 @@ class SpotAlgoOrderRecord(Base):
                 'status': algo_order.get('state'),
                 'update_time': datetime.now(),
                 'uTime': algo_order.get('uTime'),
+                'exec_price': algo_order.get('avgPrice')
             })
             session.commit()
             return result > 0
