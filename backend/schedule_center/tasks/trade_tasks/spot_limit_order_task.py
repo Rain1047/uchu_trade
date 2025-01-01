@@ -78,7 +78,7 @@ class SpotLimitOrderTask:
 
     # [调度子任务] 根据配置进行限价委托
     def execute_limit_order_task(self, config: dict):
-
+        print(f"execute_limit_order_task@config: {config}")
         ccy = config.get('ccy')
         target_price = config.get('target_price')
         if not target_price:
@@ -107,9 +107,13 @@ class SpotLimitOrderTask:
         )
         if result and result.get('code') == '0':
             result = result.get('data')[0]
+            result['instId'] = ccy
             result['type'] = EnumTradeExecuteType.LIMIT_ORDER.value
+            result['sz'] = sz
+            result['exec_source'] = EnumExecSource.AUTO.value
+            result['state'] = EnumOrderState.LIVE.value
             self.okx_record_service.save_or_update_limit_order_result(config, result)
-        SpotTradeConfig.minus_exec_nums(config)
+        SpotTradeConfig.minus_exec_nums(int(config.get('id')))
         print(result)
 
     def update_limit_order_status(self):

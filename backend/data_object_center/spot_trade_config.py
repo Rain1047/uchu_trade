@@ -240,7 +240,7 @@ class SpotTradeConfig(Base):
             return False
 
     @classmethod
-    def minus_exec_nums(cls, id) -> bool:
+    def minus_exec_nums(cls, id: int) -> bool:
         try:
             spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(id=id)
             if not spot_trade_config:
@@ -262,10 +262,10 @@ class SpotTradeConfig(Base):
             return False
 
     @classmethod
-    def get_effective_spot_config_by_id(cls, id):
-        filters = [cls.is_del == 0,
+    def get_effective_spot_config_by_id(cls, id: int):
+        filters = [cls.is_del == '0',
                    cls.id == id,
-                   cls.switch == '0']
+                   cls.exec_nums > 0]
         result = session.query(cls).filter(*filters).first()
         return result.to_dict() if result else None
 
