@@ -356,18 +356,33 @@ class SpotAlgoOrderRecord(Base):
 
     @classmethod
     def update_status_by_order(cls, order: dict) -> bool:
-            try:
-                result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
-                    'status': order.get('state'),
-                    'update_time': datetime.now(),
-                    'uTime': order.get('uTime'),
-                })
-                session.commit()
-                return result > 0
-            except Exception as e:
-                session.rollback()
-                print(f"Update failed: {e}")
-                return False
+        try:
+            result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
+                'status': order.get('state'),
+                'update_time': datetime.now(),
+                'uTime': order.get('uTime'),
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update failed: {e}")
+            return False
+
+    @classmethod
+    def update_status_by_algo_order(cls, algo_order: dict):
+        try:
+            result = session.query(cls).filter(cls.ordId == algo_order.get('algoId')).update({
+                'status': algo_order.get('state'),
+                'update_time': datetime.now(),
+                'uTime': algo_order.get('uTime'),
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            print(f"Update failed: {e}")
+            return False
 
 
 if __name__ == '__main__':

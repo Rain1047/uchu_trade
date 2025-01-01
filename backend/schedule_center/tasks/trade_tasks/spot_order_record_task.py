@@ -24,6 +24,8 @@ class SpotOrderRecordService:
         self.okx_ticker_service = OKXTickerService()
         self.okx_record_service = OKXOrderService()
 
+
+
     def save_update_spot_order_record(self):
         # [调用接口] 获取历史订单
         history_order_list = self.trade.get_orders_history_archive(
@@ -55,16 +57,36 @@ class SpotOrderRecordService:
                         else:
                             SpotAlgoOrderRecord.update_status_by_order(history_order)
                 elif history_order.get('side') == EnumSide.SELL.value:
-                    current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
-                    if not current_order:
-                        history_order['type'] = EnumTradeExecuteType.STOP_LOSS.value \
-                            if history_order.get('algoId') \
-                            else EnumTradeExecuteType.MARKET_SELL.value
-                        self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
-                    else:
-                        if current_order.get('status') == history_order.get('state'):
-                            continue
+                    history_order['type'] = EnumTradeExecuteType.STOP_LOSS.value \
+                        if history_order.get('algoId') \
+                        else EnumTradeExecuteType.MARKET_SELL.value
+                    # 如果存在algoId，一定是根据止损委托创建的
+                    if history_order.get('algoId'):
+                        # 判断algo订单是否存在
+                        algo_order = SpotAlgoOrderRecord.get_by_algo_id(history_order.get('algoId'))
+                        # 当algo_order存在时
+                        if algo_order:
+                            if algo_order.get('status') == history_order.get('state'):
+                                continue
+                            else:
+                                SpotAlgoOrderRecord.update_status_by_algo_order(history_order)
                         else:
+                            self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
+                    # 如果不存在algoId，一定是根据市价委托创建的
+                    else:
+                        # 判断ord是否存在
+                        current_order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                        if not current_order:
+                            self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
+                        else:
+                            if current_order.get('status') == history_order.get('state'):
+                                continue
+                            else:
+                                order = SpotAlgoOrderRecord.get_by_ord_id(history_order.get('ordId'))
+                                if order:
+                                    SpotAlgoOrderRecord.update_status_by_order(history_order)
+                                else:
+                                    self.okx_record_service.save_or_update_stop_loss_result(None, history_order)
                             SpotAlgoOrderRecord.update_status_by_order(history_order)
 
         else:
