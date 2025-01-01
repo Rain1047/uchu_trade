@@ -17,14 +17,14 @@ class SpotMainTask:
     def execute_spot_main_task(self):
         print("execute_spot_main_task@start.")
         # # 1.1 检查并更新手动创建且生效中的限价委托单
-        # self.limit_order_task.check_and_update_manual_live_limit_orders()
+        self.limit_order_task.check_and_update_manual_live_limit_orders()
         # # 1.2 检查并更新自动创建且生效中的限价委托单
         self.limit_order_task.check_and_update_auto_live_limit_orders()
         # 1.3 创建新的自动限价委托单
         # self.limit_order_task.process_new_auto_limit_order_task()
 
         # # 2.1 检查并更新手动创建且生效中的自动止损单
-        # self.stop_loss_task.check_and_update_manual_live_stop_loss_orders()
+        self.stop_loss_task.check_and_update_manual_live_stop_loss_orders()
         # 2.2 检查并更新自动创建且生效中的自动止损单
         self.stop_loss_task.check_and_update_auto_live_stop_loss_orders()
         # 2.3 创建新的自动止损单
