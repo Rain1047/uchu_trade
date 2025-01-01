@@ -153,6 +153,7 @@ class SpotStopLossTask:
 
     def process_new_auto_stop_loss_task(self):
         activate_stop_loss_ccy_list = AccountBalance.list_activate_stop_loss_ccy()
+        print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list: {activate_stop_loss_ccy_list}")
         if len(activate_stop_loss_ccy_list) > 0:
             for ccy in activate_stop_loss_ccy_list:
                 stop_loss_configs = SpotTradeConfig.get_effective_and_unfinished_stop_loss_configs_by_ccy(ccy)
