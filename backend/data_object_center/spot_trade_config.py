@@ -303,6 +303,13 @@ class SpotTradeConfig(Base):
             print(f"Query configs failed: {e}")
             return []
 
+    @classmethod
+    def get_spot_config_by_id(cls, config_id):
+        filters = [cls.is_del == '0',
+                   cls.id == config_id]
+        result = session.query(cls).filter(*filters).first()
+        return result.to_dict() if result else None
+
 
 if __name__ == '__main__':
     swap = SpotTradeConfig()
