@@ -34,26 +34,28 @@ class SpotStopLossTask:
                     f" {len(live_stop_loss_order_list)}")
         if len(live_stop_loss_order_list) > 0:
             for live_stop_loss_order in live_stop_loss_order_list:
+                update_count, live_count, fail_count, pass_count = 0, 0, 0, 0
                 algoId = live_stop_loss_order.get('algoId')
                 # 2. check algo order status
                 latest_algo_order_result = self.trade.get_algo_order(algoId=algoId)
                 if latest_algo_order_result and latest_algo_order_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
                     latest_algo_order = latest_algo_order_result.get('data')[0]
-
-                    if latest_algo_order.get('state') == EnumAlgoOrderState.CANCELED.value:
-                        SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.CANCELED.value)
-                    if latest_algo_order.get('state') == EnumAlgoOrderState.EFFECTIVE.value:
-                        SpotAlgoOrderRecord.update_status_by_algo_id(algoId, EnumAlgoOrderState.EFFECTIVE.value)
-                        SpotTradeConfig.minus_exec_nums(id=live_stop_loss_order.get('config_id'))
+                    if latest_algo_order.get('state') in [EnumAlgoOrderState.CANCELED.value,
+                                                          EnumAlgoOrderState.EFFECTIVE.value]:
+                        SpotAlgoOrderRecord.update_status_by_algo_order(latest_algo_order)
+                        update_count += 1
                     elif latest_algo_order.get('state') == EnumAlgoOrderState.LIVE.value:
-                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
-                        spot_trade_config = SpotTradeConfig.get_effective_spot_config_by_id(
+                        # logger.info(f"check_and_update_auto_spot_live_order@ {latest_algo_order} is live")
+                        # TODO 这里得检查下balance的 限价/止损 开关还再不，如果在，还得校验配置是否被删除了
+                        # 如果开关取消了，或者配置删除了，则取消该订单
+                        spot_trade_config = SpotTradeConfig.get_spot_config_by_id(
                             live_stop_loss_order.get('config_id'))
                         if spot_trade_config:
+                            # 更新止损订单
                             self.update_stop_loss_order(spot_trade_config, latest_algo_order)
+                            live_count += 1
                     else:
-                        logger.info(
-                            f"check_and_update_auto_spot_live_order@ {latest_algo_order} is {latest_algo_order.get('state')}.")
+                        pass_count += 1
                 elif latest_algo_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
                     SpotAlgoOrderRecord.mark_canceled_by_algoId(algoId)
         else:
@@ -158,7 +160,7 @@ class SpotStopLossTask:
 
     def process_new_auto_stop_loss_task(self):
         activate_stop_loss_ccy_list = AccountBalance.list_activate_stop_loss_ccy()
-        print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list: {activate_stop_loss_ccy_list}")
+        print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list size: {len(activate_stop_loss_ccy_list)}")
         if len(activate_stop_loss_ccy_list) > 0:
             for ccy in activate_stop_loss_ccy_list:
                 stop_loss_configs = SpotTradeConfig.get_effective_and_unfinished_stop_loss_configs_by_ccy(ccy)
@@ -167,7 +169,8 @@ class SpotStopLossTask:
                         print(f"process_new_auto_stop_loss_task@config: {config}")
                         self.execute_stop_loss_task(config)
                     print(f"process_new_auto_stop_loss_task@stop_loss_configs execute finished.")
-            print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list execute finished.")
+                print(f"process_new_auto_stop_loss_task@ccy {ccy} execute finished.")
+            print(f"process_new_auto_stop_loss_task@all task execute finished.")
         else:
             print(f"process_new_auto_stop_loss_task@activate_stop_loss_ccy_list is empty.")
 
@@ -175,6 +178,7 @@ class SpotStopLossTask:
         # [查看数据库] 获取所有未完成的订单
         manual_live_stop_loss_order_list = SpotAlgoOrderRecord.list_live_manual_spot_stop_loss_orders()
         if len(manual_live_stop_loss_order_list) > 0:
+            live_count, update_count, fail_count = 0, 0, 0
             for manual_live_stop_loss_order in manual_live_stop_loss_order_list:
                 latest_algo_order_result = self.trade.get_algo_order(algoId=manual_live_stop_loss_order.get('algoId'))
                 if latest_algo_order_result:
@@ -182,8 +186,18 @@ class SpotStopLossTask:
                         latest_algo_order = latest_algo_order_result.get('data')[0]
                         if latest_algo_order.get('state') != EnumAlgoOrderState.LIVE.value:
                             SpotAlgoOrderRecord.update_status_by_algo_order(latest_algo_order)
+                            update_count += 1
+                        else:
+                            live_count += 1
+                            continue
                     elif latest_algo_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
                         algoId = manual_live_stop_loss_order.get('algoId')
+                        SpotAlgoOrderRecord.mark_canceled_by_algoId(algoId)
+                        update_count += 1
+                else:
+                    fail_count += 1
+            print(f"check_and_update_manual_live_stop_loss_orders@live_count: {live_count}, "
+                  f"update_count: {update_count}, fail_count: {fail_count}")
 
         # [调用接口] 获取所有未完成的订单
         algo_order_list_result = self.trade.order_algos_list(

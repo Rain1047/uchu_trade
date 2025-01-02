@@ -33,28 +33,32 @@ class SpotLimitOrderTask:
         auto_live_order_list = SpotAlgoOrderRecord.list_live_auto_spot_limit_orders()
         print(f"check_and_update_auto_live_limit_orders@auto_live_order_list size: {len(auto_live_order_list)}")
         if len(auto_live_order_list) > 0:
+            update_count, live_count, fail_count = 0, 0, 0
             for auto_live_order in auto_live_order_list:
                 ordId = auto_live_order.get('ordId')
                 # 2. check order status
                 latest_order_result = self.trade.get_order(
                     instId=SymbolFormatUtils.get_usdt(auto_live_order.get('ccy')),
                     ordId=ordId)
-                print(f"check_and_update_auto_live_limit_orders@latest_order_result: {latest_order_result}")
+                # print(f"check_and_update_auto_live_limit_orders@latest_order_result: {latest_order_result}")
                 if latest_order_result:
                     if latest_order_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
                         latest_order = latest_order_result.get('data')[0]
                         if latest_order.get('state') in [EnumOrderState.CANCELED.value,
                                                          EnumOrderState.FILLED.value]:
                             SpotAlgoOrderRecord.update_status_by_order(latest_order)
+                            update_count += 1
                         else:
+                            live_count += 1
                             continue
-                        logger.info(f"check_and_update_auto_spot_live_order@ {latest_order} "
-                                    f"is {latest_order.get('state')}.")
                     elif latest_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
                         # 订单不存在
                         SpotAlgoOrderRecord.mark_canceled_by_ordId(ordId)
+                        update_count += 1
+                else:
+                    fail_count += 1
         else:
-            logger.info("check_and_update_auto_spot_live_order@no auto live spot orders.")
+            print("check_and_update_auto_spot_live_order@no auto live spot orders.")
 
     def process_new_auto_limit_order_task(self):
         activate_limit_order_ccy_list = AccountBalance.list_activate_limit_order_ccy()
@@ -149,7 +153,9 @@ class SpotLimitOrderTask:
     def check_and_update_manual_live_limit_orders(self):
         # [查看数据库] 获取所有未完成的订单，更新其状态
         manual_live_order_list = SpotAlgoOrderRecord.list_live_manual_limit_orders()
+        print(f"check_and_update_manual_live_limit_orders@manual_live_order_list size: {len(manual_live_order_list)}")
         if len(manual_live_order_list) > 0:
+            live_count, update_count, fail_count = 0, 0, 0
             for manual_live_order in manual_live_order_list:
                 latest_order_result = self.trade.get_order(
                     instId=SymbolFormatUtils.get_usdt(manual_live_order.get('ccy')),
@@ -159,15 +165,26 @@ class SpotLimitOrderTask:
                         latest_order = latest_order_result.get('data')[0]
                         if latest_order.get('state') != EnumOrderState.LIVE.value:
                             SpotAlgoOrderRecord.update_status_by_order(latest_order)
+                            update_count += 1
+                        else:
+                            live_count += 1
+                            continue
                     elif latest_order_result.get('code') == OKX_CONSTANTS.ORDER_NOT_EXIST.value:
                         ordId = manual_live_order.get('ordId')
                         SpotAlgoOrderRecord.mark_canceled_by_ordId(ordId)
-                print(f"check_and_update_manual_live_limit_orders@ {latest_order_result}")
+                        update_count += 1
+                else:
+                    fail_count += 1
+                    logger.info(f"check_and_update_manual_live_limit_orders@ {latest_order_result}")
+            print(f"check_and_update_manual_live_limit_orders@still live count: {live_count}, "
+                  f"update count: {update_count}, fail count: {fail_count}")
+        else:
+            print("check_and_update_manual_live_limit_orders@manual_live_order_list is empty.")
 
         # [调用接口] 获取所有未完成的限价购买订单, 并保存
         live_order_list_result = self.trade.get_order_list(
             instType="SPOT", state=EnumOrderState.LIVE.value, ordType="limit")
-        if live_order_list_result and live_order_list_result.get('code') == '0':
+        if live_order_list_result and live_order_list_result.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             live_order_list = live_order_list_result.get('data')
             if len(live_order_list) > 0:
                 for live_order in live_order_list:
