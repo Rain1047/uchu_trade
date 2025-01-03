@@ -5,15 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
-      <change afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_spot_order_record_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_stop_loss_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/buy_order_processor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/order_processor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/order_processor_factory.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/record/sell_order_processor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/trade/trade_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/trade/trade_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +57,7 @@
       <recent name="$PROJECT_DIR$/backend/service_center/okx_service" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.spot_main_task">
+  <component name="RunManager" selected="Python.main_controller">
     <configuration name="main_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
@@ -179,11 +175,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_controller" />
         <item itemvalue="Python.spot_main_task" />
         <item itemvalue="Python.spot_order_record_task" />
         <item itemvalue="Python.spot_limit_order_task" />
         <item itemvalue="Python.spot_algo_order_record" />
-        <item itemvalue="Python.main_controller" />
       </list>
     </recent_temporary>
   </component>
@@ -532,7 +528,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735749544545</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735753406547</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1735753406547</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -553,7 +557,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="[交易记录后端开发]" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1735441214409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1735828578298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
