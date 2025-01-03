@@ -24,7 +24,7 @@ class TradeService:
         try:
             # 1. 从API获取最新数据并保存
             result = okx.trade.get_trade_fills_history(instType="SPOT")
-            if result['code'] == OKX_CONSTANTS.SUCCESS_CODE:
+            if result['code'] == OKX_CONSTANTS.SUCCESS_CODE.value:
                 FillsHistory.insert(result)
             else:
                 logger.error(f"Failed to get fills history: {result['code']}, {result['msg']}")
