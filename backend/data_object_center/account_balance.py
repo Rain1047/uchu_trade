@@ -217,7 +217,7 @@ class AccountBalance(Base):
     @staticmethod
     def reset_account_balance(response: dict):
         print(response)
-        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             # 从response['data']中提取出每个币种的详细信息
             balance_data = response.get('data', [])
 

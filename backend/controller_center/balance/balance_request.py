@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
@@ -37,20 +38,33 @@ class TradeConfig(BaseModel):
         }
 
 
-class TradeConfigExecuteHistory(BaseModel):
-    ccy: str
-    type: str
-    status: str
-    create_time: str
-    exec_source: str
+class TradeRecordPageRequest(BaseModel):
+    pageSize: int = 10
+    pageNum: int = 1
+    # 交易符号
+    ccy: str = ''
+    # 交易类别
+    type: str = ''
+    # 交易方向
+    side: str = ''
+    # 交易状态
+    status: str = ''
+    # 交易方式
+    exec_source: str = ''
+
+    # 开始/结束时间
+    begin_time: str = ''
+    end_time: str = ''
 
     def to_dict(self):
         return {
             'ccy': self.ccy,
             'type': self.type,
-            'exec_source': self.exec_source,
+            'side': self.side,
             'status': self.status,
-            'create_time': self.create_time
+            'exec_source': self.exec_source,
+            'begin_time': self.begin_time,
+            'end_time': self.end_time
         }
 
 

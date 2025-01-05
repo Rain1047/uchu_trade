@@ -72,7 +72,7 @@ class OKXBalanceService:
     def reset_funding_balance(self):
         # 1. 更新现有记录
         response = self.funding.get_balances()
-        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             FundingBalance.reset(response)
             return True
         else:
@@ -91,7 +91,7 @@ class OKXBalanceService:
     def reset_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
-        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             AccountBalance.reset_account_balance(response)
             return True
         else:
@@ -120,10 +120,12 @@ class OKXBalanceService:
     def list_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
-        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE:
+        print(response.get('code'))
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
+            print("list_account_balance success.")
             AccountBalance.insert_or_update(response)
         else:
-            print(response)
+            print("list account balance failed.")
             logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
 
         # 2. 获取列表结果并转换为可修改的字典列表

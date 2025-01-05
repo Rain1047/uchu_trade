@@ -5,7 +5,7 @@ from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
-from backend.controller_center.balance.balance_request import TradeConfigExecuteHistory
+from backend.controller_center.balance.balance_request import TradeRecordPageRequest
 from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
@@ -33,6 +33,9 @@ class SpotAlgoOrderRecord(Base):
     cTime = Column(DateTime, comment='订单创建时间')
     uTime = Column(DateTime, comment='订单更新时间')
 
+    side = Column(String, comment='订单方向')
+    note = Column(String, comment='交易日志')
+
     def to_dict(self) -> Dict:
         """转换为字典格式"""
         return {
@@ -48,6 +51,8 @@ class SpotAlgoOrderRecord(Base):
             'ordId': self.ordId,
             'status': self.status,
             'exec_source': self.exec_source,
+            'side': self.side,
+            'note': self.note,
             'cTime': self.cTime.strftime('%Y-%m-%d %H:%M:%S') if self.cTime else None,
             'uTime': self.uTime.strftime('%Y-%m-%d %H:%M:%S') if self.uTime else None,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
@@ -337,25 +342,54 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeConfigExecuteHistory):
+    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeRecordPageRequest):
+        """分页查询订单记录"""
         filters = []
+
+        # 添加过滤条件
         if config_execute_history_request.ccy:
-            filters.append(SpotAlgoOrderRecord.ccy == config_execute_history_request.ccy)
+            filters.append(SpotAlgoOrderRecord.ccy.like(f'%{config_execute_history_request.ccy}%'))
         if config_execute_history_request.type:
             filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
+        if config_execute_history_request.side:
+            filters.append(SpotAlgoOrderRecord.side == config_execute_history_request.side)
         if config_execute_history_request.status:
             filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
         if config_execute_history_request.exec_source:
             filters.append(SpotAlgoOrderRecord.exec_source == config_execute_history_request.exec_source)
-        if config_execute_history_request.create_time:
+
+        # 处理时间范围
+        if config_execute_history_request.begin_time and config_execute_history_request.end_time:
             try:
-                # 将字符串日期转换为 datetime 对象
-                create_time_dt = datetime.strptime(config_execute_history_request.create_time, "%Y-%m-%d")
-                filters.append(SpotAlgoOrderRecord.create_time >= create_time_dt)
+                begin_time_dt = datetime.strptime(config_execute_history_request.begin_time, "%Y-%m-%d")
+                end_time_dt = datetime.strptime(config_execute_history_request.end_time, "%Y-%m-%d")
+                filters.append(SpotAlgoOrderRecord.uTime >= begin_time_dt)
+                filters.append(SpotAlgoOrderRecord.uTime <= end_time_dt)
             except ValueError as e:
                 raise ValueError(f"日期格式错误: {e}")
 
-        return session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.create_time.desc()).all()
+        # 分页参数
+        page_size = config_execute_history_request.pageSize or 10
+        page_num = config_execute_history_request.pageNum or 1
+        offset = (page_num - 1) * page_size
+
+        # 查询总数
+        total = session.query(cls).filter(*filters).count()
+
+        # 分页查询
+        results = session.query(cls) \
+            .filter(*filters) \
+            .order_by(SpotAlgoOrderRecord.uTime.desc()) \
+            .limit(page_size) \
+            .offset(offset) \
+            .all()
+
+        return {
+            "records": [result.to_dict() for result in results],
+            "total": total,
+            "pageSize": page_size,
+            "pageNum": page_num
+        }
 
     @classmethod
     def update_status_by_order(cls, order: dict) -> bool:
