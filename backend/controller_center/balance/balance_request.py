@@ -39,6 +39,8 @@ class TradeConfig(BaseModel):
 
 
 class TradeRecordPageRequest(BaseModel):
+    pageSize: int = 10
+    pageNum: int = 1
     # 交易符号
     ccy: str
     # 交易类别
