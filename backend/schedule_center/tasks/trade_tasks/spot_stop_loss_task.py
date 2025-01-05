@@ -142,6 +142,7 @@ class SpotStopLossTask:
             result.get('slTriggerPx'),
             'algoId': result.get('algoId'),
             'status': EnumAlgoOrderState.LIVE.value,
+            'side': EnumSide.SELL.value,
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
         }
         success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)

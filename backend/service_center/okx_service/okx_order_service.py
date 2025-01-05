@@ -23,6 +23,7 @@ class OKXOrderService:
             'ordId': result.get('ordId'),
             'algoId': result.get('algoId'),
             'status': result.get('state'),
+            'side': result.get('side'),
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
             'uTime': result.get('uTime'),
             'cTime': result.get('cTime')
@@ -47,6 +48,7 @@ class OKXOrderService:
             'ordId': result.get('ordId'),
             'algoId': result.get('algoId'),
             'status': result.get('state'),
+            'side': result.get('side'),
             'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
             'uTime': result.get('uTime'),
             'cTime': result.get('cTime')
