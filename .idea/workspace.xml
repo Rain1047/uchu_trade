@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
-      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/constants/constants.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/types/types.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/styles/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/features/record/utils/styles.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/record/record_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/record/record_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/[common-list-prompt].md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/[common-list-prompt].md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +53,7 @@
     "Python.spot_main_task.executor": "Run",
     "Python.spot_order_record_task.executor": "Run",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/rain/PycharmProjects/uchu_trade/frontend/src/features",
+    "last_opened_file_path": "/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils",
     "node.js.selected.package.tslint": "(autodetect)",
     "settings.editor.selected.configurable": "preferences.lookFeel",
     "ts.external.directory.path": "/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib"
@@ -60,6 +61,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/frontend/src/features/record/utils" />
       <recent name="$PROJECT_DIR$/frontend/src/features" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -193,14 +195,6 @@
     </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00003" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735465737185</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1735465737185</updated>
-    </task>
     <task id="LOCAL-00004" summary="[现货下单主链路开发]">
       <option name="closed" value="true" />
       <created>1735468887939</created>
@@ -593,7 +587,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736084551846</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736090863726</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1736090863726</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

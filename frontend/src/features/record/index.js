@@ -1,2 +1,3 @@
-// features/record/index.js
-export { TradeRecordTable } from './components/TradeRecordTable';
+import TradeRecordTable from './components/TradeRecordTable';
+
+export { TradeRecordTable };
