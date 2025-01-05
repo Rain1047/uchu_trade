@@ -348,7 +348,7 @@ class SpotAlgoOrderRecord(Base):
 
         # 添加过滤条件
         if config_execute_history_request.ccy:
-            filters.append(SpotAlgoOrderRecord.ccy == config_execute_history_request.ccy)
+            filters.append(SpotAlgoOrderRecord.ccy.like(f'%{config_execute_history_request.ccy}%'))
         if config_execute_history_request.type:
             filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
         if config_execute_history_request.side:
@@ -385,10 +385,10 @@ class SpotAlgoOrderRecord(Base):
             .all()
 
         return {
-            'records': [result.to_dict() for result in results],
-            'total': total,
-            'pageSize': page_size,
-            'pageNum': page_num
+            "records": [result.to_dict() for result in results],
+            "total": total,
+            "pageSize": page_size,
+            "pageNum": page_num
         }
 
     @classmethod

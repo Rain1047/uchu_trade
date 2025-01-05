@@ -42,19 +42,19 @@ class TradeRecordPageRequest(BaseModel):
     pageSize: int = 10
     pageNum: int = 1
     # 交易符号
-    ccy: str
+    ccy: str = ''
     # 交易类别
-    type: str
+    type: str = ''
     # 交易方向
-    side: str
+    side: str = ''
     # 交易状态
-    status: str
+    status: str = ''
     # 交易方式
-    exec_source: str
+    exec_source: str = ''
 
     # 开始/结束时间
-    begin_time: datetime
-    end_time: datetime
+    begin_time: str = ''
+    end_time: str = ''
 
     def to_dict(self):
         return {
