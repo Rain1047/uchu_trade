@@ -13,16 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/list_spot_record")
-async def list_spot_record(request: TradeRecordPageRequest):
+def list_spot_record(request: TradeRecordPageRequest):
     try:
         print(f"Received trade request: {request}")
 
         page_result = RecordService.list_config_execute_records(request)
-
-        return {
-            'success': True,
-            'data': page_result
-        }
+        page_result['success'] = True
+        return page_result
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
         raise HTTPException(
@@ -30,3 +27,8 @@ async def list_spot_record(request: TradeRecordPageRequest):
             detail=str(e)
         )
 
+
+if __name__ == '__main__':
+    request = TradeRecordPageRequest()
+    request.ccy = "ETH"
+    print(list_spot_record(request))
