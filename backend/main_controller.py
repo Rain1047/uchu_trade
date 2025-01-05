@@ -11,6 +11,7 @@ from backend.controller_center.strategy.strategy_controller import router as str
 from backend.controller_center.balance.balance_controller import router as balance_router
 from backend.controller_center.backtest.backtest_controller import router as backtest_router
 from backend.controller_center.strategy_files.strategy_files_controller import router as strategy_files_router
+from backend.controller_center.record.record_controller import router as record_router
 import uvicorn
 
 
@@ -23,6 +24,7 @@ app.include_router(strategy_router, prefix="/api/strategy", tags=["strategy"])
 app.include_router(balance_router, prefix="/api/balance", tags=["balance"])
 app.include_router(backtest_router, prefix="/api/backtest", tags=["backtest"])
 app.include_router(strategy_files_router, prefix="/api/strategy-files", tags=["strategy-files"])
+app.include_router(record_router, prefix="/api/record", tags=["record"])
 
 # 配置 CORS
 app.add_middleware(
