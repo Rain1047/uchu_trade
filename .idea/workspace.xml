@@ -6,8 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/constants/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/constants/constants.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/styles/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/styles/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/utils/styles.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/utils/styles.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,35 +27,35 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:Rain1047/uchu_trade.git",
-    "accountId": "367d11a5-1d22-44c0-9af3-c637c64bd74f"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:Rain1047/uchu_trade.git&quot;,
+    &quot;accountId&quot;: &quot;367d11a5-1d22-44c0-9af3-c637c64bd74f&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.balance_controller.executor": "Run",
-    "Python.fedJeffCox.executor": "Run",
-    "Python.main_controller.executor": "Run",
-    "Python.record_controller.executor": "Run",
-    "Python.spot_algo_order_record.executor": "Run",
-    "Python.spot_limit_order_task.executor": "Run",
-    "Python.spot_main_task.executor": "Run",
-    "Python.spot_order_record_task.executor": "Run",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "ts.external.directory.path": "/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.balance_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fedJeffCox.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.record_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_algo_order_record.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_limit_order_task.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_main_task.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_order_record_task.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src/features/record/utils" />
@@ -190,14 +192,6 @@
     </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00005" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735472875654</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1735472875654</updated>
-    </task>
     <task id="LOCAL-00006" summary="[现货下单主链路开发]">
       <option name="closed" value="true" />
       <created>1735476130486</created>
@@ -590,7 +584,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736093320602</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736094730602</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1736094730602</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

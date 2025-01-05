@@ -15,9 +15,11 @@ import {
   Paper,
   Pagination,
 } from '@mui/material';
-import { TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES } from '../constants/constants';
+import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES} from '../constants/constants';
 import {
   DarkTextField,
+    DarkSelect,
+    searchAreaStyles,
   SearchButton,
   ResetButton,
   StyledTableContainer,
@@ -28,6 +30,7 @@ const TradeRecordTable = () => {
   const [records, setRecords] = useState([]); // 交易记录数据
   const [total, setTotal] = useState(0); // 总记录数
   const [loading, setLoading] = useState(false); // 加载状态
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [query, setQuery] = useState({
     pageNum: 1,
     pageSize: 10,
@@ -97,9 +100,8 @@ const TradeRecordTable = () => {
           onChange={(e) => updateQuery('ccy', e.target.value)}
         />
 
-        {/* 交易类别多选 */}
-        <Select
-          multiple
+        {/* 交易类别 */}
+        <DarkSelect
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
           renderValue={(selected) =>
@@ -111,10 +113,10 @@ const TradeRecordTable = () => {
               {type.label}
             </MenuItem>
           ))}
-        </Select>
+        </DarkSelect>
 
         {/* 交易方向单选 */}
-        <Select
+        <DarkSelect
           value={query.side}
           onChange={(e) => updateQuery('side', e.target.value)}
         >
@@ -124,10 +126,10 @@ const TradeRecordTable = () => {
               {side.label}
             </MenuItem>
           ))}
-        </Select>
+        </DarkSelect>
 
         {/* 交易方式单选 */}
-        <Select
+        <DarkSelect
           value={query.exec_source}
           onChange={(e) => updateQuery('exec_source', e.target.value)}
         >
@@ -137,10 +139,10 @@ const TradeRecordTable = () => {
               {source.label}
             </MenuItem>
           ))}
-        </Select>
+        </DarkSelect>
 
         {/* 时间范围选择 */}
-        <Select
+        <DarkSelect
           value={query.timeRange || ''}
           onChange={(e) => {
             const days = e.target.value;
@@ -160,7 +162,7 @@ const TradeRecordTable = () => {
               {range.label}
             </MenuItem>
           ))}
-        </Select>
+        </DarkSelect>
 
         <SearchButton variant="contained" onClick={fetchRecords}>
           查询
