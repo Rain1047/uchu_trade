@@ -113,10 +113,8 @@ def list_config_execute_records(config_execute_history_request: TradeRecordPageR
     try:
         balance_service = BalanceService()
         configs = balance_service.list_config_execute_records(config_execute_history_request)
-        return {
-            "success": True,
-            "data": configs
-        }
+        configs['success'] = True
+        return configs
     except Exception as e:
         return {
             "success": False,
