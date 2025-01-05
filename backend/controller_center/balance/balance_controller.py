@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Body, Query
 import logging
 
 from backend.controller_center.balance.balance_request import TradeConfig, UpdateAccountBalanceSwitchRequest, \
-    TradeConfigExecuteHistory, ConfigUpdateRequest
+    TradeRecordPageRequest, ConfigUpdateRequest
 from backend.controller_center.balance.balance_service import BalanceService
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
@@ -109,7 +109,7 @@ def list_configs(ccy: str, type_: str):
 
 
 @router.post("/list_config_execute_records")
-def list_config_execute_records(config_execute_history_request: TradeConfigExecuteHistory):
+def list_config_execute_records(config_execute_history_request: TradeRecordPageRequest):
     try:
         balance_service = BalanceService()
         configs = balance_service.list_config_execute_records(config_execute_history_request)
