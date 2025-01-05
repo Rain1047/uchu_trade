@@ -344,23 +344,28 @@ class SpotAlgoOrderRecord(Base):
     @classmethod
     def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeRecordPageRequest):
         filters = []
-        if config_execute_history_request.ccy:
+        if config_execute_history_request.ccy and config_execute_history_request.ccy != "":
             filters.append(SpotAlgoOrderRecord.ccy == config_execute_history_request.ccy)
-        if config_execute_history_request.type:
+        if config_execute_history_request.type and config_execute_history_request.type != "":
             filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
-        if config_execute_history_request.status:
+        if config_execute_history_request.side and config_execute_history_request.side != "":
+            filters.append(SpotAlgoOrderRecord.side == config_execute_history_request.side)
+        if config_execute_history_request.status and config_execute_history_request.status != "":
             filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
-        if config_execute_history_request.exec_source:
+        if config_execute_history_request.exec_source and config_execute_history_request.exec_source != "":
             filters.append(SpotAlgoOrderRecord.exec_source == config_execute_history_request.exec_source)
-        if config_execute_history_request.create_time:
+        if config_execute_history_request.begin_time and config_execute_history_request.end_time:
             try:
                 # 将字符串日期转换为 datetime 对象
-                create_time_dt = datetime.strptime(config_execute_history_request.create_time, "%Y-%m-%d")
-                filters.append(SpotAlgoOrderRecord.create_time >= create_time_dt)
+                begin_time_dt = datetime.strptime(config_execute_history_request.begin_time, "%Y-%m-%d")
+                end_time_dt = datetime.strptime(config_execute_history_request.end_time, "%Y-%m-%d")
+                filters.append(SpotAlgoOrderRecord.uTime >= begin_time_dt)
+                filters.append(SpotAlgoOrderRecord.uTime <= end_time_dt)
             except ValueError as e:
                 raise ValueError(f"日期格式错误: {e}")
 
-        return session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.create_time.desc()).all()
+        results = session.query(cls).filter(*filters).order_by(SpotAlgoOrderRecord.uTime.desc()).all()
+        return [result.to_dict() for result in results]
 
     @classmethod
     def update_status_by_order(cls, order: dict) -> bool:
