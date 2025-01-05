@@ -5,7 +5,7 @@ from backend.data_object_center.account_balance import AccountBalance
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 from backend.controller_center.balance.balance_request import UpdateAccountBalanceSwitchRequest, TradeConfig, \
-    TradeConfigExecuteHistory
+    TradeRecordPageRequest
 from backend.service_center.okx_service.okx_balance_service import OKXBalanceService
 
 
@@ -38,7 +38,7 @@ class BalanceService:
         return self.okx_balance_service.list_account_balance()
 
     @staticmethod
-    def list_config_execute_records(config_execute_history_request: TradeConfigExecuteHistory):
+    def list_config_execute_records(config_execute_history_request: TradeRecordPageRequest):
         return SpotAlgoOrderRecord.list_spot_algo_order_record_by_conditions(config_execute_history_request)
 
 

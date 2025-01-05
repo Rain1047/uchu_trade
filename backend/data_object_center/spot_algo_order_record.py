@@ -5,7 +5,7 @@ from datetime import datetime
 
 from backend._decorators import singleton
 from backend._utils import DatabaseUtils
-from backend.controller_center.balance.balance_request import TradeConfigExecuteHistory
+from backend.controller_center.balance.balance_request import TradeRecordPageRequest
 from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
@@ -342,7 +342,7 @@ class SpotAlgoOrderRecord(Base):
             return []
 
     @classmethod
-    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeConfigExecuteHistory):
+    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeRecordPageRequest):
         filters = []
         if config_execute_history_request.ccy:
             filters.append(SpotAlgoOrderRecord.ccy == config_execute_history_request.ccy)
