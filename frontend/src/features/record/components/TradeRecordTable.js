@@ -23,6 +23,7 @@ import {
   StyledTableContainer,
   tableStyles
 } from '../styles';
+import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
 const TradeRecordTable = () => {
   const [records, setRecords] = useState([]); // 交易记录数据
   const [total, setTotal] = useState(0); // 总记录数
@@ -37,19 +38,22 @@ const TradeRecordTable = () => {
     begin_time: '',
     end_time: '',
   });
+  const handleReset = () => {
+    setFilters(INITIAL_FILTERS);
+  };
 
 
   // 列定义
   const columns = [
-    { label: '符号', key: 'ccy' },
-    { label: '交易类别', key: 'type', render: (value) => TRADE_TYPES.find((t) => t.value === value)?.label },
-    { label: '交易方向', key: 'side', render: (value) => TRADE_SIDES.find((t) => t.value === value)?.label },
-    { label: '数量(USDT)', key: 'amount' },
-    { label: '交易价格', key: 'exec_price' },
-    { label: '交易方式', key: 'exec_source', render: (value) => EXEC_SOURCES.find((t) => t.value === value)?.label },
-    { label: '交易时间', key: 'create_time' },
-  ];
-
+      { label: '符号', key: 'ccy' },
+      { label: '交易类别', key: 'type', render: (value) => TRADE_TYPES.find(t => t.value === value)?.label },
+      { label: '交易方向', key: 'side', render: (value) => TRADE_SIDES.find(t => t.value === value)?.label },
+      { label: '数量(USDT)', key: 'amount' },
+      { label: '交易价格', key: 'exec_price' },
+      { label: '交易方式', key: 'exec_source', render: (value) => EXEC_SOURCES.find(t => t.value === value)?.label },
+      { label: '交易时间', key: 'uTime' },
+      { label: '交易日志', key: 'note' },
+    ];
   // 请求数据
   const fetchRecords = async () => {
     setLoading(true);
@@ -87,34 +91,83 @@ const TradeRecordTable = () => {
       {/* 搜索区域 */}
       <Box sx={tableStyles.searchArea}>
         <DarkTextField
-          placeholder="Instrument ID"
+          placeholder="符号"
           size="small"
           value={query.ccy}
           onChange={(e) => updateQuery('ccy', e.target.value)}
-          sx={tableStyles.textField}
         />
-        <DarkTextField
-          label="Start Time"
-          type="date"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={query.begin_time}
-          onChange={(e) => updateQuery('begin_time', e.target.value)}
-        />
-        <DarkTextField
-          label="End Time"
-          type="date"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={query.end_time}
-          onChange={(e) => updateQuery('end_time', e.target.value)}
-        />
+
+        {/* 交易类别多选 */}
+        <Select
+          multiple
+          value={query.type}
+          onChange={(e) => updateQuery('type', e.target.value)}
+          renderValue={(selected) =>
+            selected.map(value => TRADE_TYPES.find(t => t.value === value)?.label).join(', ')
+          }
+        >
+          {TRADE_TYPES.map((type) => (
+            <MenuItem key={type.value} value={type.value}>
+              {type.label}
+            </MenuItem>
+          ))}
+        </Select>
+
+        {/* 交易方向单选 */}
+        <Select
+          value={query.side}
+          onChange={(e) => updateQuery('side', e.target.value)}
+        >
+          <MenuItem value="">全部</MenuItem>
+          {TRADE_SIDES.map((side) => (
+            <MenuItem key={side.value} value={side.value}>
+              {side.label}
+            </MenuItem>
+          ))}
+        </Select>
+
+        {/* 交易方式单选 */}
+        <Select
+          value={query.exec_source}
+          onChange={(e) => updateQuery('exec_source', e.target.value)}
+        >
+          <MenuItem value="">全部</MenuItem>
+          {EXEC_SOURCES.map((source) => (
+            <MenuItem key={source.value} value={source.value}>
+              {source.label}
+            </MenuItem>
+          ))}
+        </Select>
+
+        {/* 时间范围选择 */}
+        <Select
+          value={query.timeRange || ''}
+          onChange={(e) => {
+            const days = e.target.value;
+            if (days) {
+              const endDate = new Date();
+              const startDate = new Date();
+              startDate.setDate(startDate.getDate() - days);
+              updateQuery('begin_time', startDate.toISOString().split('T')[0]);
+              updateQuery('end_time', endDate.toISOString().split('T')[0]);
+              updateQuery('timeRange', days);
+            }
+          }}
+        >
+          <MenuItem value="">选择时间范围</MenuItem>
+          {TIME_RANGES.map((range) => (
+            <MenuItem key={range.value} value={range.value}>
+              {range.label}
+            </MenuItem>
+          ))}
+        </Select>
+
         <SearchButton variant="contained" onClick={fetchRecords}>
-          SEARCH
+          查询
         </SearchButton>
-        {/*<ResetButton variant="contained" onClick={handleReset}>*/}
-        {/*  RESET*/}
-        {/*</ResetButton>*/}
+        <ResetButton variant="contained" onClick={handleReset}>
+          重置
+        </ResetButton>
       </Box>
 
       {/* 表格内容 */}
@@ -122,7 +175,7 @@ const TradeRecordTable = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Trade ID</TableCell>
+              <TableCell>CCY</TableCell>
               <TableCell>Instrument</TableCell>
               <TableCell>Side</TableCell>
               <TableCell>Price</TableCell>
