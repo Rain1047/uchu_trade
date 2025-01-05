@@ -13,6 +13,7 @@ import StrategyPage from "./features/strategy"
 import BalanceList from "./features/balance"
 import Backtest from "./features/backtest";
 import StrategyFilesPage from "./features/strategyfiles";
+import {TradeRecordTable} from "./features/record"
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -56,6 +57,7 @@ function App() {
                             <Route path="/balance" element={<BalanceList />} />
                             <Route path="/backtest" element={<Backtest />} />
                             <Route path="/strategyfiles" element={<StrategyFilesPage />} />
+                            <Route path="/record" element={<TradeRecordTable />} />
                         </Routes>
                     </Layout>
                 </Router>
