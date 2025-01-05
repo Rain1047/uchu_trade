@@ -113,7 +113,7 @@ def list_config_execute_records(config_execute_history_request: TradeRecordPageR
     try:
         balance_service = BalanceService()
         configs = balance_service.list_config_execute_records(config_execute_history_request)
-        configs['success'] = True
+        configs["success"] = True
         return configs
     except Exception as e:
         return {
@@ -121,5 +121,8 @@ def list_config_execute_records(config_execute_history_request: TradeRecordPageR
             "message": str(e)
         }
 
+
 if __name__ == '__main__':
-    get_balance_list()
+    request = TradeRecordPageRequest()
+    request.ccy = "ETH"
+    print(list_config_execute_records(request))
