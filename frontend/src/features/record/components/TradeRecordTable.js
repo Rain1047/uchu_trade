@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES} from '../constants/constants';
 import {
+  useStyles,
   DarkTextField,
     DarkSelect,
     searchAreaStyles,
@@ -44,6 +45,7 @@ const TradeRecordTable = () => {
   const handleReset = () => {
     setFilters(INITIAL_FILTERS);
   };
+  const classes = useStyles();
 
 
   // 列定义
