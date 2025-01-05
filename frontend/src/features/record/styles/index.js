@@ -1,6 +1,51 @@
 // features/record/styles/index.ts
 import { styled } from '@mui/material/styles';
-import { TextField, Button, TableContainer } from '@mui/material';
+import {TextField, Button, TableContainer, Select} from '@mui/material';
+
+export const DarkSelect = styled(Select)(({ theme }) => ({
+  backgroundColor: '#1E1E1E',
+  color: '#fff',
+  minWidth: '180px',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '4px',
+    '& fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+  },
+  '& .MuiSelect-select': {
+    padding: '10px 14px',
+    fontSize: '14px',
+  },
+  '& .MuiSelect-icon': {
+    color: '#fff',
+  }
+}));
+
+
+// 搜索区域样式
+export const searchAreaStyles = {
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 2,
+    mb: 3,
+  },
+  selectGroup: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 2,
+    flex: 1,
+    minWidth: '300px',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: 2,
+    alignItems: 'flex-start',
+  }
+};
 
 export const DarkTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
