@@ -1,4 +1,5 @@
 // features/record/constants.js
+
 export const TRADE_TYPES = [
   { label: '限价买入', value: 'limit_order' },
   { label: '市价买入', value: 'market_buy' },
