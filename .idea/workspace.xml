@@ -191,14 +191,6 @@
     </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00010" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735577331092</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1735577331092</updated>
-    </task>
     <task id="LOCAL-00011" summary="[现货下单主链路开发]">
       <option name="closed" value="true" />
       <created>1735581371517</created>
@@ -591,7 +583,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736169952567</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736185555640</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1736185555640</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

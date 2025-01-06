@@ -291,5 +291,6 @@ export const useStyles = makeStyles((theme) => ({
     '& .MuiInputBase-input': {
       color: '#fff',
     }
-  }
+  },
+
 }));
