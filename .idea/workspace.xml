@@ -6,10 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/balance/balance_request.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/styles/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/styles/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,47 +18,53 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
         <option value="Python Script" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:Rain1047/uchu_trade.git",
-    "accountId": "367d11a5-1d22-44c0-9af3-c637c64bd74f"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:Rain1047/uchu_trade.git&quot;,
+    &quot;accountId&quot;: &quot;367d11a5-1d22-44c0-9af3-c637c64bd74f&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.balance_controller.executor": "Run",
-    "Python.fedJeffCox.executor": "Run",
-    "Python.main_controller.executor": "Run",
-    "Python.spot_algo_order_record.executor": "Run",
-    "Python.spot_limit_order_task.executor": "Run",
-    "Python.spot_main_task.executor": "Run",
-    "Python.spot_order_record_task.executor": "Run",
-    "git-widget-placeholder": "master",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "ts.external.directory.path": "/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.balance_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fedJeffCox.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.record_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_algo_order_record.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_limit_order_task.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_main_task.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spot_order_record_task.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/frontend/src/features/record/utils" />
+      <recent name="$PROJECT_DIR$/frontend/src/features" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/backend/service_center/okx_service" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.balance_controller">
+  <component name="RunManager" selected="Python.record_controller">
     <configuration name="balance_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
@@ -129,6 +134,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="record_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="uchu_trade" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/controller_center/record" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/controller_center/record/record_controller.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="spot_main_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
@@ -152,112 +180,17 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="spot_order_record_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="uchu_trade" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_order_record_task.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.record_controller" />
         <item itemvalue="Python.balance_controller" />
         <item itemvalue="Python.main_controller" />
         <item itemvalue="Python.fedJeffCox" />
         <item itemvalue="Python.spot_main_task" />
-        <item itemvalue="Python.spot_order_record_task" />
       </list>
     </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00002" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735449578172</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1735449578172</updated>
-    </task>
-    <task id="LOCAL-00003" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735465737185</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1735465737185</updated>
-    </task>
-    <task id="LOCAL-00004" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735468887939</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1735468887939</updated>
-    </task>
-    <task id="LOCAL-00005" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735472875654</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1735472875654</updated>
-    </task>
-    <task id="LOCAL-00006" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735476130486</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1735476130486</updated>
-    </task>
-    <task id="LOCAL-00007" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735476479400</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1735476479400</updated>
-    </task>
-    <task id="LOCAL-00008" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735478291267</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1735478291267</updated>
-    </task>
-    <task id="LOCAL-00009" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735576818334</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1735576818334</updated>
-    </task>
-    <task id="LOCAL-00010" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735577331092</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1735577331092</updated>
-    </task>
     <task id="LOCAL-00011" summary="[现货下单主链路开发]">
       <option name="closed" value="true" />
       <created>1735581371517</created>
@@ -586,7 +519,79 @@
       <option name="project" value="LOCAL" />
       <updated>1736077008467</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736084551846</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1736084551846</updated>
+    </task>
+    <task id="LOCAL-00053" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736090863726</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1736090863726</updated>
+    </task>
+    <task id="LOCAL-00054" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736093320602</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1736093320602</updated>
+    </task>
+    <task id="LOCAL-00055" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736094730602</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1736094730602</updated>
+    </task>
+    <task id="LOCAL-00056" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736095981790</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1736095981790</updated>
+    </task>
+    <task id="LOCAL-00057" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736096777580</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1736096777581</updated>
+    </task>
+    <task id="LOCAL-00058" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736168951397</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1736168951397</updated>
+    </task>
+    <task id="LOCAL-00059" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736169952567</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1736169952567</updated>
+    </task>
+    <task id="LOCAL-00060" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736185555640</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1736185555640</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -608,6 +613,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/uchu_trade$fedJeffCox.coverage" NAME="fedJeffCox Coverage Results" MODIFIED="1736060616627" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_center/data_gather" />
+    <SUITE FILE_PATH="coverage/uchu_trade$record_controller.coverage" NAME="record_controller Coverage Results" MODIFIED="1736087083495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/record" />
     <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1736077120241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
