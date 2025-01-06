@@ -23,7 +23,8 @@ import {
   ResetButton,
   StyledTableContainer,
   tableStyles,
-    DarkFormControl,
+  DarkFormControl,
+  menuProps,
 } from '../styles';
 import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
 const TradeRecordTable = () => {
@@ -45,6 +46,24 @@ const TradeRecordTable = () => {
     setFilters(INITIAL_FILTERS);
   };
   const classes = useStyles();
+
+  const menuProps = {
+  classes: { paper: classes.selectMenu },
+  MenuListProps: {
+    sx: { backgroundColor: '#1E1E1E' }
+  },
+  PaperProps: {
+    sx: { backgroundColor: '#1E1E1E' }
+  },
+  anchorOrigin: {
+    vertical: 'bottom',
+    horizontal: 'left',
+  },
+  transformOrigin: {
+    vertical: 'top',
+    horizontal: 'left',
+  },
+};
 
 
   // 列定义
@@ -96,7 +115,7 @@ const TradeRecordTable = () => {
       <Box sx={tableStyles.searchArea}>
         <DarkFormControl>
           <DarkTextField
-            placeholder="请输入交易符号"
+            placeholder="交易符号"
             size="small"
             value={query.ccy}
             onChange={(e) => updateQuery('ccy', e.target.value)}
@@ -107,18 +126,10 @@ const TradeRecordTable = () => {
         <DarkSelect
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
-          MenuProps={{
-              classes: { paper: classes.selectMenu },
-              anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'left',
-              },
-              transformOrigin: {
-                vertical: 'top',
-                horizontal: 'left',
-              },
-            }}
+          MenuProps={menuProps}
+          placeholder="交易类别"
         >
+          <MenuItem value="">全部</MenuItem>
           {TRADE_TYPES.map((type) => (
             <MenuItem key={type.value} value={type.value}>
               {type.label}
@@ -130,6 +141,8 @@ const TradeRecordTable = () => {
         <DarkSelect
           value={query.side}
           onChange={(e) => updateQuery('side', e.target.value)}
+          MenuProps={menuProps}
+          placeholder="交易方向"
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_SIDES.map((side) => (
@@ -143,6 +156,8 @@ const TradeRecordTable = () => {
         <DarkSelect
           value={query.exec_source}
           onChange={(e) => updateQuery('exec_source', e.target.value)}
+          MenuProps={menuProps}
+          placeholder="交易方式"
         >
           <MenuItem value="">全部</MenuItem>
           {EXEC_SOURCES.map((source) => (
@@ -166,6 +181,8 @@ const TradeRecordTable = () => {
               updateQuery('timeRange', days);
             }
           }}
+          MenuProps={menuProps}
+          placeholder="时间范围"
         >
           <MenuItem value="">选择时间范围</MenuItem>
           {TIME_RANGES.map((range) => (
