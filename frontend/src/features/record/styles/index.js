@@ -1,6 +1,6 @@
 // features/record/styles/index.ts
 import { styled } from '@mui/material/styles';
-import {TextField, Button, TableContainer, Select} from '@mui/material';
+import {TextField, Button, TableContainer, Select, FormControl} from '@mui/material';
 import {makeStyles} from "@material-ui/core/styles";
 
 // 新增 FormControl 样式组件
@@ -205,12 +205,15 @@ export const useStyles = makeStyles((theme) => ({
   pagination: {
     '& .MuiPaginationItem-root': {
       color: '#fff',
+      '&:hover': {
+        backgroundColor: 'rgba(46, 229, 172, 0.08)',
+      }
     },
     '& .Mui-selected': {
-      backgroundColor: '#2EE5AC !important',
+      backgroundColor: '#2EE5AC',
       color: '#000',
       '&:hover': {
-        backgroundColor: '#27CC98 !important',
+        backgroundColor: '#27CC98',
       },
     },
   },
