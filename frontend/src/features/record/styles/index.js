@@ -2,20 +2,34 @@
 import { styled } from '@mui/material/styles';
 import {TextField, Button, TableContainer, Select} from '@mui/material';
 import {makeStyles} from "@material-ui/core/styles";
-import { Theme } from '@mui/material';
+
+// 新增 FormControl 样式组件
+export const DarkFormControl = styled(FormControl)(({ theme }) => ({
+  minWidth: '180px',
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+    '&.Mui-focused': {
+      color: '#2EE5AC',
+    }
+  },
+  '& .MuiInputLabel-shrink': {
+    transform: 'translate(0, -1.5px) scale(0.85)',
+    color: 'rgba(255, 255, 255, 0.7)',
+  }
+}));
 
 export const DarkSelect = styled(Select)(({ theme }) => ({
   backgroundColor: '#1E1E1E',
   color: '#fff',
   minWidth: '180px',
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '4px',
-    '& fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.12)',
-    },
-    '&:hover fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.2)',
-    },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#2EE5AC',
   },
   '& .MuiSelect-select': {
     padding: '10px 14px',
@@ -26,7 +40,6 @@ export const DarkSelect = styled(Select)(({ theme }) => ({
   '& .MuiSelect-icon': {
     color: '#fff',
   },
-
 }));
 
 
@@ -52,6 +65,7 @@ export const searchAreaStyles = {
   }
 };
 
+// 更新 TextField 组件样式
 export const DarkTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     backgroundColor: '#1E1E1E',
@@ -62,9 +76,15 @@ export const DarkTextField = styled(TextField)({
     '&:hover fieldset': {
       borderColor: 'rgba(255, 255, 255, 0.2)',
     },
+    '&.Mui-focused fieldset': {
+      borderColor: '#2EE5AC',
+    }
   },
   '& .MuiInputLabel-root': {
     color: 'rgba(255, 255, 255, 0.7)',
+    '&.Mui-focused': {
+      color: '#2EE5AC',
+    }
   },
 });
 
@@ -120,12 +140,19 @@ export const tableStyles = {
     mt: 2,
     '& .MuiPaginationItem-root': {
       color: '#fff',
+      '&:hover': {
+        backgroundColor: 'rgba(46, 229, 172, 0.08)',
+      }
     },
     '& .Mui-selected': {
       backgroundColor: '#2EE5AC',
       color: '#000',
+      '&:hover': {
+        backgroundColor: '#27CC98',
+      }
     },
   },
+
   sideTag: {
     sell: {
       backgroundColor: '#DC3545',
@@ -153,12 +180,13 @@ export const tableStyles = {
 
 export const useStyles = makeStyles((theme) => ({
 
-  // 修改下拉菜单的样式
+  // 更新下拉菜单样式
   selectMenu: {
     backgroundColor: '#1E1E1E',
     '& .MuiPaper-root': {
       backgroundColor: '#1E1E1E',
       color: '#fff',
+      border: '1px solid rgba(255, 255, 255, 0.12)',
     },
     '& .MuiMenuItem-root': {
       color: '#fff',
@@ -167,6 +195,9 @@ export const useStyles = makeStyles((theme) => ({
       },
       '&.Mui-selected': {
         backgroundColor: 'rgba(46, 229, 172, 0.16)',
+        '&:hover': {
+          backgroundColor: 'rgba(46, 229, 172, 0.24)',
+        }
       },
     },
   },
