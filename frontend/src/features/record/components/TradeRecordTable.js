@@ -8,6 +8,7 @@ import {
   Select,
   MenuItem,
   TextField,
+  InputLabel,
   CircularProgress,
   Box,
   Pagination,
@@ -21,7 +22,8 @@ import {
   SearchButton,
   ResetButton,
   StyledTableContainer,
-  tableStyles
+  tableStyles,
+    DarkFormControl,
 } from '../styles';
 import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
 const TradeRecordTable = () => {
@@ -92,12 +94,14 @@ const TradeRecordTable = () => {
     <Box sx={tableStyles.container}>
       {/* 搜索区域 */}
       <Box sx={tableStyles.searchArea}>
-        <DarkTextField
-          placeholder="符号"
-          size="small"
-          value={query.ccy}
-          onChange={(e) => updateQuery('ccy', e.target.value)}
-        />
+        <DarkFormControl>
+          <DarkTextField
+            placeholder="请输入交易符号"
+            size="small"
+            value={query.ccy}
+            onChange={(e) => updateQuery('ccy', e.target.value)}
+          />
+        </DarkFormControl>
 
         {/* 交易类别 */}
         <DarkSelect
