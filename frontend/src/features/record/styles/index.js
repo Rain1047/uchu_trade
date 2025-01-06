@@ -2,6 +2,7 @@
 import { styled } from '@mui/material/styles';
 import {TextField, Button, TableContainer, Select} from '@mui/material';
 import {makeStyles} from "@material-ui/core/styles";
+import { Theme } from '@mui/material';
 
 export const DarkSelect = styled(Select)(({ theme }) => ({
   backgroundColor: '#1E1E1E',
@@ -19,10 +20,13 @@ export const DarkSelect = styled(Select)(({ theme }) => ({
   '& .MuiSelect-select': {
     padding: '10px 14px',
     fontSize: '14px',
+    backgroundColor: '#1E1E1E',
+    color: '#fff',
   },
   '& .MuiSelect-icon': {
     color: '#fff',
-  }
+  },
+
 }));
 
 
@@ -96,20 +100,6 @@ export const StyledTableContainer = styled(TableContainer)({
 
 // 表格容器的样式
 export const tableStyles = {
-  selectWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-  },
-
-  selectLabel: {
-    color: '#fff',
-    fontSize: '14px',
-    opacity: 0.7,
-    paddingLeft: theme.spacing(0.5),
-  },
-
-
   container: {
     p: 3,
     bgcolor: '#121212',
@@ -162,6 +152,37 @@ export const tableStyles = {
 };
 
 export const useStyles = makeStyles((theme) => ({
+
+  // 修改下拉菜单的样式
+  selectMenu: {
+    backgroundColor: '#1E1E1E',
+    '& .MuiPaper-root': {
+      backgroundColor: '#1E1E1E',
+      color: '#fff',
+    },
+    '& .MuiMenuItem-root': {
+      color: '#fff',
+      '&:hover': {
+        backgroundColor: 'rgba(46, 229, 172, 0.08)',
+      },
+      '&.Mui-selected': {
+        backgroundColor: 'rgba(46, 229, 172, 0.16)',
+      },
+    },
+  },
+
+  pagination: {
+    '& .MuiPaginationItem-root': {
+      color: '#fff',
+    },
+    '& .Mui-selected': {
+      backgroundColor: '#2EE5AC !important',
+      color: '#000',
+      '&:hover': {
+        backgroundColor: '#27CC98 !important',
+      },
+    },
+  },
 
 
   // 布局相关
