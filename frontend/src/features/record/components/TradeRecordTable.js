@@ -10,17 +10,14 @@ import {
   TextField,
   CircularProgress,
   Box,
-  Button,
-  TableContainer,
-  Paper,
   Pagination,
 } from '@mui/material';
 import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES} from '../constants/constants';
 import {
   useStyles,
   DarkTextField,
-    DarkSelect,
-    searchAreaStyles,
+  DarkSelect,
+  searchAreaStyles,
   SearchButton,
   ResetButton,
   StyledTableContainer,
@@ -106,9 +103,17 @@ const TradeRecordTable = () => {
         <DarkSelect
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
-          renderValue={(selected) =>
-            selected.map(value => TRADE_TYPES.find(t => t.value === value)?.label).join(', ')
-          }
+          MenuProps={{
+              classes: { paper: classes.selectMenu },
+              anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left',
+              },
+              transformOrigin: {
+                vertical: 'top',
+                horizontal: 'left',
+              },
+            }}
         >
           {TRADE_TYPES.map((type) => (
             <MenuItem key={type.value} value={type.value}>
