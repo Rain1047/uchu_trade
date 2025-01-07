@@ -13,7 +13,7 @@ import {
   Box,
   Pagination,
 } from '@mui/material';
-import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES} from '../constants/constants';
+import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES, TRADE_STATUS} from '../constants/constants';
 import {
   useStyles,
   DarkTextField,
@@ -221,6 +221,7 @@ const TradeRecordTable = () => {
               <TableCell>交易数量/USDT</TableCell>
               <TableCell>成交价格</TableCell>
               <TableCell>交易来源</TableCell>
+              <TableCell>订单状态</TableCell>
               <TableCell>成交时间</TableCell>
               <TableCell>交易日志</TableCell>
             </TableRow>
@@ -249,6 +250,9 @@ const TradeRecordTable = () => {
                 <TableCell>
                   {EXEC_SOURCES.find(exec_source => exec_source.value === record.exec_source)
                       ?.label || record.exec_source}
+                </TableCell>
+                <TableCell>
+                  {TRADE_STATUS.find(status => status.value === record.status)?.label || record.status}
                 </TableCell>
                 <TableCell>{record.uTime}</TableCell>
                 <TableCell>

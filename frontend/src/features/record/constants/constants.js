@@ -22,3 +22,15 @@ export const TIME_RANGES = [
   { label: '近三月', value: 90 },
   { label: '近一年', value: 365 }
 ];
+
+export const TRADE_STATUS = [
+  { label: '全部', value: ''},
+    { label: '未成交', value: 'pending' },
+    { label: '部分成交', value: 'partially_filled' },
+    { label: '全部成交', value: 'filled' },
+    { label: '已撤单', value: 'canceled' },
+    { label: '已过期', value: 'expired' },
+    { label: '生效中', value: 'live' }
+
+];
+
