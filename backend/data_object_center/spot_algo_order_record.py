@@ -384,8 +384,23 @@ class SpotAlgoOrderRecord(Base):
             .offset(offset) \
             .all()
 
+        records = []
+        for result in results:
+            record_dict = result.to_dict()
+            # 格式化 amount 和 exec_price
+            try:
+                record_dict['amount'] = format(float(record_dict['amount']), '.4f') if record_dict[
+                    'amount'] else '0.0000'
+                record_dict['exec_price'] = format(float(record_dict['exec_price']), '.4f') if record_dict[
+                    'exec_price'] else '0.0000'
+            except (ValueError, TypeError):
+                # 处理可能的转换错误
+                record_dict['amount'] = '0.0000'
+                record_dict['exec_price'] = '0.0000'
+            records.append(record_dict)
+
         return {
-            "records": [result.to_dict() for result in results],
+            "records": records,
             "total": total,
             "pageSize": page_size,
             "pageNum": page_num

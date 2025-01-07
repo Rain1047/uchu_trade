@@ -13,18 +13,16 @@ import {
   Box,
   Pagination,
 } from '@mui/material';
-import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES} from '../constants/constants';
+import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES, TRADE_STATUS} from '../constants/constants';
 import {
   useStyles,
   DarkTextField,
   DarkSelect,
-  searchAreaStyles,
   SearchButton,
   ResetButton,
   StyledTableContainer,
   tableStyles,
   DarkFormControl,
-  menuProps,
 } from '../styles';
 import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
 const TradeRecordTable = () => {
@@ -65,18 +63,6 @@ const TradeRecordTable = () => {
   },
 };
 
-
-  // 列定义
-  const columns = [
-      { label: '符号', key: 'ccy' },
-      { label: '交易类别', key: 'type', render: (value) => TRADE_TYPES.find(t => t.value === value)?.label },
-      { label: '交易方向', key: 'side', render: (value) => TRADE_SIDES.find(t => t.value === value)?.label },
-      { label: '数量(USDT)', key: 'amount' },
-      { label: '交易价格', key: 'exec_price' },
-      { label: '交易方式', key: 'exec_source', render: (value) => EXEC_SOURCES.find(t => t.value === value)?.label },
-      { label: '交易时间', key: 'uTime' },
-      { label: '交易日志', key: 'note' },
-    ];
   // 请求数据
   const fetchRecords = async () => {
     setLoading(true);
@@ -127,7 +113,13 @@ const TradeRecordTable = () => {
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易类别"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易类别</span>;
+            }
+            return TRADE_TYPES.find(type => type.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_TYPES.map((type) => (
@@ -142,7 +134,13 @@ const TradeRecordTable = () => {
           value={query.side}
           onChange={(e) => updateQuery('side', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易方向"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方向</span>;
+            }
+            return TRADE_SIDES.find(side => side.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_SIDES.map((side) => (
@@ -157,7 +155,13 @@ const TradeRecordTable = () => {
           value={query.exec_source}
           onChange={(e) => updateQuery('exec_source', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易方式"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方式</span>;
+            }
+            return EXEC_SOURCES.find(exec_source => exec_source.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {EXEC_SOURCES.map((source) => (
@@ -182,7 +186,13 @@ const TradeRecordTable = () => {
             }
           }}
           MenuProps={menuProps}
-          placeholder="时间范围"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>时间范围</span>;
+            }
+            return TIME_RANGES.find(time_range => time_range.value === selected)?.label;
+          }}
         >
           <MenuItem value="">选择时间范围</MenuItem>
           {TIME_RANGES.map((range) => (
@@ -195,9 +205,9 @@ const TradeRecordTable = () => {
         <SearchButton variant="contained" onClick={fetchRecords}>
           查询
         </SearchButton>
-        <ResetButton variant="contained" onClick={handleReset}>
-          重置
-        </ResetButton>
+        {/*<ResetButton variant="contained" onClick={handleReset}>*/}
+        {/*  重置*/}
+        {/*</ResetButton>*/}
       </Box>
 
       {/* 表格内容 */}
@@ -205,13 +215,15 @@ const TradeRecordTable = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>CCY</TableCell>
-              <TableCell>Instrument</TableCell>
-              <TableCell>Side</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Time</TableCell>
-              <TableCell>Note</TableCell>
+              <TableCell>Symbol</TableCell>
+              <TableCell>交易类别</TableCell>
+              <TableCell>交易方向</TableCell>
+              <TableCell>交易数量/USDT</TableCell>
+              <TableCell>成交价格</TableCell>
+              <TableCell>交易来源</TableCell>
+              <TableCell>订单状态</TableCell>
+              <TableCell>成交时间</TableCell>
+              <TableCell>交易日志</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -223,15 +235,25 @@ const TradeRecordTable = () => {
               </TableRow>
             ) : records.map((record) => (
               <TableRow key={record.id}>
-                <TableCell>{record.id}</TableCell>
                 <TableCell>{record.ccy}</TableCell>
                 <TableCell>
+                  {TRADE_TYPES.find(type => type.value === record.type)?.label || record.type}
+                </TableCell>
+                <TableCell>
                   <Box sx={tableStyles.sideTag[record.side]}>
-                    {record.side.toUpperCase()}
+                    {TRADE_SIDES.find(side => side.value === record.side)?.label || record.side}
                   </Box>
                 </TableCell>
-                <TableCell>{record.exec_price}</TableCell>
+
                 <TableCell>{record.amount}</TableCell>
+                <TableCell>{record.exec_price}</TableCell>
+                <TableCell>
+                  {EXEC_SOURCES.find(exec_source => exec_source.value === record.exec_source)
+                      ?.label || record.exec_source}
+                </TableCell>
+                <TableCell>
+                  {TRADE_STATUS.find(status => status.value === record.status)?.label || record.status}
+                </TableCell>
                 <TableCell>{record.uTime}</TableCell>
                 <TableCell>
                   <DarkTextField
