@@ -19,7 +19,8 @@ import {
     Menu as MenuIcon,
     Settings as SettingsIcon,
     AccountBalance as AccountBalanceIcon,
-    Assessment as AssessmentIcon
+    Assessment as AssessmentIcon,
+    Receipt as ReceiptIcon,
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -78,6 +79,11 @@ const SideBar = ({ open, setOpen }) => {
             text: 'Balance',  // 新增 Balance 菜单项
             icon: <AccountBalanceIcon />,
             path: '/balance'
+        },
+        {
+            text: 'Record',
+            icon: <ReceiptIcon />,
+            path: '/record'
         },
         {
             text: 'Backtest',  // 新增 Balance 菜单项
