@@ -127,7 +127,13 @@ const TradeRecordTable = () => {
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易类别"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易类别</span>;
+            }
+            return TRADE_TYPES.find(type => type.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_TYPES.map((type) => (
@@ -142,7 +148,13 @@ const TradeRecordTable = () => {
           value={query.side}
           onChange={(e) => updateQuery('side', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易方向"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方向</span>;
+            }
+            return TRADE_SIDES.find(side => side.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_SIDES.map((side) => (
@@ -157,7 +169,13 @@ const TradeRecordTable = () => {
           value={query.exec_source}
           onChange={(e) => updateQuery('exec_source', e.target.value)}
           MenuProps={menuProps}
-          placeholder="交易方式"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方式</span>;
+            }
+            return EXEC_SOURCES.find(exec_source => exec_source.value === selected)?.label;
+          }}
         >
           <MenuItem value="">全部</MenuItem>
           {EXEC_SOURCES.map((source) => (
@@ -182,7 +200,13 @@ const TradeRecordTable = () => {
             }
           }}
           MenuProps={menuProps}
-          placeholder="时间范围"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>时间范围</span>;
+            }
+            return TIME_RANGES.find(time_range => time_range.value === selected)?.label;
+          }}
         >
           <MenuItem value="">选择时间范围</MenuItem>
           {TIME_RANGES.map((range) => (
