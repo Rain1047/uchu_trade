@@ -105,16 +105,29 @@ export const ResetButton = styled(Button)({
 });
 
 export const StyledTableContainer = styled(TableContainer)({
-  backgroundColor: '#1E1E1E',
+  backgroundColor: 'transparent',
   '& .MuiTableHead-root': {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#1A1A1A',
+    '& .MuiTableCell-head': {
+      color: '#999',
+      borderBottom: 'none',
+      fontSize: '14px',
+      padding: '16px',
+    }
   },
   '& .MuiTableCell-root': {
-    borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+    borderBottom: 'none',  // 移除所有边框
+    padding: '16px',
     color: '#fff',
   },
-  '& .MuiTableRow-root:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  '& .MuiTableRow-root': {
+    '&:nth-of-type(odd)': {
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    },
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    },
+    height: '60px', // 统一行高
   },
 });
 
@@ -157,24 +170,33 @@ export const tableStyles = {
     sell: {
       backgroundColor: '#DC3545',
       color: '#fff',
-      borderRadius: 1,
-      px: 1,
-      py: 0.5,
+      borderRadius: '4px',
+      padding: '6px 12px',
       display: 'inline-block',
+      fontSize: '12px',
+      fontWeight: 500,
     },
     buy: {
       backgroundColor: '#198754',
       color: '#fff',
-      borderRadius: 1,
-      px: 1,
-      py: 0.5,
+      borderRadius: '4px',
+      padding: '6px 12px',
       display: 'inline-block',
+      fontSize: '12px',
+      fontWeight: 500,
     }
   },
   noteInput: {
     '& .MuiInput-input': {
       color: '#fff',
-    }
+      fontSize: '14px',
+    },
+    '&:before': {
+      borderBottomColor: 'rgba(255, 255, 255, 0.12)',
+    },
+    '&:hover:not(.Mui-disabled):before': {
+      borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    },
   }
 };
 
