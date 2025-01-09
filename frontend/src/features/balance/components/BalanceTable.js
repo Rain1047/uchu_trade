@@ -41,31 +41,32 @@ const GreenSwitch = styled(Switch)({
 
 // 自定义暗色主题的 TableCell
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  color: theme.palette.grey[300],
-  borderBottom: `1px solid ${theme.palette.grey[900]}`,
+  color: '#ffffff',
+  borderBottom: 'none',
+  padding: '16px',
   '&.MuiTableCell-head': {
-    backgroundColor: theme.palette.grey[900],
-    color: theme.palette.grey[300],
-    fontWeight: 500,
+    backgroundColor: '#1A1A1A',
+    color: '#999',
+    fontWeight: 400,
   },
-  '&.MuiTableCell-body': {
-    backgroundColor: theme.palette.grey[800],
-  }
 }));
 
-// 自定义暗色主题的 TableRow
+// 自定义表格行样式
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  // 奇数行和偶数行使用不同的背景色
   '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.grey[800],
+    backgroundColor: '#1A1A1A',
   },
   '&:nth-of-type(even)': {
-    backgroundColor: theme.palette.grey[850],
+    backgroundColor: '#121212',
   },
+  // hover 效果
   '&:hover': {
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: '#242424 !important', // 使用 !important 确保 hover 效果优先
+    cursor: 'pointer',
   },
-  // 最后一行去除底部边框
-  '&:last-child td': {
+  // 去掉最后一个单元格的底部边框
+  '&:last-child td, &:last-child th': {
     borderBottom: 0,
   },
 }));
