@@ -64,7 +64,7 @@ const SideBar = ({ open, setOpen }) => {
     const classes = useStyles();
 
     const menuItems = [
-
+        //
         // {
         //     text: 'History',
         //     icon: <HistoryIcon />,
@@ -85,7 +85,7 @@ const SideBar = ({ open, setOpen }) => {
             icon: <SettingsIcon />,
             path: '/strategy'
         },
-        
+
         {
             text: 'Backtest',  // 新增 Balance 菜单项
             icon: <AssessmentIcon />,
