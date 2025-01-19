@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter
 import logging
 
+from backend.controller_center.backtest.backtest_request import BackTestRunRequest
 from backend.controller_center.backtest.backtest_service import *
 
 # 创建路由器实例
@@ -91,9 +92,10 @@ def list_key(strategy_id: int, symbol: str):
 
 
 @router.post("/run_backtest")
-def run_backtest(strategy_id: int):
+def run_backtest(request: BackTestRunRequest):
     try:
-        run_result = BacktestService.run_backtest(strategy_id)
+        print(request.strategy_id)
+        run_result = BacktestService.run_backtest(request.strategy_id)
         return {
             "success": True,
             "data": run_result
