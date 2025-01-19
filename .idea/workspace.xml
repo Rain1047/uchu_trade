@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_request.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/components/TradeRecordTable.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/record/constants/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/record/constants/constants.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/strategy_center/atom_strategy/exit_strategy/dbb_exit_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/strategy_center/atom_strategy/exit_strategy/dbb_exit_strategy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,46 +192,6 @@
     </recent_temporary>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00015" summary="[现货下单主链路开发]">
-      <option name="closed" value="true" />
-      <created>1735610790953</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1735610790953</updated>
-    </task>
-    <task id="LOCAL-00016" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735613484532</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1735613484532</updated>
-    </task>
-    <task id="LOCAL-00017" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735616681842</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1735616681842</updated>
-    </task>
-    <task id="LOCAL-00018" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735625942337</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1735625942337</updated>
-    </task>
-    <task id="LOCAL-00019" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735626978386</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1735626978386</updated>
-    </task>
     <task id="LOCAL-00020" summary="[交易记录后端开发]">
       <option name="closed" value="true" />
       <created>1735627679169</created>
@@ -591,7 +552,47 @@
       <option name="project" value="LOCAL" />
       <updated>1736263895221</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736265441442</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1736265441442</updated>
+    </task>
+    <task id="LOCAL-00066" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736347492524</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1736347492524</updated>
+    </task>
+    <task id="LOCAL-00067" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736439244164</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1736439244164</updated>
+    </task>
+    <task id="LOCAL-00068" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736515533016</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1736515533016</updated>
+    </task>
+    <task id="LOCAL-00069" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1736610773271</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1736610773271</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -614,7 +615,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/uchu_trade$fedJeffCox.coverage" NAME="fedJeffCox Coverage Results" MODIFIED="1736060616627" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_center/data_gather" />
     <SUITE FILE_PATH="coverage/uchu_trade$record_controller.coverage" NAME="record_controller Coverage Results" MODIFIED="1736087083495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/record" />
-    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1736262040595" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1736616096452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />

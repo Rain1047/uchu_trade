@@ -11,17 +11,20 @@ from backend.strategy_center.strategy_result import StrategyExecuteResult
 
 
 @registry.register(name="dbb_exit_long_strategy", desc="布林带做多止损策略", side="long", type="exit")
-def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance], algoOrdRecord: Optional[SwapAlgoOrderRecord]):
+def dbb_exit_long_strategy(df: DataFrame, stIns: Optional[StrategyInstance],
+                           algoOrdRecord: Optional[SwapAlgoOrderRecord] = None):
     """
     Main entry point for the exit strategy.
     Handles both backtest and live trading modes.
     """
     if stIns is None:
+        print("No strategy instance found")
         return dbb_exit_strategy_for_backtest(df)
     return dbb_exit_strategy_for_live(df=df, algoOrdRecord=algoOrdRecord)
 
 
-def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[SwapAlgoOrderRecord]) -> StrategyExecuteResult:
+def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[SwapAlgoOrderRecord] = None) \
+        -> StrategyExecuteResult:
     """
     Live trading implementation of the exit strategy.
     Args:
