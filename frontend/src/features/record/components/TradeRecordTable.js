@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Box,
   Pagination,
+  IconButton,
 } from '@mui/material';
 import {TRADE_TYPES, TRADE_SIDES, EXEC_SOURCES, TIME_RANGES, TRADE_STATUS} from '../constants/constants';
 import {
@@ -25,10 +26,13 @@ import {
   DarkFormControl,
 } from '../styles';
 import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
+import {Button, Typography} from "@material-ui/core";
+import {Refresh as RefreshIcon, Clear as ClearIcon} from "@material-ui/icons";
+
 const TradeRecordTable = () => {
-  const [records, setRecords] = useState([]); // 交易记录数据
-  const [total, setTotal] = useState(0); // 总记录数
-  const [loading, setLoading] = useState(false); // 加载状态
+  const [records, setRecords] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [query, setQuery] = useState({
     pageNum: 1,
@@ -39,31 +43,42 @@ const TradeRecordTable = () => {
     exec_source: '',
     begin_time: '',
     end_time: '',
+    timeRange: '',
   });
+
   const handleReset = () => {
-    setFilters(INITIAL_FILTERS);
+    setQuery({
+      ...query,
+      ccy: '',
+      type: '',
+      side: '',
+      exec_source: '',
+      begin_time: '',
+      end_time: '',
+      timeRange: '',
+    });
   };
+
   const classes = useStyles();
 
   const menuProps = {
-  classes: { paper: classes.selectMenu },
-  MenuListProps: {
-    sx: { backgroundColor: '#1E1E1E' }
-  },
-  PaperProps: {
-    sx: { backgroundColor: '#1E1E1E' }
-  },
-  anchorOrigin: {
-    vertical: 'bottom',
-    horizontal: 'left',
-  },
-  transformOrigin: {
-    vertical: 'top',
-    horizontal: 'left',
-  },
-};
+    classes: { paper: classes.selectMenu },
+    MenuListProps: {
+      sx: { backgroundColor: '#1E1E1E' }
+    },
+    PaperProps: {
+      sx: { backgroundColor: '#1E1E1E' }
+    },
+    anchorOrigin: {
+      vertical: 'bottom',
+      horizontal: 'left',
+    },
+    transformOrigin: {
+      vertical: 'top',
+      horizontal: 'left',
+    },
+  };
 
-  // 请求数据
   const fetchRecords = async () => {
     setLoading(true);
     try {
@@ -90,14 +105,52 @@ const TradeRecordTable = () => {
     fetchRecords();
   }, [query]);
 
-  // 更新查询条件
   const updateQuery = (key, value) => {
     setQuery((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleClearSelect = (field) => {
+    updateQuery(field, '');
+    if (field === 'timeRange') {
+      updateQuery('begin_time', '');
+      updateQuery('end_time', '');
+    }
+  };
+
+  const renderSelectValue = (selected, placeholder, options) => {
+    if (!selected) {
+      return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>{placeholder}</span>;
+    }
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <span>{options.find(item => item.value === selected)?.label}</span>
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClearSelect(placeholder === '时间范围' ? 'timeRange' : placeholder === '交易类别' ? 'type' : placeholder === '交易方向' ? 'side' : 'exec_source');
+          }}
+          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+        >
+          <ClearIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    );
+  };
+
   return (
     <Box sx={tableStyles.container}>
-      {/* 搜索区域 */}
+      <Typography
+        variant="h5"
+        component="h2"
+        style={{
+          margin: '0 0 20px 0',  // 移除上边距，只保留下边距
+          color: '#fff'
+        }}
+      >
+        Trade History
+      </Typography>
+
       <Box sx={tableStyles.searchArea}>
         <DarkFormControl>
           <DarkTextField
@@ -105,21 +158,26 @@ const TradeRecordTable = () => {
             size="small"
             value={query.ccy}
             onChange={(e) => updateQuery('ccy', e.target.value)}
+            InputProps={{
+              endAdornment: query.ccy && (
+                <IconButton
+                  size="small"
+                  onClick={() => updateQuery('ccy', '')}
+                  sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                >
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              ),
+            }}
           />
         </DarkFormControl>
 
-        {/* 交易类别 */}
         <DarkSelect
           value={query.type}
           onChange={(e) => updateQuery('type', e.target.value)}
           MenuProps={menuProps}
           displayEmpty
-          renderValue={(selected) => {
-            if (!selected) {
-              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易类别</span>;
-            }
-            return TRADE_TYPES.find(type => type.value === selected)?.label;
-          }}
+          renderValue={(selected) => renderSelectValue(selected, '交易类别', TRADE_TYPES)}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_TYPES.map((type) => (
@@ -129,18 +187,12 @@ const TradeRecordTable = () => {
           ))}
         </DarkSelect>
 
-        {/* 交易方向单选 */}
         <DarkSelect
           value={query.side}
           onChange={(e) => updateQuery('side', e.target.value)}
           MenuProps={menuProps}
           displayEmpty
-          renderValue={(selected) => {
-            if (!selected) {
-              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方向</span>;
-            }
-            return TRADE_SIDES.find(side => side.value === selected)?.label;
-          }}
+          renderValue={(selected) => renderSelectValue(selected, '交易方向', TRADE_SIDES)}
         >
           <MenuItem value="">全部</MenuItem>
           {TRADE_SIDES.map((side) => (
@@ -150,18 +202,12 @@ const TradeRecordTable = () => {
           ))}
         </DarkSelect>
 
-        {/* 交易方式单选 */}
         <DarkSelect
           value={query.exec_source}
           onChange={(e) => updateQuery('exec_source', e.target.value)}
           MenuProps={menuProps}
           displayEmpty
-          renderValue={(selected) => {
-            if (!selected) {
-              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>交易方式</span>;
-            }
-            return EXEC_SOURCES.find(exec_source => exec_source.value === selected)?.label;
-          }}
+          renderValue={(selected) => renderSelectValue(selected, '交易方式', EXEC_SOURCES)}
         >
           <MenuItem value="">全部</MenuItem>
           {EXEC_SOURCES.map((source) => (
@@ -171,9 +217,8 @@ const TradeRecordTable = () => {
           ))}
         </DarkSelect>
 
-        {/* 时间范围选择 */}
         <DarkSelect
-          value={query.timeRange || ''}
+          value={query.timeRange}
           onChange={(e) => {
             const days = e.target.value;
             if (days) {
@@ -187,12 +232,7 @@ const TradeRecordTable = () => {
           }}
           MenuProps={menuProps}
           displayEmpty
-          renderValue={(selected) => {
-            if (!selected) {
-              return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>时间范围</span>;
-            }
-            return TIME_RANGES.find(time_range => time_range.value === selected)?.label;
-          }}
+          renderValue={(selected) => renderSelectValue(selected, '时间范围', TIME_RANGES)}
         >
           <MenuItem value="">选择时间范围</MenuItem>
           {TIME_RANGES.map((range) => (
@@ -205,12 +245,11 @@ const TradeRecordTable = () => {
         <SearchButton variant="contained" onClick={fetchRecords}>
           查询
         </SearchButton>
-        {/*<ResetButton variant="contained" onClick={handleReset}>*/}
-        {/*  重置*/}
-        {/*</ResetButton>*/}
+        <ResetButton variant="contained" onClick={handleReset}>
+          重置
+        </ResetButton>
       </Box>
 
-      {/* 表格内容 */}
       <StyledTableContainer>
         <Table>
           <TableHead>
@@ -244,7 +283,6 @@ const TradeRecordTable = () => {
                     {TRADE_SIDES.find(side => side.value === record.side)?.label || record.side}
                   </Box>
                 </TableCell>
-
                 <TableCell>{record.amount}</TableCell>
                 <TableCell>{record.exec_price}</TableCell>
                 <TableCell>
@@ -269,7 +307,6 @@ const TradeRecordTable = () => {
         </Table>
       </StyledTableContainer>
 
-      {/* 分页 */}
       <Box sx={tableStyles.pagination}>
         <Pagination
           count={Math.ceil(total / query.pageSize)}
