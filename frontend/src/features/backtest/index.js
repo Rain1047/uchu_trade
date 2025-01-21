@@ -5,7 +5,7 @@ import { useBacktest } from './hooks/useBacktest';
 import { BacktestControls } from './components/BacktestControls';
 import { BacktestStatistics } from './components/BacktestStatistics';
 import { BacktestRecords } from './components/BacktestRecords';
-import {BacktestChart} from "./components/BacktestChart";
+import { BacktestChart } from "./components/BacktestChart";
 
 const BacktestResults = () => {
   const classes = useStyles();
@@ -23,13 +23,14 @@ const BacktestResults = () => {
     details,
     loading,
     error,
-    runBacktest,      // Add this
+    runBacktest,
     runningBacktest,
   } = useBacktest();
 
   if (error) {
     return (
       <Container className={classes.root}>
+        <Typography variant="h5" gutterBottom>回测结果分析</Typography>
         <Paper className={classes.paper}>
           <Typography color="error">{error}</Typography>
         </Paper>
@@ -39,9 +40,8 @@ const BacktestResults = () => {
 
   return (
     <Container className={classes.root}>
+      <Typography variant="h5" gutterBottom>回测结果分析</Typography>
       <Paper className={classes.paper}>
-        <Typography variant="h5" gutterBottom>回测结果分析</Typography>
-
         <BacktestControls
           symbols={symbols}
           selectedSymbol={selectedSymbol}
@@ -63,17 +63,10 @@ const BacktestResults = () => {
         ) : (
           <>
             <BacktestStatistics details={details} />
-            {/*<BacktestRecords records={records} />*/}
-            {loading ? (
-            <Box className={classes.loading}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <>
-              <BacktestStatistics details={details} />
+            {records && records.length > 0 && (
               <BacktestChart records={records} />
-            </>
-)}
+            )}
+            {/*<BacktestRecords records={records} />*/}
           </>
         )}
       </Paper>
