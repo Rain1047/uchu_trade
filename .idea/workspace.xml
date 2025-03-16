@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/backtest/components/BacktestChart.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/backtest/components/BacktestChart.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/backtest/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/backtest/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/features/backtest/utils/styles.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/backtest/utils/styles.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,12 +24,23 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Rain1047&quot;
+  }
+}</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;git@github.com:Rain1047/uchu_trade.git&quot;,
     &quot;accountId&quot;: &quot;367d11a5-1d22-44c0-9af3-c637c64bd74f&quot;
   }
 }</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2stooAmSvHmLaZfGjh9yS1uWD3d" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -49,11 +57,17 @@
     &quot;Python.spot_limit_order_task.executor&quot;: &quot;Run&quot;,
     &quot;Python.spot_main_task.executor&quot;: &quot;Run&quot;,
     &quot;Python.spot_order_record_task.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;
+    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -191,23 +205,8 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
-    <task id="LOCAL-00022" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735662086495</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1735662086495</updated>
-    </task>
-    <task id="LOCAL-00023" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1735662668227</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1735662668227</updated>
-    </task>
     <task id="LOCAL-00024" summary="[交易记录后端开发]">
       <option name="closed" value="true" />
       <created>1735664323731</created>
@@ -592,15 +591,48 @@
       <option name="project" value="LOCAL" />
       <updated>1737384810468</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <task id="LOCAL-00072" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1737474525545</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1737474525545</updated>
+    </task>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]" />
+      <created>1739284408496</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1739284408496</updated>
+      <workItem from="1739284408889" duration="14348000" />
+      <workItem from="1739893535863" duration="11115000" />
+      <workItem from="1742056683362" duration="1836000" />
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -615,7 +647,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/uchu_trade$fedJeffCox.coverage" NAME="fedJeffCox Coverage Results" MODIFIED="1736060616627" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_center/data_gather" />
     <SUITE FILE_PATH="coverage/uchu_trade$record_controller.coverage" NAME="record_controller Coverage Results" MODIFIED="1736087083495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/record" />
-    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1736616096452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1739374808754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
