@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/account_balance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backtest_center/backtest_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backtest_center/backtest_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backtest_center/backtest_results.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backtest_center/backtest_results.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backtest_results.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,29 +51,30 @@
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.balance_controller.executor&quot;: &quot;Run&quot;,
-    &quot;Python.fedJeffCox.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
-    &quot;Python.record_controller.executor&quot;: &quot;Run&quot;,
-    &quot;Python.spot_algo_order_record.executor&quot;: &quot;Run&quot;,
-    &quot;Python.spot_limit_order_task.executor&quot;: &quot;Run&quot;,
-    &quot;Python.spot_main_task.executor&quot;: &quot;Run&quot;,
-    &quot;Python.spot_order_record_task.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.backtest_main.executor": "Run",
+    "Python.balance_controller.executor": "Run",
+    "Python.fedJeffCox.executor": "Run",
+    "Python.main_controller.executor": "Run",
+    "Python.record_controller.executor": "Run",
+    "Python.spot_algo_order_record.executor": "Run",
+    "Python.spot_limit_order_task.executor": "Run",
+    "Python.spot_main_task.executor": "Run",
+    "Python.spot_order_record_task.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src/features/record/utils" />
@@ -79,7 +84,30 @@
       <recent name="$PROJECT_DIR$/backend/service_center/okx_service" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main_controller">
+  <component name="RunManager" selected="Python.backtest_main">
+    <configuration name="backtest_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="uchu_trade" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/backtest_center" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/backtest_center/backtest_main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="balance_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
@@ -172,36 +200,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="spot_main_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="uchu_trade" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.backtest_main" />
         <item itemvalue="Python.main_controller" />
         <item itemvalue="Python.record_controller" />
         <item itemvalue="Python.balance_controller" />
         <item itemvalue="Python.fedJeffCox" />
-        <item itemvalue="Python.spot_main_task" />
       </list>
     </recent_temporary>
   </component>
@@ -607,7 +612,8 @@
       <updated>1739284408496</updated>
       <workItem from="1739284408889" duration="14348000" />
       <workItem from="1739893535863" duration="11115000" />
-      <workItem from="1742056683362" duration="1836000" />
+      <workItem from="1742056683362" duration="3485000" />
+      <workItem from="1742393550437" duration="2808000" />
     </task>
     <option name="localTasksCounter" value="73" />
     <servers />
@@ -651,6 +657,7 @@
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
+    <SUITE FILE_PATH="coverage/uchu_trade$backtest_main.coverage" NAME="backtest_main Coverage Results" MODIFIED="1742394731209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/backtest_center" />
     <SUITE FILE_PATH="coverage/uchu_trade$balance_controller.coverage" NAME="balance_controller Coverage Results" MODIFIED="1736077382807" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/balance" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_algo_order_record.coverage" NAME="spot_algo_order_record Coverage Results" MODIFIED="1735616883468" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_object_center" />
   </component>

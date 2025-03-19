@@ -33,4 +33,3 @@ def backtest_main(st_instance_id):
 
 if __name__ == '__main__':
     backtest_main(8)
-
