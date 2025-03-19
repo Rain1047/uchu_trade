@@ -4,7 +4,9 @@ from bs4 import BeautifulSoup
 import requests
 from openai import OpenAI
 import g4f
+from backend._utils import LogConfig
 
+logger = LogConfig.get_logger(__name__)
 
 def get_fed_news_links(url, div_class):
     response = requests.get(url)
@@ -42,8 +44,8 @@ def create_prompt(role, content):
 def call_g4f(content, prompt):
     g4f.debug.logging = True  # Enable logging
     g4f.check_version = False  # Disable automatic version checking
-    print("start analysis" + g4f.version)  # Check version
-    print(g4f.Provider.Ails.params)  # Supported args
+    logger.info("开始分析" + g4f.version)  # Check version
+    logger.info(g4f.Provider.Ails.params)  # Supported args
 
     # Automatic selection of provider
     response = g4f.ChatCompletion.create(

@@ -4,8 +4,9 @@ from datetime import datetime
 from backend.data_object_center.enum_obj import EnumTradeEnv, EnumTimeFrame
 from backend.schedule_center.core.base_task import BaseTask, TaskResult, TaskConfig
 from backend.strategy_center.strategy_processor.strategy_executor import StrategyExecutor
-from backend._utils import DatabaseUtils
+from backend._utils import DatabaseUtils, LogConfig
 
+logger = LogConfig.get_logger(__name__)
 
 class SwapMainTask(BaseTask):
 
@@ -21,7 +22,6 @@ class SwapMainTask(BaseTask):
         )
         super().__init__(f"{name}_{interval}", config)
         self.interval = interval
-        self.logger = logging.getLogger(f"strategy.{interval}")
         self.session = DatabaseUtils.get_db_session()
         self.strategy_executor_4h = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.in_4_hour.value)
         self.strategy_executor_15min = StrategyExecutor(env=EnumTradeEnv.MARKET.value, time_frame=EnumTimeFrame.in_15_minute.value)
@@ -35,7 +35,7 @@ class SwapMainTask(BaseTask):
     def execute(self) -> TaskResult:
         try:
             self.logger.info(f"PeriodicStrategyTask#execute, {self.interval} task start.")
-            print(f"PeriodicStrategyTask execute {self.interval} task start.")
+            logger.info(f"PeriodicStrategyTask execute {self.interval} task start.")
 
             # 1. 策略执行器
             executor = self.strategy_executor_map.get(self.interval)

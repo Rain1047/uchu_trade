@@ -8,7 +8,9 @@ from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.data_object_center.backtest_record import BacktestRecord
 from backend.data_object_center.backtest_result import BacktestResult
 from backend.data_object_center.st_instance import StrategyInstance
+from backend._utils import LogConfig
 
+logger = LogConfig.get_logger(__name__)
 
 class BacktestSystem:
     """回测系统主类"""
@@ -123,9 +125,9 @@ class BacktestSystem:
         # 打印生成的信号统计
         backtest_results.total_entry_signals = df['entry_sig'].sum()
         backtest_results.total_sell_signals = df['sell_sig'].sum()
-        print(f"\n信号统计:")
-        print(f"总买入信号数: {backtest_results.total_entry_signals}")
-        print(f"总卖出信号数: {backtest_results.total_sell_signals}")
+        logger.info("\n信号统计:")
+        logger.info(f"总买入信号数: {backtest_results.total_entry_signals}")
+        logger.info(f"总卖出信号数: {backtest_results.total_sell_signals}")
         key = f'{st.trade_pair}_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
         record_backtest_results(backtest_results, results, st, key)
         backtest_results.key = key
@@ -142,27 +144,27 @@ class BacktestSystem:
 
 
 def _print_results(results: BacktestResults) -> None:
-    print('\n=== 回测结果 ===')
-    print(f'初始投资组合价值: ${results.initial_value:.2f}')
-    print(f'最终投资组合价值: ${results.final_value:.2f}')
-    print(f'总收益率: {results.total_return:.2%}')
-    print(f'年化收益率: {results.annual_return:.2%}')
+    logger.info('\n=== 回测结果 ===')
+    logger.info(f'初始投资组合价值: ${results.initial_value:.2f}')
+    logger.info(f'最终投资组合价值: ${results.final_value:.2f}')
+    logger.info(f'总收益率: {results.total_return:.2%}')
+    logger.info(f'年化收益率: {results.annual_return:.2%}')
     if results.sharpe_ratio is None:
-        print('夏普比率: 无法计算')
+        logger.info('夏普比率: 无法计算')
     else:
-        print(f'夏普比率: {results.sharpe_ratio:.3f}')
-    print(f'最大回撤: {results.max_drawdown:.2%}')
-    print(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
+        logger.info(f'夏普比率: {results.sharpe_ratio:.3f}')
+    logger.info(f'最大回撤: {results.max_drawdown:.2%}')
+    logger.info(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
 
-    print('\n=== 交易统计 ===')
-    print(f'总交易次数: {results.total_trades}')
-    print(f'盈利交易次数: {results.winning_trades}')
-    print(f'亏损交易次数: {results.losing_trades}')
-    print(f'胜率: {results.win_rate:.2f}%')
+    logger.info('\n=== 交易统计 ===')
+    logger.info(f'总交易次数: {results.total_trades}')
+    logger.info(f'盈利交易次数: {results.winning_trades}')
+    logger.info(f'亏损交易次数: {results.losing_trades}')
+    logger.info(f'胜率: {results.win_rate:.2f}%')
     if results.winning_trades:
-        print(f'平均盈利: ${results.avg_win:.2f}')
+        logger.info(f'平均盈利: ${results.avg_win:.2f}')
     if results.losing_trades:
-        print(f'平均亏损: ${results.avg_loss:.2f}')
+        logger.info(f'平均亏损: ${results.avg_loss:.2f}')
 
 
 def record_backtest_results(backtest_results: BacktestResults, results, st: StrategyInstance, key: str):

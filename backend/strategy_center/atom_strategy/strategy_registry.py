@@ -3,9 +3,9 @@ import inspect
 import os
 from typing import Callable, Dict, Optional, List
 import pandas as pd
-import logging
+from backend._utils import LogConfig
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 
 class StrategyRegistry:
@@ -86,11 +86,11 @@ class StrategyRegistry:
     @classmethod
     def print_registered_strategies(cls):
         if cls._strategies:
-            print("Registered strategies:")
+            logger.info("已注册的策略:")
             for name in cls._strategies:
-                print(f"- {name}")
+                logger.info(f"- {name}")
         else:
-            print("No strategies registered")
+            logger.info("没有注册的策略")
 
     def list_strategies(self) -> list:
         return self._strategies_config
