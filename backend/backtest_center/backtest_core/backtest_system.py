@@ -12,6 +12,7 @@ from backend._utils import LogConfig
 
 logger = LogConfig.get_logger(__name__)
 
+
 class BacktestSystem:
     """回测系统主类"""
 
@@ -196,3 +197,4 @@ def record_backtest_results(backtest_results: BacktestResults, results, st: Stra
                 'transaction_pnl': round(record.pnl, 2)
             }
             BacktestRecord.insert_or_update(record_data)
+

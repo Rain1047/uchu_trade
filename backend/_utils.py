@@ -81,13 +81,15 @@ class DateUtils:
     @staticmethod
     def current_time2string():
         now = datetime.now()
-        print(now)
+        logger = LogConfig.get_logger(__name__)
+        logger.debug(f"当前时间: {now}")
         return now.strftime("%Y-%m-%d")
 
     @staticmethod
     def past_time2string(days):
         date = datetime.now() - timedelta(days=days)
-        print("past_time: " + str(date))
+        logger = LogConfig.get_logger(__name__)
+        logger.debug(f"过去时间: {date}")
         return date.strftime("%Y-%m-%d")
 
     @staticmethod
@@ -242,7 +244,8 @@ class FormatUtils:
             # 尝试解析数据，如果数据格式不正确，这里会抛出异常
             return json.loads(data)
         except json.JSONDecodeError as e:
-            print(f"JSON 解析错误: {e}")
+            logger = LogConfig.get_logger(__name__)
+            logger.error(f"JSON 解析错误: {e}")
             return None
 
     @staticmethod
@@ -278,7 +281,8 @@ class FormatUtils:
                 if hasattr(instance, snake_case_key):
                     setattr(instance, snake_case_key, FormatUtils.convert_value(value))
                 else:
-                    print(f"警告: {snake_case_key} 不是 {model_class.__name__} 的属性")
+                    logger = LogConfig.get_logger(__name__)
+                    logger.warning(f"警告: {snake_case_key} 不是 {model_class.__name__} 的属性")
 
         return instance
 

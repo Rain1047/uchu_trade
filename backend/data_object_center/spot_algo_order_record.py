@@ -4,12 +4,13 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 from backend._decorators import singleton
-from backend._utils import DatabaseUtils
+from backend._utils import DatabaseUtils, LogConfig
 from backend.controller_center.balance.balance_request import TradeRecordPageRequest
 from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
+logger = LogConfig.get_logger(__name__)
 
 
 class SpotAlgoOrderRecord(Base):
@@ -81,6 +82,21 @@ class SpotAlgoOrderRecord(Base):
             if processed_data.get('uTime'):
                 processed_data['uTime'] = datetime.fromtimestamp(int(processed_data['uTime']) / 1000)
 
+            # 确保关键字段存在
+            if 'amount' not in processed_data or not processed_data['amount']:
+                try:
+                    sz = float(processed_data.get('sz', '0'))
+                    px = float(processed_data.get('px', '0'))
+                    processed_data['amount'] = str(sz * px)
+                except (ValueError, TypeError):
+                    processed_data['amount'] = '0'
+
+            if 'target_price' not in processed_data or not processed_data['target_price']:
+                processed_data['target_price'] = processed_data.get('px', '0')
+
+            if 'exec_price' not in processed_data or not processed_data['exec_price']:
+                processed_data['exec_price'] = processed_data.get('px', '0')
+
             # 检查记录是否存在
             existing_record = None
             if processed_data.get('ordId'):
@@ -92,16 +108,20 @@ class SpotAlgoOrderRecord(Base):
             if existing_record:
                 for key, value in processed_data.items():
                     setattr(existing_record, key, value)
+                logger.info(f"更新记录: {processed_data.get('ordId') or processed_data.get('algoId')}, "
+                          f"amount={processed_data.get('amount')}, target_price={processed_data.get('target_price')}")
             else:
                 processed_data['create_time'] = current_time
                 record = cls(**processed_data)
                 session.add(record)
+                logger.info(f"插入新记录: {processed_data.get('ordId') or processed_data.get('algoId')}, "
+                          f"amount={processed_data.get('amount')}, target_price={processed_data.get('target_price')}")
 
             session.commit()
             return True
         except Exception as e:
             session.rollback()
-            print(f"Insert/Update failed: {e}")
+            logger.error(f"插入/更新记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -116,7 +136,7 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.id == id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -131,7 +151,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.ccy == ccy).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -144,7 +164,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -159,7 +179,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.type == type).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -174,7 +194,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.status == status).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -191,7 +211,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Delete failed: {e}")
+            logger.error(f"删除记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -210,7 +230,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -231,7 +251,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -252,7 +272,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -267,7 +287,7 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.algoId == algo_id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -282,7 +302,7 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.ordId == ord_id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -296,7 +316,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -310,7 +330,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -324,7 +344,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -338,7 +358,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -387,16 +407,29 @@ class SpotAlgoOrderRecord(Base):
         records = []
         for result in results:
             record_dict = result.to_dict()
-            # 格式化 amount 和 exec_price
+            # 格式化 sz 和 px
             try:
-                record_dict['amount'] = format(float(record_dict['amount']), '.4f') if record_dict[
-                    'amount'] else '0.0000'
-                record_dict['exec_price'] = format(float(record_dict['exec_price']), '.4f') if record_dict[
-                    'exec_price'] else '0.0000'
-            except (ValueError, TypeError):
-                # 处理可能的转换错误
-                record_dict['amount'] = '0.0000'
-                record_dict['exec_price'] = '0.0000'
+                # 使用sz字段，如果为空则使用amount
+                sz = record_dict.get('sz') or record_dict.get('amount', '0')
+                record_dict['sz'] = format(float(sz), '.8f') if sz else '0.00000000'
+                
+                # 使用px字段，如果为空则使用exec_price
+                px = record_dict.get('px') or record_dict.get('exec_price', '0')
+                record_dict['px'] = format(float(px), '.8f') if px else '0.00000000'
+                
+                # 计算amount（如果为空）
+                if not record_dict.get('amount'):
+                    try:
+                        amount = float(sz) * float(px)
+                        record_dict['amount'] = format(amount, '.8f')
+                    except (ValueError, TypeError):
+                        record_dict['amount'] = '0.00000000'
+            except (ValueError, TypeError) as e:
+                logger.error(f"格式化数值失败: {str(e)}", exc_info=True)
+                record_dict['sz'] = '0.00000000'
+                record_dict['px'] = '0.00000000'
+                record_dict['amount'] = '0.00000000'
+            
             records.append(record_dict)
 
         return {
@@ -420,7 +453,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -436,7 +469,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -452,7 +485,7 @@ class SpotAlgoOrderRecord(Base):
             session.commit()
             return result > 0
         except Exception as e:
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -468,7 +501,7 @@ class SpotAlgoOrderRecord(Base):
             session.commit()
             return result > 0
         except Exception as e:
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
 

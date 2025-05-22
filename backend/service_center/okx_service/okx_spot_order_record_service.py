@@ -1,13 +1,13 @@
 import logging
 
-from backend._utils import SymbolFormatUtils
+from backend._utils import SymbolFormatUtils, LogConfig
 from backend.data_object_center.enum_obj import EnumTradeExecuteType, EnumOrdType, EnumSide
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 
 from abc import ABC, abstractmethod
 from typing import Optional, Dict
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 
 class OrderProcessor(ABC):
@@ -100,6 +100,7 @@ class SpotOrderRecordService:
     def __init__(self, trade_client, record_service):
         self.trade = trade_client
         self.processor_factory = OrderProcessorFactory(record_service)
+        logger.info("初始化SpotOrderRecordService")
 
     def save_update_spot_order_record(self):
         """保存更新现货订单记录"""
@@ -109,12 +110,14 @@ class SpotOrderRecordService:
             logger.info("No manual live spot orders.")
             return
 
+        logger.info(f"获取到 {len(history_orders)} 条历史订单记录")
         # 处理每个订单
         for order in history_orders:
             self._process_order(order)
 
     def _get_history_orders(self):
         """获取历史订单"""
+        logger.info("开始获取历史订单")
         response = self.trade.get_orders_history_archive(
             instType="SPOT",
             ordType="limit,market"
@@ -123,8 +126,10 @@ class SpotOrderRecordService:
         if not (response and
                 response.get('code') == '0' and
                 response.get('data')):
+            logger.warning("获取历史订单失败或没有数据")
             return []
 
+        logger.info(f"成功获取历史订单，数量: {len(response.get('data'))}")
         return response.get('data')
 
     def _process_order(self, order: Dict):
@@ -132,18 +137,64 @@ class SpotOrderRecordService:
         try:
             # 预处理订单数据
             order['ccy'] = SymbolFormatUtils.get_base_symbol(order.get('instId'))
-            order['sz'] = order.get('accFillSz')
-            order['px'] = order.get('avgPx')
+            
+            # 处理数量和价格
+            if order.get('fillSz'):  # 优先使用fillSz
+                order['sz'] = order.get('fillSz')
+            elif order.get('sz'):  # 其次使用sz
+                order['sz'] = order.get('sz')
+            else:
+                order['sz'] = '0'
+                
+            if order.get('fillPx'):  # 优先使用fillPx
+                order['px'] = order.get('fillPx')
+            elif order.get('avgPx'):  # 其次使用avgPx
+                order['px'] = order.get('avgPx')
+            elif order.get('px'):  # 再次使用px
+                order['px'] = order.get('px')
+            else:
+                order['px'] = '0'
+                
+            # 计算amount（如果为空）
+            if not order.get('amount'):
+                try:
+                    amount = float(order['sz']) * float(order['px'])
+                    order['amount'] = str(amount)
+                except (ValueError, TypeError):
+                    order['amount'] = '0'
+
+            # 处理目标价格
+            if order.get('tpTriggerPx'):  # 优先使用tpTriggerPx
+                order['target_price'] = order.get('tpTriggerPx')
+            elif order.get('target_price'):  # 其次使用target_price
+                order['target_price'] = order.get('target_price')
+            else:
+                order['target_price'] = order['px']  # 如果没有目标价格，使用当前价格
+
+            # 处理执行价格
+            if order.get('fillPx'):  # 优先使用fillPx
+                order['exec_price'] = order.get('fillPx')
+            elif order.get('avgPx'):  # 其次使用avgPx
+                order['exec_price'] = order.get('avgPx')
+            elif order.get('px'):  # 再次使用px
+                order['exec_price'] = order.get('px')
+            else:
+                order['exec_price'] = '0'
+
+            logger.info(f"处理订单数据: sz={order['sz']}, px={order['px']}, amount={order.get('amount')}, "
+                       f"target_price={order.get('target_price')}, exec_price={order.get('exec_price')}")
 
             # 获取对应的处理器
             processor = self.processor_factory.create_processor(order.get('side'))
             if not processor:
-                logger.error(f"Unknown order side: {order.get('side')}")
+                logger.error(f"未知的订单方向: {order.get('side')}")
                 return
 
             # 处理订单
             if not processor.process(order):
-                logger.error(f"Failed to process order: {order.get('ordId')}")
+                logger.error(f"处理订单失败: {order.get('ordId')}")
+            else:
+                logger.info(f"成功处理订单: {order.get('ordId')}")
 
         except Exception as e:
-            logger.error(f"Error processing order: {str(e)}")
+            logger.error(f"处理订单时发生错误: {str(e)}", exc_info=True)

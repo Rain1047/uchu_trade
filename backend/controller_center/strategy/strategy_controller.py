@@ -26,7 +26,7 @@ async def list_strategy(page_num: int = 1, page_size: int = 10):
     result = StrategyService.list_strategies(page_num, page_size)
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    print(f"Strategies listed: {result}")
+    logger.info(f"策略列表: {result}")
     return result
 
 
@@ -63,8 +63,7 @@ async def get_strategy_config():
 
 
 if __name__ == '__main__':
-    # result = StrategyService.list_strategies(1, 10)
-    print({
+    logger.info({
         "success": True,
         "data": StrategyService.get_strategy_config()
     })

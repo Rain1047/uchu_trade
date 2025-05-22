@@ -1,9 +1,14 @@
 import os
 import sys
 
+# 添加项目根目录到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.controller_center.settings import settings
+from backend._utils import LogConfig
 
 from api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.controller_center.trade.trade_controller import router as trade_router
@@ -14,6 +19,10 @@ from backend.controller_center.strategy_files.strategy_files_controller import r
 from backend.controller_center.record.record_controller import router as record_router
 import uvicorn
 
+# 初始化日志配置
+LogConfig.setup()
+
+logger = LogConfig.get_logger(__name__)
 
 okx = OKXAPIWrapper()
 
@@ -50,13 +59,12 @@ def get_account_balance():
     try:
         return okx.account.get_account_balance()
     except Exception as e:
-        print(f"Error getting OKX account: {e}")
+        logger.error(f"获取OKX账户余额时出错: {e}")
         return None
 
 
 if __name__ == "__main__":
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+    logger.info(f"启动FastAPI服务器 - 主机: {settings.API_HOST}, 端口: {settings.API_PORT}")
     uvicorn.run("main_controller:app",
                 host=settings.API_HOST,
                 port=settings.API_PORT,
