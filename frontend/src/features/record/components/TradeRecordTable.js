@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Table,
   TableHead,
@@ -27,12 +27,30 @@ import {
 } from '../styles';
 import {INITIAL_FILTERS} from "../../trade/constants/historyConstants";
 import {Button, Typography} from "@material-ui/core";
-import {Refresh as RefreshIcon, Clear as ClearIcon} from "@material-ui/icons";
+import {Refresh as RefreshIcon, Clear as ClearIcon, Sync as SyncIcon} from "@material-ui/icons";
+
+// 防抖Hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 const TradeRecordTable = () => {
   const [records, setRecords] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [query, setQuery] = useState({
     pageNum: 1,
@@ -46,9 +64,13 @@ const TradeRecordTable = () => {
     timeRange: '',
   });
 
+  // 对搜索输入进行防抖处理
+  const debouncedCcy = useDebounce(query.ccy, 500);
+
   const handleReset = () => {
     setQuery({
-      ...query,
+      pageNum: 1,
+      pageSize: 10,
       ccy: '',
       type: '',
       side: '',
@@ -79,13 +101,20 @@ const TradeRecordTable = () => {
     },
   };
 
-  const fetchRecords = async () => {
+  const fetchRecords = useCallback(async (fastMode = true) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/record/list_spot_record', {
+      const apiUrl = fastMode 
+        ? 'http://localhost:8000/api/record/list_spot_record_fast'
+        : 'http://localhost:8000/api/record/list_spot_record';
+        
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(query),
+        body: JSON.stringify({
+          ...query,
+          ccy: debouncedCcy, // 使用防抖后的值
+        }),
       });
       const data = await response.json();
       if (data.success) {
@@ -93,20 +122,78 @@ const TradeRecordTable = () => {
         setTotal(data.total || 0);
       } else {
         console.error('Failed to fetch data:', data.message);
+        setRecords([]);
+        setTotal(0);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
+      if (initialLoading) {
+        setInitialLoading(false);
+      }
     }
-  };
+  }, [query, debouncedCcy, initialLoading]);
 
+  // 手动刷新数据（从OKX同步最新数据）
+  const handleRefreshData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // 先调用刷新接口
+      const refreshResponse = await fetch('http://localhost:8000/api/record/refresh_spot_record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      const refreshData = await refreshResponse.json();
+      if (refreshData.success) {
+        // 刷新成功后，重新获取数据
+        await fetchRecords(false); // 使用完整模式
+      } else {
+        console.error('Failed to refresh data:', refreshData.message);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  }, [fetchRecords]);
+
+  // 初始加载
   useEffect(() => {
     fetchRecords();
-  }, [query]);
+  }, []);
+
+  // 监听查询条件变化（除了ccy，因为它有防抖处理）
+  useEffect(() => {
+    if (!initialLoading) {
+      fetchRecords(); // 使用快速模式
+    }
+  }, [query.pageNum, query.pageSize, query.type, query.side, query.exec_source, query.begin_time, query.end_time, query.timeRange]);
+
+  // 监听防抖后的ccy变化
+  useEffect(() => {
+    if (!initialLoading && debouncedCcy !== query.ccy) {
+      // 重置到第一页
+      setQuery(prev => ({ ...prev, pageNum: 1 }));
+    }
+  }, [debouncedCcy, initialLoading]);
+
+  // 当防抖后的ccy实际改变时触发搜索
+  useEffect(() => {
+    if (!initialLoading) {
+      fetchRecords(); // 使用快速模式
+    }
+  }, [debouncedCcy]);
 
   const updateQuery = (key, value) => {
-    setQuery((prev) => ({ ...prev, [key]: value }));
+    setQuery((prev) => ({ 
+      ...prev, 
+      [key]: value,
+      // 非分页相关的搜索条件改变时重置到第一页
+      ...(key !== 'pageNum' && key !== 'pageSize' ? { pageNum: 1 } : {})
+    }));
   };
 
   const handleClearSelect = (field) => {
@@ -138,18 +225,54 @@ const TradeRecordTable = () => {
     );
   };
 
+  // 手动刷新功能
+  const handleRefresh = () => {
+    fetchRecords(); // 快速刷新当前数据
+  };
+
+  if (initialLoading) {
+    return (
+      <Box sx={tableStyles.container}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+          <CircularProgress sx={{ color: '#2EE5AC' }} />
+          <Typography sx={{ ml: 2, color: '#fff' }}>加载交易记录...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={tableStyles.container}>
-      <Typography
-        variant="h5"
-        component="h2"
-        style={{
-          margin: '0 0 20px 0',  // 移除上边距，只保留下边距
-          color: '#fff'
-        }}
-      >
-        Trade History
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          style={{
+            margin: 0,
+            color: '#fff'
+          }}
+        >
+          Trade History
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            onClick={handleRefresh}
+            disabled={loading}
+            sx={{ color: '#2EE5AC' }}
+            title="刷新当前页面"
+          >
+            <RefreshIcon />
+          </IconButton>
+          <IconButton
+            onClick={handleRefreshData}
+            disabled={loading}
+            sx={{ color: '#ff9800' }}
+            title="同步最新数据"
+          >
+            <SyncIcon />
+          </IconButton>
+        </Box>
+      </Box>
 
       <Box sx={tableStyles.searchArea}>
         <DarkFormControl>
@@ -242,8 +365,8 @@ const TradeRecordTable = () => {
           ))}
         </DarkSelect>
 
-        <SearchButton variant="contained" onClick={fetchRecords}>
-          查询
+        <SearchButton variant="contained" onClick={fetchRecords} disabled={loading}>
+          {loading ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : '查询'}
         </SearchButton>
         <ResetButton variant="contained" onClick={handleReset}>
           重置
@@ -266,43 +389,51 @@ const TradeRecordTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
+            {loading && !initialLoading ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={9} align="center">
                   <CircularProgress sx={{ color: '#2EE5AC' }} />
                 </TableCell>
               </TableRow>
-            ) : records.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell>{record.ccy}</TableCell>
-                <TableCell>
-                  {TRADE_TYPES.find(type => type.value === record.type)?.label || record.type}
-                </TableCell>
-                <TableCell>
-                  <Box sx={tableStyles.sideTag[record.side]}>
-                    {TRADE_SIDES.find(side => side.value === record.side)?.label || record.side}
-                  </Box>
-                </TableCell>
-                <TableCell>{record.amount}</TableCell>
-                <TableCell>{record.exec_price}</TableCell>
-                <TableCell>
-                  {EXEC_SOURCES.find(exec_source => exec_source.value === record.exec_source)
-                      ?.label || record.exec_source}
-                </TableCell>
-                <TableCell>
-                  {TRADE_STATUS.find(status => status.value === record.status)?.label || record.status}
-                </TableCell>
-                <TableCell>{record.uTime}</TableCell>
-                <TableCell>
-                  <DarkTextField
-                    placeholder="Add note..."
-                    size="small"
-                    variant="standard"
-                    sx={tableStyles.noteInput}
-                  />
+            ) : records.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                  暂无数据
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              records.map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell>{record.ccy}</TableCell>
+                  <TableCell>
+                    {TRADE_TYPES.find(type => type.value === record.type)?.label || record.type}
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={tableStyles.sideTag[record.side]}>
+                      {TRADE_SIDES.find(side => side.value === record.side)?.label || record.side}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{record.amount}</TableCell>
+                  <TableCell>{record.exec_price}</TableCell>
+                  <TableCell>
+                    {EXEC_SOURCES.find(exec_source => exec_source.value === record.exec_source)
+                        ?.label || record.exec_source}
+                  </TableCell>
+                  <TableCell>
+                    {TRADE_STATUS.find(status => status.value === record.status)?.label || record.status}
+                  </TableCell>
+                  <TableCell>{record.uTime}</TableCell>
+                  <TableCell>
+                    <DarkTextField
+                      placeholder="Add note..."
+                      size="small"
+                      variant="standard"
+                      sx={tableStyles.noteInput}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </StyledTableContainer>
@@ -312,6 +443,7 @@ const TradeRecordTable = () => {
           count={Math.ceil(total / query.pageSize)}
           page={query.pageNum}
           onChange={(event, page) => updateQuery('pageNum', page)}
+          disabled={loading}
         />
       </Box>
     </Box>

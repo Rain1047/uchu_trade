@@ -49,10 +49,11 @@ export const useStyles = makeStyles((theme) => ({
   loading: {
     display: 'flex',
     justifyContent: 'center',
-    padding: theme.spacing(4)
+    alignItems: 'center',
+    minHeight: '200px',
   },
   // Add these to your existing styles
-plotContainer: {
+  plotContainer: {
     position: 'relative',
     width: '100%',
     height: '400px',
@@ -77,56 +78,51 @@ plotContainer: {
     fontSize: '0.875rem',
     textAlign: 'right',
   },
-axisContainer: {
+  axisContainer: {
     position: 'relative',
     flex: 1,
     height: '100%',
     marginLeft: theme.spacing(2),
   },
-point: {
-  position: 'absolute',
-  width: 6,
-  height: 6,
-  borderRadius: '50%',
-  transform: 'translate(-50%, -50%)',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    width: 8,
-    height: 8,
-    zIndex: 2,
-  },
-},
-profitPoint: {
-  backgroundColor: '#5eddac',
-},
-lossPoint: {
-  backgroundColor: '#f57ad0',
-},
-tooltip: {
+  point: {
     position: 'absolute',
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    color: 'white',
-    padding: theme.spacing(1),
-    borderRadius: theme.spacing(1),
-    fontSize: '0.875rem',
-    pointerEvents: 'none',
-    zIndex: 1000,
-    whiteSpace: 'nowrap',
+    width: 6,
+    height: 6,
+    borderRadius: '50%',
+    transform: 'translate(-50%, -50%)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      width: 8,
+      height: 8,
+      zIndex: 2,
+    },
   },
-yAxis: {
-  position: 'absolute',
-  left: -50,
-  top: 0,
-  bottom: 0,
-  width: 40,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  color: '#888',
-  fontSize: 12,
-},
-xAxis: {
+  profitPoint: {
+    backgroundColor: '#5eddac',
+  },
+  lossPoint: {
+    backgroundColor: '#f57ad0',
+  },
+  tooltip: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[3],
+  },
+  yAxis: {
+    position: 'absolute',
+    left: -50,
+    top: 0,
+    bottom: 0,
+    width: 40,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    color: '#888',
+    fontSize: 12,
+  },
+  xAxis: {
     position: 'absolute',
     bottom: '-20px',
     left: 0,
@@ -136,7 +132,7 @@ xAxis: {
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: '0.875rem',
   },
-centerLine: {
+  centerLine: {
     position: 'absolute',
     left: 0,
     right: 0,
@@ -156,9 +152,34 @@ centerLine: {
     right: 0,
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
   },
-
-runButton: {
-  minWidth: 120,
-  marginRight: theme.spacing(2)
-}
+  runButton: {
+    minWidth: 120,
+    marginRight: theme.spacing(2)
+  },
+  chartContainer: {
+    height: '400px',
+    marginTop: theme.spacing(2),
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  cardContent: {
+    flexGrow: 1,
+  },
+  metricValue: {
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    color: theme.palette.primary.main,
+  },
+  metricLabel: {
+    color: theme.palette.text.secondary,
+  },
+  gridContainer: {
+    marginTop: theme.spacing(2),
+  },
+  chartTitle: {
+    marginBottom: theme.spacing(2),
+  },
 }));

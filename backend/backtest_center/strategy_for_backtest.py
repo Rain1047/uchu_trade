@@ -1,6 +1,8 @@
 from typing import Optional, Any
 
 import backtrader as bt
+import math
+import pandas as pd
 
 from backend.backtest_center.models.trade_record import TradeRecord
 
@@ -22,6 +24,13 @@ class StrategyForBacktest(bt.Strategy):
         self.entry_price = self.datas[0].entry_price
         self.sell_sig = self.datas[0].sell_sig
         self.sell_price = self.datas[0].sell_price
+
+        # 添加布林带指标
+        self.bollinger = bt.indicators.BollingerBands(
+            self.data.close,
+            period=20,
+            devfactor=2
+        )
 
         # 订单管理
         self.entry_order = None  # 入场订单
@@ -47,7 +56,7 @@ class StrategyForBacktest(bt.Strategy):
         if order.status in [order.Submitted, order.Accepted]:
             return
 
-            # 打印止损单状态
+        # 打印止损单状态
         if order.status == order.Canceled:
             if order.status == order.Canceled:
                 # 通过exectype判断订单类型更准确
@@ -76,7 +85,8 @@ class StrategyForBacktest(bt.Strategy):
             else:
                 # 计算收益
                 if self.buy_price:
-                    profit = (order.executed.price - self.buy_price) * abs(order.executed.size)
+                    # 计算实际收益（考虑手续费）
+                    profit = (order.executed.price - self.buy_price) * abs(order.executed.size) - order.executed.comm
                     trade_record.pnl = profit
                     self.log(f'卖出执行 - 卖出价格: {order.executed.price:.2f}, '
                              f'买入价格: {self.buy_price:.2f}, '
@@ -217,34 +227,98 @@ class StrategyForBacktest(bt.Strategy):
         改进的仓位计算:
         - 考虑现有持仓
         - 基于总资产计算新仓位
+        - 添加最小交易单位限制
+        - 添加NaN和极端值检查
         """
-        # 计算目标交易价值
-        portfolio_value = self.broker.getvalue()
-        trade_value = portfolio_value * (self.p.risk_percent / 100)
+        try:
+            # 验证输入价格
+            if pd.isna(price) or price <= 0 or not math.isfinite(price):
+                if self.p.debug:
+                    self.log(f'价格无效: {price}, 返回仓位0')
+                return 0
+            
+            # 获取投资组合价值
+            portfolio_value = self.broker.getvalue()
+            if pd.isna(portfolio_value) or portfolio_value <= 0 or not math.isfinite(portfolio_value):
+                if self.p.debug:
+                    self.log(f'投资组合价值无效: {portfolio_value}, 返回仓位0')
+                return 0
 
-        # 计算最大允许的总仓位价值
-        max_position_value = portfolio_value * self.p.max_position_size
+            # 计算目标交易价值
+            trade_value = portfolio_value * (self.p.risk_percent / 100)
+            if pd.isna(trade_value) or trade_value <= 0 or not math.isfinite(trade_value):
+                if self.p.debug:
+                    self.log(f'交易价值无效: {trade_value}, 返回仓位0')
+                return 0
 
-        # 计算现有仓位价值
-        current_position_value = self.position.size * price if self.position else 0
+            # 计算最大允许的总仓位价值
+            max_position_value = portfolio_value * self.p.max_position_size
+            if pd.isna(max_position_value) or max_position_value <= 0 or not math.isfinite(max_position_value):
+                if self.p.debug:
+                    self.log(f'最大仓位价值无效: {max_position_value}, 返回仓位0')
+                return 0
 
-        # 计算还可以增加的仓位价值
-        available_position_value = max_position_value - current_position_value
+            # 计算现有仓位价值
+            current_position_size = self.position.size if self.position else 0
+            if pd.isna(current_position_size) or not math.isfinite(current_position_size):
+                current_position_size = 0
+                
+            current_position_value = current_position_size * price
+            if pd.isna(current_position_value) or not math.isfinite(current_position_value):
+                current_position_value = 0
 
-        # 确定本次交易的目标价值
-        target_trade_value = min(trade_value, available_position_value)
+            # 计算还可以增加的仓位价值
+            available_position_value = max_position_value - current_position_value
+            if pd.isna(available_position_value) or not math.isfinite(available_position_value):
+                available_position_value = 0
 
-        # 如果可用金额太小，返回0
-        if target_trade_value < price * 0.001:  # 最小交易单位
+            # 确定本次交易的目标价值
+            target_trade_value = min(trade_value, available_position_value)
+            if pd.isna(target_trade_value) or target_trade_value <= 0 or not math.isfinite(target_trade_value):
+                if self.p.debug:
+                    self.log(f'目标交易价值无效: {target_trade_value}, 返回仓位0')
+                return 0
+
+            # 检查最小交易单位
+            min_trade_value = price * 0.001  # 最小交易单位
+            if target_trade_value < min_trade_value:
+                if self.p.debug:
+                    self.log(f'仓位太小 - 目标交易价值: {target_trade_value:.2f}, '
+                             f'最小要求: {min_trade_value:.2f}')
+                return 0
+
+            # 计算实际可以购买的数量
+            size = target_trade_value / price
+            if pd.isna(size) or size <= 0 or not math.isfinite(size):
+                if self.p.debug:
+                    self.log(f'计算的仓位大小无效: {size}, 返回仓位0')
+                return 0
+
+            # 限制最大仓位
+            max_size = portfolio_value * 0.5 / price  # 最大使用50%资金
+            if pd.isna(max_size) or not math.isfinite(max_size):
+                max_size = size  # 如果max_size无效，使用原size
+            else:
+                size = min(size, max_size)
+
+            # 最终验证
+            if pd.isna(size) or size <= 0 or not math.isfinite(size):
+                if self.p.debug:
+                    self.log(f'最终仓位大小无效: {size}, 返回仓位0')
+                return 0
+            
+            # 限制极端值
+            if size > 1000000:  # 防止极端大的仓位
+                if self.p.debug:
+                    self.log(f'仓位过大，限制为合理值: {size} -> 1000')
+                size = 1000
+
+            return float(size)
+            
+        except Exception as e:
             if self.p.debug:
-                self.log(f'仓位太小 - 目标交易价值: {target_trade_value:.2f}, '
-                         f'最小要求: {price * 0.001:.2f}')
+                self.log(f'计算仓位大小时发生错误: {str(e)}, 返回仓位0')
             return 0
-
-        # 计算实际可以购买的数量
-        size = target_trade_value / price
-
-        return size
 
     def stop(self):
         """

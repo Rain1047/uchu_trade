@@ -3,17 +3,17 @@ import '@fontsource/inter';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
 import TradeHistoryTable from "./features/trade/components/history";
-import { darkTheme} from "./theme";
+import { darkTheme } from "./theme";
 import './index.css';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import './styles/global.css';
 import Layout from './components/Layout';
-import {Container, Typography} from "@material-ui/core";
+import { Container, Typography } from "@material-ui/core";
 import StrategyPage from "./features/strategy"
 import BalanceList from "./features/balance"
 import Backtest from "./features/backtest";
 import StrategyFilesPage from "./features/strategyfiles";
-import {TradeRecordTable} from "./features/record"
+import { TradeRecordTable } from "./features/record"
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -44,10 +44,9 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-
 function App() {
-  return (
-      <ErrorBoundary>
+    return (
+        <ErrorBoundary>
             <ThemeProvider theme={darkTheme}>
                 <Router>
                     <Layout>
@@ -63,7 +62,7 @@ function App() {
                 </Router>
             </ThemeProvider>
         </ErrorBoundary>
-  );
+    );
 }
 
 export default App;

@@ -1,10 +1,10 @@
 export const API_ENDPOINTS = {
-  LIST_SYMBOL: '/api/backtest/list_symbol',
-  LIST_STRATEGY: '/api/backtest/list_strategy_by_symbol',
+  LIST_STRATEGIES: '/api/backtest/list_strategies',
+  RUN_BACKTEST: '/api/backtest/run_backtest',
   LIST_KEY: '/api/backtest/list_key',
-  LIST_RECORD: '/api/backtest/list_record_by_key',
+  LIST_RECORD: '/api/backtest/list_record',
   GET_DETAIL: '/api/backtest/get_backtest_detail',
-  RUN_BACKTEST: '/api/backtest/run_backtest'
+  LIST_BACKTEST_RESULTS: '/api/backtest/list_backtest_results'
 };
 
 export const BASE_URL = 'http://127.0.0.1:8000';

@@ -72,12 +72,62 @@ def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StrategyInstance) -> S
             df.loc[df.index[-1], 'signal'] = EnumSide.BUY.value
         # 如果满足买入信号，则设置交易信号为True
         if df.iloc[-1]['signal'] == EnumSide.BUY.value:
+            # 检查loss_per_trans是否有效
+            if stIns.loss_per_trans is None or stIns.loss_per_trans <= 0:
+                print(f"dbb_entry_long_strategy_live#execute result: loss_per_trans ({stIns.loss_per_trans}) is invalid, no signal")
+                res.signal = False
+                return res
+            
+            # 检查价格数据是否有效
+            current_close = df.iloc[-1]['close']
+            current_sma20 = df.iloc[-1]['sma20']
+            
+            if pd.isna(current_close) or pd.isna(current_sma20):
+                print(f"dbb_entry_long_strategy_live#execute result: price data contains NaN, no signal")
+                res.signal = False
+                return res
+            
+            # 计算价格差异，避免除零
+            price_diff = current_close - current_sma20
+            if abs(price_diff) < 0.01:  # 价格差异太小，避免除零或极大值
+                print(f"dbb_entry_long_strategy_live#execute result: price difference too small ({price_diff}), no signal")
+                res.signal = False
+                return res
+            
             # 获取仓位
-            position = str(
-                stIns.loss_per_trans * round(df.iloc[-1]['close'] / (df.iloc[-1]['close'] - df.iloc[-1]['sma20']),
-                                             2) * 10)
+            try:
+                position_ratio = round(current_close / price_diff, 2)
+                # 限制比例，避免极端值
+                position_ratio = max(1.0, min(position_ratio, 100.0))
+                position = str(stIns.loss_per_trans * position_ratio * 10)
+                
+                # 检查position是否有效
+                position_float = float(position)
+                if pd.isna(position_float) or position_float <= 0:
+                    print(f"dbb_entry_long_strategy_live#execute result: calculated position ({position}) is invalid, no signal")
+                    res.signal = False
+                    return res
+                
+            except (ValueError, TypeError, ZeroDivisionError) as e:
+                print(f"dbb_entry_long_strategy_live#execute result: position calculation failed: {str(e)}, no signal")
+                res.signal = False
+                return res
+            
             # 获取单个产品行情信息
-            res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
+            try:
+                res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
+                
+                # 检查sz是否有效
+                if not res.sz or res.sz == '0' or pd.isna(float(res.sz)):
+                    print(f"dbb_entry_long_strategy_live#execute result: sz ({res.sz}) is invalid, no signal")
+                    res.signal = False
+                    return res
+                    
+            except Exception as e:
+                print(f"dbb_entry_long_strategy_live#execute result: get_sz failed: {str(e)}, no signal")
+                res.signal = False
+                return res
+            
             res.signal = True
             res.side = EnumSide.BUY.value
             res.pos_side = EnumPosSide.LONG.value
