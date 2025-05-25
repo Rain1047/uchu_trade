@@ -2,6 +2,7 @@
   "name": "okx-front",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@ant-design/pro-components": "^2.6.46",
     "@emotion/react": "^11.13.3",
@@ -19,8 +20,10 @@
     "@testing-library/user-event": "^13.5.0",
     "@uiw/react-textarea-code-editor": "^3.1.0",
     "axios": "^1.6.2",
+    "highlight.js": "^11.11.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
+    "marked": "^15.0.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
@@ -56,6 +59,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
+    "http-proxy-middleware": "^3.0.5",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14"
   }
