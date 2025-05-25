@@ -1,21 +1,8 @@
-import os
-import sys
-from typing import Optional
-import pandas as pd
-from backend.data_object_center.st_instance import StrategyInstance
-from backend.data_object_center.enum_obj import EnumTradeType, EnumSide, EnumPosSide
-from backend.service_center.okx_service.okx_ticker_service import OKXTickerService
-from backend.strategy_center.strategy_result import StrategyExecuteResult
-from backend.data_center.kline_data.kline_data_collector import KlineDataCollector
-from backend.strategy_center.atom_strategy.strategy_registry import registry
+from backend.strategy_center.atom_strategy.strategy_imports import *
+from backend.strategy_center.atom_strategy.strategy_utils import StrategyUtils
 
 # 将项目根目录添加到Python解释器的搜索路径中
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import okx.PublicData as PublicData
-import okx.MarketData as MarketData
-from backend.api_center.okx_api.okx_main import OKXAPIWrapper
-
 marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
 publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
 okx = OKXAPIWrapper()
@@ -31,7 +18,6 @@ def dbb_entry_long_strategy(df: pd.DataFrame, stIns: Optional[StrategyInstance])
         return dbb_entry_long_strategy_live(df, stIns)
 
 
-# @registry.register(name="dbb_entry_long_strategy_backtest", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
@@ -61,7 +47,6 @@ def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     return df
 
 
-# @registry.register(name="dbb_entry_long_strategy_live", desc="布林带入场策略", side="long")
 def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StrategyInstance) -> StrategyExecuteResult:
     res = StrategyExecuteResult()
     if not df.empty:
@@ -79,55 +64,38 @@ def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StrategyInstance) -> S
                 return res
             
             # 检查价格数据是否有效
-            current_close = df.iloc[-1]['close']
-            current_sma20 = df.iloc[-1]['sma20']
+            entry_price = df.iloc[-1]['close']
+            # 止损价可根据实际策略调整，这里用sma20
+            stop_loss_price = df.iloc[-1]['sma20'] if 'sma20' in df.columns else entry_price * 0.98
+            leverage = getattr(stIns, 'leverage', 3)  # 优先取stIns.leverage，否则默认3倍杠杆
+            max_loss_per_trade = stIns.loss_per_trans
             
-            if pd.isna(current_close) or pd.isna(current_sma20):
+            if pd.isna(entry_price) or pd.isna(stop_loss_price):
                 print(f"dbb_entry_long_strategy_live#execute result: price data contains NaN, no signal")
                 res.signal = False
                 return res
             
-            # 计算价格差异，避免除零
-            price_diff = current_close - current_sma20
-            if abs(price_diff) < 0.01:  # 价格差异太小，避免除零或极大值
-                print(f"dbb_entry_long_strategy_live#execute result: price difference too small ({price_diff}), no signal")
-                res.signal = False
-                return res
-            
-            # 获取仓位
-            try:
-                position_ratio = round(current_close / price_diff, 2)
-                # 限制比例，避免极端值
-                position_ratio = max(1.0, min(position_ratio, 100.0))
-                position = str(stIns.loss_per_trans * position_ratio * 10)
-                
-                # 检查position是否有效
-                position_float = float(position)
-                if pd.isna(position_float) or position_float <= 0:
-                    print(f"dbb_entry_long_strategy_live#execute result: calculated position ({position}) is invalid, no signal")
-                    res.signal = False
-                    return res
-                
-            except (ValueError, TypeError, ZeroDivisionError) as e:
-                print(f"dbb_entry_long_strategy_live#execute result: position calculation failed: {str(e)}, no signal")
+            # 仓位计算
+            position = StrategyUtils.calculate_position(entry_price, stop_loss_price, leverage, max_loss_per_trade)
+            if position <= 0:
+                print(f"dbb_entry_long_strategy_live#execute result: calculated position ({position}) is invalid, no signal")
                 res.signal = False
                 return res
             
             # 获取单个产品行情信息
             try:
-                res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=position)
-                
+                res.sz = price_collector.get_sz(instId=stIns.trade_pair, position=str(position))
                 # 检查sz是否有效
                 if not res.sz or res.sz == '0' or pd.isna(float(res.sz)):
                     print(f"dbb_entry_long_strategy_live#execute result: sz ({res.sz}) is invalid, no signal")
                     res.signal = False
                     return res
-                    
             except Exception as e:
                 print(f"dbb_entry_long_strategy_live#execute result: get_sz failed: {str(e)}, no signal")
                 res.signal = False
                 return res
             
+            # 封装结果
             res.signal = True
             res.side = EnumSide.BUY.value
             res.pos_side = EnumPosSide.LONG.value
