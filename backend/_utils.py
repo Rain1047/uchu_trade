@@ -147,7 +147,6 @@ class CheckUtils:
 
 class DatabaseUtils:
     _instance = None
-    _session = None
     _engine = None
     _Session = None
 
@@ -173,9 +172,9 @@ class DatabaseUtils:
             logger = LogConfig.get_logger(__name__)
             logger.info(f"数据库路径: {db_absolute_path}")
             # 创建数据库连接引擎
-            cls._engine = create_engine(f'sqlite:///{db_absolute_path}')
-            # 创建会话类
-            cls._Session = sessionmaker(bind=cls._engine)
+            cls._engine = create_engine(f'sqlite:///{db_absolute_path}', connect_args={"check_same_thread": False})
+            # 创建会话工厂，关闭自动 commit 与 flush，降低并发锁冲突
+            cls._Session = sessionmaker(autocommit=False, autoflush=False, bind=cls._engine)
             logger.info("数据库设置完成")
         except Exception as e:
             logger = LogConfig.get_logger(__name__)
@@ -184,12 +183,10 @@ class DatabaseUtils:
 
     @staticmethod
     def get_db_session():
-        if DatabaseUtils._session is None:
-            # Ensure that _setup() has been called and _Session has been initialized
-            if DatabaseUtils._engine is None or DatabaseUtils._Session is None:
-                DatabaseUtils._setup()
-            DatabaseUtils._session = DatabaseUtils._Session()
-        return DatabaseUtils._session
+        """获取新的数据库会话，调用方应在使用完毕后关闭或提交。"""
+        if DatabaseUtils._engine is None or DatabaseUtils._Session is None:
+            DatabaseUtils._setup()
+        return DatabaseUtils._Session()
 
     @staticmethod
     def get_project_root():

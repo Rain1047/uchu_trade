@@ -5,23 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
-      <change beforePath="$PROJECT_DIR$/.idea/uchu_trade.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/uchu_trade.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/api_center/okx_api/account_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_center/okx_api/account_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/api_center/okx_api/okx_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_center/okx_api/okx_main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backtest_center/backtest_core/backtest_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backtest_center/backtest_core/backtest_system.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/record/record_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/record/record_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/record/record_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/record/record_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controller_center/strategy/strategy_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/strategy/strategy_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_center/data_gather/fedJeffCox.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/data_gather/fedJeffCox.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_center/data_gather/fedNew.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/data_gather/fedNew.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_object_center/spot_algo_order_record.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_balance_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/service_center/okx_service/okx_spot_order_record_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/service_center/okx_service/okx_spot_order_record_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -625,7 +610,7 @@
       <workItem from="1743001865460" duration="4800000" />
       <workItem from="1743353777402" duration="8463000" />
       <workItem from="1746626188614" duration="4911000" />
-      <workItem from="1747922841159" duration="988000" />
+      <workItem from="1747922841159" duration="2793000" />
     </task>
     <option name="localTasksCounter" value="73" />
     <servers />
