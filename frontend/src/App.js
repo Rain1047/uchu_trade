@@ -15,6 +15,7 @@ import Backtest from "./features/backtest";
 import StrategyFilesPage from "./features/strategyfiles";
 import { TradeRecordTable } from "./features/record"
 import AgentUpload from "./pages/AgentUpload";
+import ChatAgent from "./pages/ChatAgent";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -51,16 +52,19 @@ function App() {
             <ThemeProvider theme={darkTheme}>
                 <Router>
                     <Layout>
-                        <Routes>
-                            <Route path="/" element={<AgentUpload />} />
-                            <Route path="/trade/history" element={<TradeHistoryTable />} />
-                            <Route path="/strategy" element={<StrategyPage />} />
-                            <Route path="/balance" element={<BalanceList />} />
-                            <Route path="/backtest" element={<Backtest />} />
-                            <Route path="/strategyfiles" element={<StrategyFilesPage />} />
-                            <Route path="/record" element={<TradeRecordTable />} />
-                            <Route path="/agent/upload" element={<AgentUpload />} />
-                        </Routes>
+                        <React.Suspense fallback={<div style={{color:'#fff',textAlign:'center',marginTop:40}}>Loading...</div>}>
+                            <Routes>
+                                <Route path="/" element={<AgentUpload />} />
+                                <Route path="/trade/history" element={<TradeHistoryTable />} />
+                                <Route path="/strategy" element={<StrategyPage />} />
+                                <Route path="/balance" element={<BalanceList />} />
+                                <Route path="/backtest" element={<Backtest />} />
+                                <Route path="/strategyfiles" element={<StrategyFilesPage />} />
+                                <Route path="/record" element={<TradeRecordTable />} />
+                                <Route path="/agent/upload" element={<AgentUpload />} />
+                                <Route path="/agent/chat" element={<ChatAgent/>} />
+                            </Routes>
+                        </React.Suspense>
                     </Layout>
                 </Router>
             </ThemeProvider>

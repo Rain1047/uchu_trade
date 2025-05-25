@@ -78,4 +78,52 @@ export const downloadRaw = async (fileId) => {
   const response = await fetch(`${BASE_URL}/api/agent/files/${fileId}/raw`);
   if (!response.ok) throw new Error('下载失败');
   return response.blob();
+};
+
+// -------- Chat (new) ---------
+
+// 普通一次性返回
+export const chatOnce = async (body) => {
+  const response = await fetch(`${BASE_URL}/api/agent/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return handleResponse(response);
+};
+
+// 流式：返回 EventSource 实例，由调用方监听 message
+export const chatStream = async (body) => {
+  // 1. 创建通道，获取 cid
+  const res = await fetch(`${BASE_URL}/api/agent/chat/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const { cid } = await res.json();
+  // 2. 打开 SSE
+  return new EventSource(`${BASE_URL}/api/agent/chat/stream/${cid}`);
+};
+
+export const adoptStrategy = async (payload) => {
+  const response = await fetch(`${BASE_URL}/api/agent/adopt`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return handleResponse(response);
+};
+
+export const startEvaluate = async (payload) => {
+  const response = await fetch(`${BASE_URL}/api/agent/evaluate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return handleResponse(response);
+};
+
+export const getEvaluate = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/api/agent/evaluate/${jobId}`);
+  return handleResponse(response);
 }; 

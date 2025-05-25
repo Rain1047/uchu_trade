@@ -18,6 +18,7 @@ from backend.controller_center.backtest.backtest_controller import router as bac
 from backend.controller_center.strategy_files.strategy_files_controller import router as strategy_files_router
 from backend.controller_center.record.record_controller import router as record_router
 from backend.controller_center.agent.agent_controller import router as agent_router
+from backend.controller_center.agent.chat_controller import router as chat_router
 from backend.data_object_center.base import Base, engine
 
 # 导入所有模型类以确保表被创建
@@ -53,6 +54,7 @@ app.include_router(backtest_router, prefix="/api/backtest", tags=["backtest"])
 app.include_router(strategy_files_router, prefix="/api/strategy-files", tags=["strategy-files"])
 app.include_router(record_router, prefix="/api/record", tags=["record"])
 app.include_router(agent_router, prefix="/api/agent", tags=["agent"])
+app.include_router(chat_router, prefix="/api/agent", tags=["agent-chat"])
 
 # 配置 CORS
 app.add_middleware(

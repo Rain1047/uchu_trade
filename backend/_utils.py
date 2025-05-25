@@ -4,7 +4,7 @@ from datetime import timedelta, timezone
 import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 import yfinance as yf
 
 from sqlalchemy import create_engine
@@ -14,6 +14,9 @@ from datetime import datetime
 import uuid
 import time
 import random
+
+# --------------------- SSE Manager ---------------------
+import asyncio
 
 
 class LogConfig:
@@ -322,3 +325,34 @@ class FormatUtils:
 # 示例用法
 if __name__ == "__main__":
     print(DatabaseUtils.get_db_session())
+
+
+class SSEManager:
+    """管理所有 SSE 连接（cid -> asyncio.Queue）"""
+
+    _channels: Dict[str, "asyncio.Queue[dict]"] = {}
+
+    @classmethod
+    def create_channel(cls):
+        cid = uuid.uuid4().hex[:12]
+        q: "asyncio.Queue[dict]" = asyncio.Queue()
+        cls._channels[cid] = q
+        return cid, q
+
+    @classmethod
+    def get_queue(cls, cid: str):
+        return cls._channels.get(cid)
+
+    @classmethod
+    async def generator(cls, cid: str):
+        queue = cls.get_queue(cid)
+        if queue is None:
+            yield {"event": "end", "data": ""}
+            return
+        while True:
+            msg = await queue.get()
+            yield msg
+            if msg.get("event") == "end":
+                # 关闭后移除
+                cls._channels.pop(cid, None)
+                break

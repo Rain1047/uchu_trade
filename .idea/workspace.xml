@@ -6,6 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/main_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/agent.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/agent.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -611,6 +616,7 @@
       <workItem from="1743353777402" duration="8463000" />
       <workItem from="1746626188614" duration="4911000" />
       <workItem from="1747922841159" duration="2793000" />
+      <workItem from="1748165209795" duration="19000" />
     </task>
     <option name="localTasksCounter" value="73" />
     <servers />
