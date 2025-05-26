@@ -28,5 +28,7 @@ yarn-error.log*
 *.pyc
 __pycache__/
 
-# 忽略所有pdf文件
+# 忽略所有文件类
 *.pdf
+*.txt
+
