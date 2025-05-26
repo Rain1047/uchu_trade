@@ -81,13 +81,45 @@ class OKXTickerService:
 
     def get_sz(self, instId: str, position: str) -> str:
         # 获取单个产品行情信息
-        instId = SymbolFormatUtils.get_swap_usdt(instId)
-        last_price = self.get_current_ticker_price(instId)
-        result = okx.public_data.get_convert_contract_coin(
-            instId=instId, px=last_price, sz=position)
-        print(result)
+        try:
+            # 验证输入参数
+            position_float = float(position)
+            if pd.isna(position_float) or position_float <= 0:
+                print(f"get_sz: invalid position {position}, returning 0")
+                return "0"
+            
+            instId = SymbolFormatUtils.get_swap_usdt(instId)
+            last_price = self.get_current_ticker_price(instId)
+            
+            # 验证价格
+            if not last_price or pd.isna(float(last_price)) or float(last_price) <= 0:
+                print(f"get_sz: invalid price {last_price}, returning 0")
+                return "0"
+            
+            result = okx.public_data.get_convert_contract_coin(
+                instId=instId, px=last_price, sz=position)
+            print(result)
 
-        return result['data'][0]['sz']
+            # 验证返回结果
+            if not result or 'data' not in result or not result['data'] or len(result['data']) == 0:
+                print(f"get_sz: empty result from API, returning 0")
+                return "0"
+            
+            sz_value = result['data'][0]['sz']
+            
+            # 验证sz值
+            if not sz_value or pd.isna(float(sz_value)) or float(sz_value) <= 0:
+                print(f"get_sz: invalid sz value {sz_value}, returning 0")
+                return "0"
+            
+            return sz_value
+            
+        except (ValueError, TypeError, KeyError, IndexError) as e:
+            print(f"get_sz: error occurred: {str(e)}, returning 0")
+            return "0"
+        except Exception as e:
+            print(f"get_sz: unexpected error: {str(e)}, returning 0")
+            return "0"
 
 
 if __name__ == '__main__':

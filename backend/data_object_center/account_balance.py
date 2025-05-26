@@ -3,12 +3,18 @@ import logging
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from backend._constants import okx_constants
+from backend._constants import OKX_CONSTANTS
 from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType
+from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
+# 配置日志格式
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 
@@ -217,7 +223,7 @@ class AccountBalance(Base):
     @staticmethod
     def reset_account_balance(response: dict):
         print(response)
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             # 从response['data']中提取出每个币种的详细信息
             balance_data = response.get('data', [])
 
@@ -289,8 +295,8 @@ class AccountBalance(Base):
         """
         try:
             update_field = (
-                'stop_loss_switch' if type == EnumAutoTradeConfigType.STOP_LOSS.value
-                else 'limit_order_switch' if type == EnumAutoTradeConfigType.LIMIT_ORDER.value
+                'stop_loss_switch' if type == EnumTradeExecuteType.STOP_LOSS.value
+                else 'limit_order_switch' if type == EnumTradeExecuteType.LIMIT_ORDER.value
                 else None
             )
 
@@ -309,3 +315,25 @@ class AccountBalance(Base):
             session.rollback()
             print(f"Update switch failed: {e}")
             return False
+
+    @classmethod
+    def list_activate_limit_order_ccy(cls):
+        try:
+            balance_list = session.query(cls).filter(
+                cls.limit_order_switch == 'true'
+            ).all()
+            return [balance.ccy for balance in balance_list]
+        except Exception as e:
+            print(f"list_activate_limit_order_ccy@query failed: {e}")
+            return []
+
+    @classmethod
+    def list_activate_stop_loss_ccy(cls):
+        try:
+            balance_list = session.query(cls).filter(
+                cls.stop_loss_switch == 'true'
+            ).all()
+            return [balance.ccy for balance in balance_list]
+        except Exception as e:
+            print(f"list_activate_stop_loss_ccy@query failed: {e}")
+            return []

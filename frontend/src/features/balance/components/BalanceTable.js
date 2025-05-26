@@ -1,3 +1,4 @@
+// components/BalanceTable.js
 import React, { useState } from 'react';
 import {
   Table,
@@ -8,158 +9,193 @@ import {
   TableRow,
   Paper,
   Switch,
-  Dialog,
-  Box,
-  Typography,
-  Tab,
-  Tabs,
-  IconButton
-} from '@material-ui/core';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@material-ui/icons';
+  Button,
+  Drawer,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { AutoTradeConfig } from './AutoTradeConfig';
-import { OrderList } from './OrderList';
-import { makeStyles } from '@material-ui/core/styles';
-import { formatNumber, formatPrice } from '../utils/balanceUtils';
+import { formatNumber, formatPercentage } from '../utils/balanceUtils';
 
-const useStyles = makeStyles((theme) => ({
-  clickableRow: {
-    cursor: 'pointer',
+// 自定义绿色按钮
+const GreenButton = styled(Button)({
+  color: '#2EE5AC',
+  borderColor: '#2EE5AC',
+  '&:hover': {
+    backgroundColor: 'rgba(46, 229, 172, 0.08)',
+    borderColor: '#2EE5AC',
+  },
+});
+
+// 自定义绿色开关
+const GreenSwitch = styled(Switch)({
+  '& .MuiSwitch-switchBase.Mui-checked': {
+    color: '#2EE5AC',
     '&:hover': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: 'rgba(46, 229, 172, 0.08)',
     },
   },
-  expandedCell: {
-    padding: 0,
-    backgroundColor: theme.palette.background.default,
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+    backgroundColor: '#2EE5AC',
   },
-  expandedContent: {
-    padding: theme.spacing(3),
-  },
-  profit: {
-    color: theme.palette.success.main,
-  },
-  loss: {
-    color: theme.palette.error.main,
+});
+
+// 自定义暗色主题的 TableCell
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  color: '#ffffff',
+  borderBottom: 'none',
+  padding: '16px',
+  '&.MuiTableCell-head': {
+    backgroundColor: '#1A1A1A',
+    color: '#999',
+    fontWeight: 400,
   },
 }));
 
-export const BalanceTable = ({ data, onConfigSave, onSwitchToggle }) => {
-  const classes = useStyles();
-  const [expandedRow, setExpandedRow] = useState(null);
-  const [configDialog, setConfigDialog] = useState({ open: false, type: null, ccy: null });
-  const [activeTab, setActiveTab] = useState(0);
+// 自定义表格行样式
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  // 奇数行和偶数行使用不同的背景色
+  '&:nth-of-type(odd)': {
+    backgroundColor: '#1A1A1A',
+  },
+  '&:nth-of-type(even)': {
+    backgroundColor: '#121212',
+  },
+  // hover 效果
+  '&:hover': {
+    backgroundColor: '#242424 !important', // 使用 !important 确保 hover 效果优先
+    cursor: 'pointer',
+  },
+  // 去掉最后一个单元格的底部边框
+  '&:last-child td, &:last-child th': {
+    borderBottom: 0,
+  },
+}));
 
-  const handleRowClick = (ccy) => {
-    setExpandedRow(expandedRow === ccy ? null : ccy);
+// 自定义暗色主题的 TableContainer
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[900],
+  '& .MuiPaper-root': {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+  }
+}));
+
+export const BalanceTable = ({ data, onSwitchToggle, onConfigSave }) => {
+  const [configDrawer, setConfigDrawer] = useState({
+    open: false,
+    ccy: null,
+    type: null
+  });
+
+  const handleConfigOpen = (ccy, type) => {
+    setConfigDrawer({
+      open: true,
+      ccy,
+      type: 'limit_order'
+    });
   };
 
-  const handleSwitchClick = (e, ccy, type) => {
-    e.stopPropagation();
-    setConfigDialog({ open: true, type, ccy });
-  };
-
-  const handleConfigClose = () => {
-    setConfigDialog({ open: false, type: null, ccy: null });
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const handleDrawerClose = () => {
+    setConfigDrawer({
+      open: false,
+      ccy: null,
+      type: 'limit_order'
+    });
   };
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell>币种</TableCell>
-            <TableCell align="right">可用余额</TableCell>
-            <TableCell align="right">账户权益($)</TableCell>
-            <TableCell align="right">持仓均价($)</TableCell>
-            <TableCell align="right">总收益率</TableCell>
-            <TableCell align="center">自动止损</TableCell>
-            <TableCell align="center">自动限价</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((row) => (
-            <React.Fragment key={row.ccy}>
-              <TableRow
-                hover
-                onClick={() => handleRowClick(row.ccy)}
-                className={classes.clickableRow}
-              >
-                <TableCell>
-                  <IconButton size="small">
-                    {expandedRow === row.ccy ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                  </IconButton>
-                </TableCell>
-                <TableCell>{row.ccy}</TableCell>
-                <TableCell align="right">{formatNumber(row.avail_bal)}</TableCell>
-                <TableCell align="right">{formatNumber(row.eq_usd)}</TableCell>
-                <TableCell align="right">{formatNumber(row.acc_avg_px)}</TableCell>
-                <TableCell align="right" className={parseFloat(row.total_pnl_ratio) >= 0 ? classes.profit : classes.loss}>
-                  {row.total_pnl_ratio ? `${(parseFloat(row.total_pnl_ratio) * 100).toFixed(2)}%` : '-'}
-                </TableCell>
-                <TableCell align="center">
-                  <Switch
-                    checked={row.stop_loss_switch === 'true'}
-                    onChange={(e) => handleSwitchClick(e, row.ccy, 'stop_loss')}
-                    color="primary"
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Switch
+    <>
+      <StyledTableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>币种</StyledTableCell>
+              <StyledTableCell align="right">可用余额</StyledTableCell>
+              <StyledTableCell align="right">账户权益($)</StyledTableCell>
+              <StyledTableCell align="right">持仓均价($)</StyledTableCell>
+              <StyledTableCell align="right">总收益率</StyledTableCell>
+              <StyledTableCell align="center">限价</StyledTableCell>
+              <StyledTableCell align="center">止损</StyledTableCell>
+              <StyledTableCell align="center">编辑配置</StyledTableCell>
+              <StyledTableCell align="center">执行记录</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((row) => (
+              <StyledTableRow key={row.ccy}>
+                <StyledTableCell>{row.ccy}</StyledTableCell>
+                <StyledTableCell align="right">{formatNumber(row.avail_eq)}</StyledTableCell>
+                <StyledTableCell align="right">{formatNumber(row.eq_usd)}</StyledTableCell>
+                <StyledTableCell align="right">{formatNumber(row.acc_avg_px)}</StyledTableCell>
+                <StyledTableCell
+                  align="right"
+                  sx={{
+                    color: (theme) =>
+                      parseFloat(row.total_pnl_ratio) >= 0
+                        ? theme.palette.success.main
+                        : theme.palette.error.main
+                  }}
+                >
+                  {formatPercentage(row.total_pnl_ratio)}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <GreenSwitch
                     checked={row.limit_order_switch === 'true'}
-                    onChange={(e) => handleSwitchClick(e, row.ccy, 'limit_order')}
-                    color="primary"
+                    onChange={() => onSwitchToggle(row.ccy, 'limit_order')}
                   />
-                </TableCell>
-              </TableRow>
-              {expandedRow === row.ccy && (
-                <TableRow>
-                  <TableCell className={classes.expandedCell} colSpan={8}>
-                    <Box className={classes.expandedContent}>
-                      <Tabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        variant="fullWidth"
-                      >
-                        <Tab label="生效中委托" />
-                        <Tab label="已成交委托" />
-                      </Tabs>
-                      <Box mt={2}>
-                        {activeTab === 0 ? (
-                          <OrderList orders={row.live_spot_algo_order_records} />
-                        ) : (
-                          <OrderList orders={row.filled_spot_algo_order_records} />
-                        )}
-                      </Box>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <GreenSwitch
+                    checked={row.stop_loss_switch === 'true'}
+                    onChange={() => onSwitchToggle(row.ccy, 'stop_loss')}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <GreenButton
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleConfigOpen(row.ccy)}
+                  >
+                    编辑配置
+                  </GreenButton>
+                </StyledTableCell>
 
-      <Dialog
-        open={configDialog.open}
-        onClose={handleConfigClose}
-        maxWidth="sm"
-        fullWidth
+                <StyledTableCell align="center">
+                  <GreenButton
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleConfigOpen(row.ccy)}
+                  >
+                    执行记录
+                  </GreenButton>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StyledTableContainer>
+
+      <Drawer
+        anchor="right"
+        open={configDrawer.open}
+        onClose={handleDrawerClose}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: '80%', md: '1000px' },
+            maxWidth: '1200px',
+            bgcolor: 'grey.900',
+          }
+        }}
       >
-        <AutoTradeConfig
-          type={configDialog.type}
-          ccy={configDialog.ccy}
-          onSave={onConfigSave}
-          onClose={handleConfigClose}
-          existingConfigs={data.find(item => item.ccy === configDialog.ccy)?.auto_config_list || []}
-        />
-      </Dialog>
-    </TableContainer>
+        {configDrawer.open && (
+          <AutoTradeConfig
+            ccy={configDrawer.ccy}
+            initialType={configDrawer.type}
+            onClose={handleDrawerClose}
+            onSave={onConfigSave}
+          />
+        )}
+      </Drawer>
+    </>
   );
 };

@@ -19,7 +19,8 @@ import {
     Menu as MenuIcon,
     Settings as SettingsIcon,
     AccountBalance as AccountBalanceIcon,
-    Assessment as AssessmentIcon
+    Assessment as AssessmentIcon,
+    Receipt as ReceiptIcon,
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -63,11 +64,20 @@ const SideBar = ({ open, setOpen }) => {
     const classes = useStyles();
 
     const menuItems = [
-
         {
-            text: 'History',
+            text: 'Agent',
+            icon: <SettingsIcon />,
+            path: '/'
+        },
+        {
+            text: 'Record',
             icon: <HistoryIcon />,
-            path: '/trade/history'
+            path: '/record'
+        },
+        {
+            text: 'Balance',
+            icon: <AccountBalanceIcon />,
+            path: '/balance'
         },
         {
             text: 'Strategy',
@@ -75,15 +85,10 @@ const SideBar = ({ open, setOpen }) => {
             path: '/strategy'
         },
         {
-            text: 'Balance',  // 新增 Balance 菜单项
-            icon: <AccountBalanceIcon />,
-            path: '/balance'
-        },
-        {
-            text: 'Backtest',  // 新增 Balance 菜单项
+            text: 'Backtest',
             icon: <AssessmentIcon />,
             path: '/backtest'
-        },
+        }
     ];
 
     return (

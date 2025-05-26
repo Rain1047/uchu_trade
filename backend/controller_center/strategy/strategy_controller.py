@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-import logging
+from backend._utils import LogConfig
 
 from backend.controller_center.strategy.strategy_request import StrategyCreateOrUpdateRequest
 from backend.controller_center.strategy.strategy_service import StrategyService
@@ -8,17 +8,16 @@ from backend.controller_center.strategy.strategy_service import StrategyService
 router = APIRouter()
 
 # 设置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 
 @router.post("/create_strategy")
 async def create_strategy_instance(request: StrategyCreateOrUpdateRequest):
-    print(f"Received strategy request: {request}")
+    logger.info(f"收到策略请求: {request}")
     result = StrategyService.create_strategy(request)
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    print(f"Strategy created: {result['data']}")
+    logger.info(f"策略创建成功: {result['data']}")
     return result
 
 
@@ -27,7 +26,7 @@ async def list_strategy(page_num: int = 1, page_size: int = 10):
     result = StrategyService.list_strategies(page_num, page_size)
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    print(f"Strategies listed: {result}")
+    logger.info(f"策略列表: {result}")
     return result
 
 
@@ -64,8 +63,7 @@ async def get_strategy_config():
 
 
 if __name__ == '__main__':
-    # result = StrategyService.list_strategies(1, 10)
-    print({
+    logger.info({
         "success": True,
         "data": StrategyService.get_strategy_config()
     })

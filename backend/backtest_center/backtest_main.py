@@ -28,9 +28,8 @@ def backtest_main(st_instance_id):
     df = df[df['datetime'] > "2023-12-31 08:00:00"]
 
     # 运行回测
-    return backtest.run(df, plot=True, st=st)
+    return backtest.run(df, st, plot=True)
 
 
 if __name__ == '__main__':
     backtest_main(8)
-

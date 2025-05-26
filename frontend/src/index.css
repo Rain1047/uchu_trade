@@ -26,3 +26,36 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Markdown 预览区域 */
+.markdown-preview {
+  color: #e6edf3;
+  line-height: 1.85;
+  font-size: 0.95rem;
+  background-color: transparent;
+}
+
+.markdown-preview h1,.markdown-preview h2,.markdown-preview h3 {
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 0.3em;
+}
+
+.markdown-preview pre {
+  background-color: #0d1117;
+  padding: 12px 16px;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+.markdown-preview code {
+  background-color: rgba(110,118,129,0.4);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: Source Code Pro, Menlo, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.markdown-preview pre code {
+  background: none; /* 由 highlight.js 控制 */
+  padding: 0;
+}

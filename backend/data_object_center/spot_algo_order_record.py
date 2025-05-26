@@ -4,11 +4,13 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 from backend._decorators import singleton
-from backend._utils import DatabaseUtils
-from backend.data_object_center.enum_obj import EnumOrderState
+from backend._utils import DatabaseUtils, LogConfig
+from backend.controller_center.balance.balance_request import TradeRecordPageRequest
+from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
+logger = LogConfig.get_logger(__name__)
 
 
 class SpotAlgoOrderRecord(Base):
@@ -21,12 +23,19 @@ class SpotAlgoOrderRecord(Base):
     sz = Column(String, comment='仓位')
     amount = Column(String, comment='金额/USDT')
     target_price = Column(String, comment='目标价格')
+    exec_price = Column(String, comment='执行价格')
+
     algoId = Column(String, comment='止损订单id')
     ordId = Column(String, comment='限价订单id')
     status = Column(String, comment='订单状态')
     exec_source = Column(String, comment='操作来源')
     create_time = Column(DateTime, comment='创建时间')
     update_time = Column(DateTime, comment='更新时间')
+    cTime = Column(DateTime, comment='订单创建时间')
+    uTime = Column(DateTime, comment='订单更新时间')
+
+    side = Column(String, comment='订单方向')
+    note = Column(String, comment='交易日志')
 
     def to_dict(self) -> Dict:
         """转换为字典格式"""
@@ -38,42 +47,81 @@ class SpotAlgoOrderRecord(Base):
             'sz': self.sz,
             'amount': self.amount,
             'target_price': self.target_price,
+            'exec_price': self.exec_price,
             'algoId': self.algoId,
             'ordId': self.ordId,
             'status': self.status,
             'exec_source': self.exec_source,
+            'side': self.side,
+            'note': self.note,
+            'cTime': self.cTime.strftime('%Y-%m-%d %H:%M:%S') if self.cTime else None,
+            'uTime': self.uTime.strftime('%Y-%m-%d %H:%M:%S') if self.uTime else None,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
-            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None,
         }
 
     @classmethod
     def insert_or_update(cls, data: Dict) -> bool:
         try:
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            data['update_time'] = current_time
+            # 获取有效字段
+            valid_fields = {column.name for column in cls.__table__.columns}
 
-            # Check if record exists by ordId or algoId
+            # 过滤并准备数据
+            processed_data = {}
+            for key in valid_fields:
+                if key in data:
+                    processed_data[key] = data[key]
+
+            # 设置当前时间
+            current_time = datetime.now()
+            processed_data['update_time'] = current_time
+
+            # 处理时间戳
+            if processed_data.get('cTime'):
+                processed_data['cTime'] = datetime.fromtimestamp(int(processed_data['cTime']) / 1000)
+            if processed_data.get('uTime'):
+                processed_data['uTime'] = datetime.fromtimestamp(int(processed_data['uTime']) / 1000)
+
+            # 确保关键字段存在
+            if 'amount' not in processed_data or not processed_data['amount']:
+                try:
+                    sz = float(processed_data.get('sz', '0'))
+                    px = float(processed_data.get('px', '0'))
+                    processed_data['amount'] = str(sz * px)
+                except (ValueError, TypeError):
+                    processed_data['amount'] = '0'
+
+            if 'target_price' not in processed_data or not processed_data['target_price']:
+                processed_data['target_price'] = processed_data.get('px', '0')
+
+            if 'exec_price' not in processed_data or not processed_data['exec_price']:
+                processed_data['exec_price'] = processed_data.get('px', '0')
+
+            # 检查记录是否存在
             existing_record = None
-            if data.get('ordId'):
-                existing_record = session.query(cls).filter(cls.ordId == data['ordId']).first()
-            elif data.get('algoId'):
-                existing_record = session.query(cls).filter(cls.algoId == data['algoId']).first()
+            if processed_data.get('ordId'):
+                existing_record = session.query(cls).filter(cls.ordId == processed_data['ordId']).first()
+            elif processed_data.get('algoId'):
+                existing_record = session.query(cls).filter(cls.algoId == processed_data['algoId']).first()
 
+            # 更新或插入记录
             if existing_record:
-                # Update existing record
-                for key, value in data.items():
+                for key, value in processed_data.items():
                     setattr(existing_record, key, value)
+                logger.info(f"更新记录: {processed_data.get('ordId') or processed_data.get('algoId')}, "
+                          f"amount={processed_data.get('amount')}, target_price={processed_data.get('target_price')}")
             else:
-                # Insert new record
-                data['create_time'] = current_time
-                record = cls(**data)
+                processed_data['create_time'] = current_time
+                record = cls(**processed_data)
                 session.add(record)
+                logger.info(f"插入新记录: {processed_data.get('ordId') or processed_data.get('algoId')}, "
+                          f"amount={processed_data.get('amount')}, target_price={processed_data.get('target_price')}")
 
             session.commit()
             return True
         except Exception as e:
             session.rollback()
-            print(f"Insert/Update failed: {e}")
+            logger.error(f"插入/更新记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -88,7 +136,7 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.id == id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -103,17 +151,11 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.ccy == ccy).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
     def list_by_ccy_and_status(cls, ccy: str, status: str) -> List[Dict]:
-        """根据币种查询记录列表
-        Args:
-            ccy: 币种
-        Returns:
-            Dict[str, List[Dict]]: 包含记录列表的字典
-        """
         filters = [
             SpotAlgoOrderRecord.ccy == ccy,
             SpotAlgoOrderRecord.status == status,
@@ -122,7 +164,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -137,7 +179,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.type == type).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -152,7 +194,7 @@ class SpotAlgoOrderRecord(Base):
             results = session.query(cls).filter(cls.status == status).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
@@ -169,7 +211,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Delete failed: {e}")
+            logger.error(f"删除记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -188,7 +230,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -209,7 +251,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -230,7 +272,7 @@ class SpotAlgoOrderRecord(Base):
             return result > 0
         except Exception as e:
             session.rollback()
-            print(f"Update failed: {e}")
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
     @classmethod
@@ -245,7 +287,7 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.algoId == algo_id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -260,69 +302,262 @@ class SpotAlgoOrderRecord(Base):
             result = session.query(cls).filter(cls.ordId == ord_id).first()
             return result.to_dict() if result else None
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return None
 
     @classmethod
-    def list_live_auto_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_spot_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
-            SpotAlgoOrderRecord.exec_source == 'auto'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.AUTO.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
-    def list_live_manual_spot_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_limit_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.is_(None),
-            SpotAlgoOrderRecord.ordId.isnot(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.LIMIT_ORDER.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
-    def list_live_auto_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_auto_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None),
-            SpotAlgoOrderRecord.exec_source == 'auto'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.AUTO.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
 
     @classmethod
-    def list_live_manual_spot_algo_orders(cls) -> List[Dict[str, Any]]:
+    def list_live_manual_spot_stop_loss_orders(cls) -> List[Dict[str, Any]]:
         filters = [
             SpotAlgoOrderRecord.status == EnumOrderState.LIVE.value,
-            SpotAlgoOrderRecord.algoId.isnot(None),
-            SpotAlgoOrderRecord.ordId.is_(None),
-            SpotAlgoOrderRecord.exec_source == 'manual'
+            SpotAlgoOrderRecord.type == EnumTradeExecuteType.STOP_LOSS.value,
+            SpotAlgoOrderRecord.exec_source == EnumExecSource.MANUAL.value
         ]
         try:
             results = session.query(cls).filter(*filters).all()
             return [result.to_dict() for result in results]
         except Exception as e:
-            print(f"Query failed: {e}")
+            logger.error(f"查询记录失败: {str(e)}", exc_info=True)
             return []
+
+    @classmethod
+    def list_spot_algo_order_record_by_conditions(cls, config_execute_history_request: TradeRecordPageRequest):
+        """分页查询订单记录"""
+        filters = []
+
+        # 添加过滤条件
+        if config_execute_history_request.ccy:
+            filters.append(SpotAlgoOrderRecord.ccy.like(f'%{config_execute_history_request.ccy}%'))
+        if config_execute_history_request.type:
+            filters.append(SpotAlgoOrderRecord.type == config_execute_history_request.type)
+        if config_execute_history_request.side:
+            filters.append(SpotAlgoOrderRecord.side == config_execute_history_request.side)
+        if config_execute_history_request.status:
+            filters.append(SpotAlgoOrderRecord.status == config_execute_history_request.status)
+        if config_execute_history_request.exec_source:
+            filters.append(SpotAlgoOrderRecord.exec_source == config_execute_history_request.exec_source)
+
+        # 处理时间范围
+        if config_execute_history_request.begin_time and config_execute_history_request.end_time:
+            try:
+                begin_time_dt = datetime.strptime(config_execute_history_request.begin_time, "%Y-%m-%d")
+                end_time_dt = datetime.strptime(config_execute_history_request.end_time, "%Y-%m-%d")
+                filters.append(SpotAlgoOrderRecord.uTime >= begin_time_dt)
+                filters.append(SpotAlgoOrderRecord.uTime <= end_time_dt)
+            except ValueError as e:
+                raise ValueError(f"日期格式错误: {e}")
+
+        # 分页参数
+        page_size = config_execute_history_request.pageSize or 10
+        page_num = config_execute_history_request.pageNum or 1
+        offset = (page_num - 1) * page_size
+
+        # 查询总数
+        total = session.query(cls).filter(*filters).count()
+
+        # 分页查询
+        results = session.query(cls) \
+            .filter(*filters) \
+            .order_by(SpotAlgoOrderRecord.uTime.desc()) \
+            .limit(page_size) \
+            .offset(offset) \
+            .all()
+
+        records = []
+        for result in results:
+            record_dict = result.to_dict()
+            # 格式化 sz 和 px
+            try:
+                # 使用sz字段，如果为空则使用amount
+                sz = record_dict.get('sz') or record_dict.get('amount', '0')
+                record_dict['sz'] = format(float(sz), '.8f') if sz else '0.00000000'
+                
+                # 使用px字段，如果为空则使用exec_price
+                px = record_dict.get('px') or record_dict.get('exec_price', '0')
+                record_dict['px'] = format(float(px), '.8f') if px else '0.00000000'
+                
+                # 计算amount（如果为空）
+                if not record_dict.get('amount'):
+                    try:
+                        amount = float(sz) * float(px)
+                        record_dict['amount'] = format(amount, '.8f')
+                    except (ValueError, TypeError):
+                        record_dict['amount'] = '0.00000000'
+            except (ValueError, TypeError) as e:
+                logger.error(f"格式化数值失败: {str(e)}", exc_info=True)
+                record_dict['sz'] = '0.00000000'
+                record_dict['px'] = '0.00000000'
+                record_dict['amount'] = '0.00000000'
+            
+            records.append(record_dict)
+
+        return {
+            "records": records,
+            "total": total,
+            "pageSize": page_size,
+            "pageNum": page_num
+        }
+
+    @classmethod
+    def update_status_by_order(cls, order: dict) -> bool:
+        try:
+            result = session.query(cls).filter(cls.ordId == order.get('ordId')).update({
+                'status': order.get('state'),
+                'update_time': datetime.now(),
+                'cTime': order.get('cTime'),
+                'uTime': order.get('uTime'),
+                'exec_price': order.get('avgPrice', '')
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
+            return False
+
+    @classmethod
+    def update_status_by_algo_order(cls, algo_order: dict):
+        try:
+            result = session.query(cls).filter(cls.ordId == algo_order.get('algoId')).update({
+                'status': algo_order.get('state'),
+                'update_time': datetime.now(),
+                'uTime': algo_order.get('uTime'),
+                'exec_price': algo_order.get('avgPrice', '')
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            session.rollback()
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
+            return False
+
+    @classmethod
+    def mark_canceled_by_ordId(cls, ordId):
+        try:
+            result = session.query(cls).filter(cls.ordId == ordId).update({
+                'status': EnumOrderState.CANCELED.value,
+                'update_time': datetime.now(),
+                'cTime': None,
+                'uTime': None,
+                'exec_price': ''
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
+            return False
+
+    @classmethod
+    def mark_canceled_by_algoId(cls, algoId):
+        try:
+            result = session.query(cls).filter(cls.algoId == algoId).update({
+                'status': EnumOrderState.CANCELED.value,
+                'update_time': datetime.now(),
+                'cTime': None,
+                'uTime': None,
+                'exec_price': ''
+            })
+            session.commit()
+            return result > 0
+        except Exception as e:
+            logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
+            return False
 
 
 if __name__ == '__main__':
-    pass
+    data = {
+        'type': 'manual',
+        'sz': '3.846136',
+        'algoClOrdId': '',
+        'algoId': '',
+        'attachAlgoClOrdId': '',
+        'attachAlgoOrds': [],
+        'px': '136.94',
+        'cTime': '1726336347482',
+        'cancelSource': '',
+        'cancelSourceReason': '',
+        'category': 'normal',
+        'ccy': '',
+        'clOrdId': '',
+        'fee': '-0.003846136',
+        'feeCcy': 'SOL',
+        'fillPx': '136.94',
+        'fillSz': '3.846136',
+        'fillTime': '1726336347484',
+        'instId': 'SOL-USDT',
+        'instType': 'SPOT',
+        'isTpLimit': 'false',
+        'lever': '',
+        'linkedAlgoOrd': {'algoId': ''},
+        'ordId': '1806367530105946112',
+        'ordType': 'market',
+        'pnl': '0',
+        'posSide': '',
+        'pxType': '',
+        'pxUsd': '',
+        'pxVol': '',
+        'quickMgnType': '',
+        'rebate': '0',
+        'rebateCcy': 'USDT',
+        'reduceOnly': 'false',
+        'side': 'buy',
+        'slOrdPx': '',
+        'slTriggerPx': '',
+        'slTriggerPxType': '',
+        'source': '',
+        'state': 'filled',
+        'stpId': '',
+        'stpMode': 'cancel_maker',
+        'tag': '',
+        'tdMode': 'cash',
+        'tgtCcy': 'quote_ccy',
+        'tpOrdPx': '',
+        'tpTriggerPx': '',
+        'tpTriggerPxType': '',
+        'tradeId': '172891248',
+        'uTime': '1726336347485'
+    }
+
+    # result = SpotAlgoOrderRecord.insert_or_update(data)
+    # print("Insert/Update result:", result)

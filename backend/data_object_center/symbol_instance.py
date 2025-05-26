@@ -13,8 +13,10 @@ session = DatabaseUtils.get_db_session()
 # 定义 ORM 模型类
 class SymbolInstance(Base):
     __tablename__ = 'symbol_instance'
-    id = Column(Integer, primary_key=True, autoincrement=True, comment='交易对实例ID')
-    symbol = Column(String(255), nullable=False, comment='交易对')
+    id = Column(Integer, primary_key=True, autoincrement=True, comment='ID')
+    symbol = Column(String, comment='交易对')
+    gmt_create = Column(String, nullable=False, comment='生成时间')
+    gmt_modified = Column(String, nullable=False, comment='更新时间')
 
     # interval = Column(String(255), nullable=False, comment='时间窗口')
 
@@ -28,10 +30,8 @@ class SymbolInstance(Base):
 
     @classmethod
     def query_all_usdt(cls) -> list:
-        results = session.scalars(
-            select(cls)
-        ).all()
-        return [f"{result.symbol}-USDT" for result in results]
+        stmt = select(cls.symbol).where(cls.symbol.like('%-USDT'))
+        return session.execute(stmt).scalars().all()
 
 
 def query_symbol_instance(symbol) -> SymbolInstance:

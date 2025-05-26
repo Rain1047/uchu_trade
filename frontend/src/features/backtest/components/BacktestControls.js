@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {Box, FormControl, InputLabel, Select, MenuItem, Button, CircularProgress} from '@material-ui/core';
 // import { useStyles } from '../utils/styles';
 import { PlayArrow as PlayArrowIcon } from '@material-ui/icons';
 import {makeStyles} from "@material-ui/core/styles";
+import { fetchBacktestData } from '../utils/backtestAPI';
+import debounce from 'lodash/debounce';
 
 const useStyles = makeStyles((theme) => ({
      controls: {
@@ -31,35 +33,58 @@ const useStyles = makeStyles((theme) => ({
     }));
 
 export const BacktestControls = ({
-  symbols,
-  selectedSymbol,
-  onSymbolChange,
   strategies,
   selectedStrategy,
   onStrategyChange,
-  backtestKeys,
-  selectedKey,
-  onKeyChange,
   onRunBacktest,
-  runningBacktest
+  runningBacktest,
+  onBacktestKeyChange
 }) => {
   const classes = useStyles();
+  const [backtestKeys, setBacktestKeys] = useState([]);
+  const [selectedKey, setSelectedKey] = useState('');
+  const [loading, setLoading] = useState(false);
+  const isFirstRender = useRef(true);
+
+  // 获取回测记录列表
+  const fetchBacktestKeys = useCallback(async (strategyId, shouldAutoSelect = false) => {
+    if (!strategyId) return;
+    
+    setLoading(true);
+    try {
+      const result = await fetchBacktestData.getKeys(strategyId);
+      if (result.success) {
+        setBacktestKeys(result.data);
+        // 只在首次加载或明确要求时自动选择第一个
+        if (result.data.length > 0 && (shouldAutoSelect || isFirstRender.current)) {
+          setSelectedKey(result.data[0]);
+          onBacktestKeyChange?.(result.data[0]);
+          isFirstRender.current = false;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch backtest keys:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [onBacktestKeyChange]);
+
+  // 当策略改变时，获取对应的回测记录
+  useEffect(() => {
+    // 策略改变时，清空当前选中的记录
+    setSelectedKey('');
+    fetchBacktestKeys(selectedStrategy, true);
+  }, [selectedStrategy, fetchBacktestKeys]);
+
+  const handleKeyChange = (event) => {
+    const newKey = event.target.value;
+    setSelectedKey(newKey);
+    onBacktestKeyChange?.(newKey);
+  };
+
   return (
     <Box className={classes.controls}>
         <Box className={classes.leftControls}>
-          <FormControl variant="outlined" className={classes.formControl}>
-            <InputLabel>交易对</InputLabel>
-            <Select
-              value={selectedSymbol}
-              onChange={(e) => onSymbolChange(e.target.value)}
-              label="交易对"
-            >
-              {symbols.map((symbol) => (
-                <MenuItem key={symbol} value={symbol}>{symbol}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
           <FormControl variant="outlined" className={classes.formControl}>
             <InputLabel>策略</InputLabel>
             <Select
@@ -75,11 +100,27 @@ export const BacktestControls = ({
             </Select>
           </FormControl>
 
+          <FormControl variant="outlined" className={classes.formControl}>
+            <InputLabel>回测记录</InputLabel>
+            <Select
+              value={selectedKey}
+              onChange={handleKeyChange}
+              label="回测记录"
+              disabled={loading}
+            >
+              {backtestKeys.map((key) => (
+                <MenuItem key={key} value={key}>
+                  {key}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Button
             variant="contained"
             color="primary"
             onClick={onRunBacktest}
-            disabled={runningBacktest || !selectedStrategy}
+            disabled={runningBacktest || !selectedStrategy || loading}
             startIcon={<PlayArrowIcon />}
             className={classes.runButton}
           >
@@ -89,19 +130,6 @@ export const BacktestControls = ({
               )}
           </Button>
         </Box>
-
-      <FormControl variant="outlined" className={classes.formControl}>
-        <InputLabel>回测记录</InputLabel>
-        <Select
-          value={selectedKey}
-          onChange={(e) => onKeyChange(e.target.value)}
-          label="回测记录"
-        >
-          {backtestKeys.map((key) => (
-            <MenuItem key={key} value={key}>{key}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
     </Box>
   );
 };

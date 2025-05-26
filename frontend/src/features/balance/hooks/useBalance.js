@@ -48,28 +48,99 @@ export const useBalance = () => {
         }
     }, [fetchBalances]);
 
-    const saveAutoConfig = useCallback(async (ccy, type, configs) => {
+    const updateSwitch = useCallback(async (ccy, type, switchValue) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.UPDATE_SWITCH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ccy,
+          type,
+          switch: switchValue.toString()
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchBalances();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Switch toggle failed:', error);
+      return false;
+    }
+  }, [fetchBalances]);
+
+    const fetchConfigs = useCallback(async (ccy, type) => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.LIST_CONFIGS}/${ccy}/${type}?type_=${type}`);
+      const data = await response.json();
+      return data.success ? data.data : [];
+    } catch (error) {
+      console.error('Failed to fetch configs:', error);
+      return [];
+    }
+  }, []);
+
+  const saveConfigs = useCallback(async (configs) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configs)
+      });
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error('Failed to save configs:', error);
+      return false;
+    }
+  }, []);
+
+
+    const saveTradeConfig = useCallback(async (ccy, type, configs) => {
         try {
-            const response = await fetch(API_ENDPOINTS.AUTO_CONFIG, {
+            const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ccy, type, configs }),
+                body: JSON.stringify(configs.map(config => ({
+                    ...config,
+                    ccy,
+                    type
+                })))
             });
-            await handleApiResponse(response, '保存配置失败');
+            const { success, data, message } = await response.json();
+            if (!success) {
+                throw new Error(message || '保存配置失败');
+            }
             await fetchBalances();
             return true;
-        } catch (err) {
-            console.error('保存配置失败:', err);
+        } catch (error) {
+            console.error('保存配置失败:', error);
             return false;
         }
     }, [fetchBalances]);
+
+
+    const fetchTradeConfigs = async (ccy, type) => {
+        try {
+            const response = await fetch(`/api/balance/list_configs/${ccy}/${type}`);
+            const data = await response.json();
+            return data.success ? data.data : [];
+        } catch (error) {
+            console.error('Fetch configs failed:', error);
+            return [];
+        }
+    };
+
 
     return {
         balances,
         loading,
         error,
         fetchBalances,
-        toggleAutoConfig,
-        saveAutoConfig
+        updateSwitch,
+        fetchConfigs,
+        saveConfigs
     };
 };

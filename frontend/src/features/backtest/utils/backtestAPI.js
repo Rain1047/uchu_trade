@@ -6,13 +6,13 @@ export const fetchBacktestData = {
     return response.json();
   },
 
-  async getStrategies(symbol) {
-    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LIST_STRATEGY}?symbol=${symbol}`);
+  async getStrategies() {
+    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LIST_STRATEGIES}`);
     return response.json();
   },
 
-  async getKeys(strategyId, symbol) {
-    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LIST_KEY}?strategy_id=${strategyId}&symbol=${symbol}`);
+  async getKeys(strategyId) {
+    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LIST_KEY}?strategy_id=${strategyId}`);
     return response.json();
   },
 
@@ -26,12 +26,18 @@ export const fetchBacktestData = {
     return response.json();
   },
 
+  async getBacktestResults(params) {
+    const queryParams = new URLSearchParams(params).toString();
+    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LIST_BACKTEST_RESULTS}?${queryParams}`);
+    return response.json();
+  },
+
   async runBacktest(strategyId) {
-   const response = await fetch(`${BASE_URL}${API_ENDPOINTS.RUN_BACKTEST}`, {
-     method: 'POST',
-     headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify({ strategy_id: strategyId })
-   });
-     return response.json();
+    const response = await fetch(`${BASE_URL}${API_ENDPOINTS.RUN_BACKTEST}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ strategy_id: strategyId })
+    });
+    return response.json();
   }
 };

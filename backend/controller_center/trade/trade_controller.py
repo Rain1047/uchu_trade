@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from backend.controller_center.trade.trade_request import TradeResponse
 from backend.controller_center.trade.trade_service import *
 
 # 创建路由器实例

@@ -1,28 +1,30 @@
 import logging
 from typing import Optional
 
-from backend._constants import okx_constants
+from backend._constants import OKX_CONSTANTS
 from backend._decorators import add_docstring, singleton
-from backend._utils import SymbolFormatUtils
+from backend._utils import SymbolFormatUtils, LogConfig
 from backend.api_center.okx_api.okx_main import OKXAPIWrapper
 from backend.data_object_center.account_balance import AccountBalance
-from backend.data_object_center.enum_obj import EnumAutoTradeConfigType, EnumOrderState
+from backend.data_object_center.enum_obj import EnumTradeExecuteType, EnumOrderState
 from backend.data_object_center.funding_balance import FundingBalance
 from backend.data_object_center.saving_balance import SavingBalance
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
 from backend.data_object_center.spot_trade_config import SpotTradeConfig
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 
 @singleton
 class OKXBalanceService:
 
     def __init__(self):
+        logger.info("初始化OKXBalanceService")
         self.okx = OKXAPIWrapper()
         self.trade = self.okx.trade_api
         self.funding = self.okx.funding_api
         self.account = self.okx.account_api
+        logger.info("OKXBalanceService初始化完成")
 
     # [主要方法] 赎回-划转-获取真实的交易账户余额
     @add_docstring("赎回-划转-获取真实的交易账户余额")
@@ -72,7 +74,7 @@ class OKXBalanceService:
     def reset_funding_balance(self):
         # 1. 更新现有记录
         response = self.funding.get_balances()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             FundingBalance.reset(response)
             return True
         else:
@@ -91,7 +93,7 @@ class OKXBalanceService:
     def reset_account_balance(self):
         # 1. 更新现有记录
         response = self.account.get_account_balance()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
+        if response.get('code') == OKX_CONSTANTS.SUCCESS_CODE.value:
             AccountBalance.reset_account_balance(response)
             return True
         else:
@@ -101,51 +103,50 @@ class OKXBalanceService:
 
     @add_docstring("获取赚币中币种余额")
     def get_saving_balance(self, symbol: Optional[str] = '') -> dict:
-        result = SavingBalance().list_by_condition(condition="ccy", value=symbol)
-        if result:
-            return result[0]
-        else:
-            return {}
+        try:
+            logger.info(f"开始获取余币宝余额 - 币种: {symbol}")
+            result = SavingBalance().list_by_condition(condition="ccy", value=symbol)
+            logger.info(f"获取余币宝余额响应: {result}")
+            
+            if result:
+                return result[0]
+            else:
+                return {}
+        except Exception as e:
+            logger.error(f"获取余币宝余额时发生异常: {str(e)}", exc_info=True)
+            return None
 
     @add_docstring("获取交易账户币种余额")
     def get_funding_balance(self, symbol: Optional[str]):
-        # Get the result of the query
-        result = FundingBalance.list_by_condition(condition='ccy', value=symbol)
-        if result:
-            return result[0]
-        else:
-            return {}
+        try:
+            logger.info(f"开始获取资金账户余额 - 币种: {symbol}")
+            response = FundingBalance.list_by_condition(condition='ccy', value=symbol)
+            logger.info(f"获取资金账户余额响应: {response}")
+            
+            if response:
+                return response[0]
+            else:
+                return {}
+        except Exception as e:
+            logger.error(f"获取资金账户余额时发生异常: {str(e)}", exc_info=True)
+            return None
 
     @add_docstring("获取交易账户余额列表")
     def list_account_balance(self):
-        # 1. 更新现有记录
-        response = self.account.get_account_balance()
-        if response.get('code') == okx_constants.SUCCESS_CODE:
-            AccountBalance.insert_or_update(response)
-        else:
-            print(response)
-            logger.error(f"list_account_balance error, response: {response.get('code')}, {response.get('message')}")
-
-        # 2. 获取列表结果并转换为可修改的字典列表
-        balance_list = [dict(balance) for balance in AccountBalance.list_all()]
-
-        # 3. 通过币种获取自动交易配置
-        for balance in balance_list:
-            ccy = balance.get('ccy')
-            balance['limit_order_spot_trade_configs'] = (SpotTradeConfig
-                                                         .list_by_ccy_and_type(ccy=ccy,
-                                                                               type=EnumAutoTradeConfigType.LIMIT_ORDER.value))
-            balance['stop_loss_spot_trade_configs'] = (SpotTradeConfig
-                                                       .list_by_ccy_and_type(ccy=ccy,
-                                                                             type=EnumAutoTradeConfigType.STOP_LOSS.value))
-            balance['live_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                       .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.LIVE.value))
-
-            balance['filled_spot_algo_order_records'] = (SpotAlgoOrderRecord
-                                                         .list_by_ccy_and_status(ccy=ccy, status=EnumOrderState.FILLED.value))
-
-        # print(balance_list)
-        return balance_list
+        try:
+            logger.info("开始获取账户余额列表")
+            response = self.account.get_account_balance()
+            logger.info(f"获取账户余额响应: {response}")
+            
+            if response.get('code') != '0':
+                error_msg = f"获取账户余额失败 - 错误码: {response.get('code')}, 错误信息: {response.get('msg')}"
+                logger.error(error_msg)
+                return None
+                
+            return response.get('data', [])
+        except Exception as e:
+            logger.error(f"获取账户余额时发生异常: {str(e)}", exc_info=True)
+            return None
 
     def list_balance_config(ccy):
         print(SpotTradeConfig.list_by_ccy_and_type(ccy))

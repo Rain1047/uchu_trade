@@ -55,38 +55,82 @@ class BacktestSystem:
 
     def _process_results(self, results) -> BacktestResults:
         """处理回测结果"""
-        strat = results[0]
-        portfolio_value = self.cerebro.broker.getvalue()
-        returns = strat.analyzers.returns.get_analysis()
-        sharpe = strat.analyzers.sharpe.get_analysis()
-        drawdown = strat.analyzers.drawdown.get_analysis()
-        trades = strat.analyzers.trades.get_analysis()
+        import math
+        
+        try:
+            strat = results[0]
+            portfolio_value = self.cerebro.broker.getvalue()
+            
+            # 验证portfolio_value
+            if pd.isna(portfolio_value) or not math.isfinite(portfolio_value):
+                portfolio_value = self.initial_cash
+                
+            returns = strat.analyzers.returns.get_analysis()
+            sharpe = strat.analyzers.sharpe.get_analysis()
+            drawdown = strat.analyzers.drawdown.get_analysis()
+            trades = strat.analyzers.trades.get_analysis()
 
-        total_trades = trades.get('total', {}).get('total', 0)
-        winning_trades = trades.get('won', {}).get('total', 0)
-        losing_trades = trades.get('lost', {}).get('total', 0)
-        avg_win = trades.get('won', {}).get('pnl', {}).get('average', 0)
-        avg_loss = trades.get('lost', {}).get('pnl', {}).get('average', 0)
-        win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
+            total_trades = trades.get('total', {}).get('total', 0)
+            winning_trades = trades.get('won', {}).get('total', 0)
+            losing_trades = trades.get('lost', {}).get('total', 0)
+            avg_win = trades.get('won', {}).get('pnl', {}).get('average', 0)
+            avg_loss = trades.get('lost', {}).get('pnl', {}).get('average', 0)
+            win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
 
-        return BacktestResults(
-            initial_value=self.initial_cash,
-            final_value=portfolio_value,
-            total_return=returns.get('rtot', 0),
-            annual_return=returns.get('rnorm', 0),
-            sharpe_ratio=sharpe.get('sharperatio', 0),
-            max_drawdown=drawdown.get('max', {}).get('drawdown', 0),
-            max_drawdown_amount=drawdown.get('max', {}).get('moneydown', 0),
-            total_trades=total_trades,
-            winning_trades=winning_trades,
-            losing_trades=losing_trades,
-            avg_win=avg_win,
-            avg_loss=avg_loss,
-            win_rate=win_rate,
-            total_entry_signals=0,
-            total_sell_signals=0,
-            key=''
-        )
+            # 验证和清理数值
+            def safe_value(value, default=0):
+                if pd.isna(value) or not math.isfinite(value):
+                    return default
+                return float(value)
+            
+            total_return = safe_value(returns.get('rtot', 0))
+            annual_return = safe_value(returns.get('rnorm', 0))
+            sharpe_ratio = safe_value(sharpe.get('sharperatio', 0))
+            max_drawdown = safe_value(drawdown.get('max', {}).get('drawdown', 0))
+            max_drawdown_amount = safe_value(drawdown.get('max', {}).get('moneydown', 0))
+            avg_win = safe_value(avg_win)
+            avg_loss = safe_value(avg_loss)
+            win_rate = safe_value(win_rate)
+
+            return BacktestResults(
+                initial_value=self.initial_cash,
+                final_value=portfolio_value,
+                total_return=total_return,
+                annual_return=annual_return,
+                sharpe_ratio=sharpe_ratio,
+                max_drawdown=max_drawdown,
+                max_drawdown_amount=max_drawdown_amount,
+                total_trades=total_trades,
+                winning_trades=winning_trades,
+                losing_trades=losing_trades,
+                avg_win=avg_win,
+                avg_loss=avg_loss,
+                win_rate=win_rate,
+                total_entry_signals=0,
+                total_sell_signals=0,
+                key=''
+            )
+        except Exception as e:
+            print(f"处理回测结果时发生错误: {str(e)}")
+            # 返回默认结果
+            return BacktestResults(
+                initial_value=self.initial_cash,
+                final_value=self.initial_cash,
+                total_return=0,
+                annual_return=0,
+                sharpe_ratio=0,
+                max_drawdown=0,
+                max_drawdown_amount=0,
+                total_trades=0,
+                winning_trades=0,
+                losing_trades=0,
+                avg_win=0,
+                avg_loss=0,
+                win_rate=0,
+                total_entry_signals=0,
+                total_sell_signals=0,
+                key=''
+            )
 
     def _export_trade_records(self, results) -> None:
         """导出交易记录到Excel"""
@@ -120,12 +164,10 @@ class BacktestSystem:
         results = self.cerebro.run()
 
         backtest_results = self._process_results(results)
-        # 打印生成的信号统计
+        # 设置信号统计
         backtest_results.total_entry_signals = df['entry_sig'].sum()
         backtest_results.total_sell_signals = df['sell_sig'].sum()
-        print(f"\n信号统计:")
-        print(f"总买入信号数: {backtest_results.total_entry_signals}")
-        print(f"总卖出信号数: {backtest_results.total_sell_signals}")
+        
         key = f'{st.trade_pair}_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
         record_backtest_results(backtest_results, results, st, key)
         backtest_results.key = key
@@ -154,6 +196,10 @@ def _print_results(results: BacktestResults) -> None:
     print(f'最大回撤: {results.max_drawdown:.2%}')
     print(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
 
+    print('\n=== 信号统计 ===')
+    print(f'总买入信号数: {results.total_entry_signals}')
+    print(f'总卖出信号数: {results.total_sell_signals}')
+
     print('\n=== 交易统计 ===')
     print(f'总交易次数: {results.total_trades}')
     print(f'盈利交易次数: {results.winning_trades}')
@@ -166,31 +212,65 @@ def _print_results(results: BacktestResults) -> None:
 
 
 def record_backtest_results(backtest_results: BacktestResults, results, st: StrategyInstance, key: str):
-    # 插入回测结果表
-    result_data = {
-        'strategy_id': st.id,
-        'strategy_name': st.name,
-        'back_test_result_key': key,
-        'symbol': st.trade_pair,
-        'test_finished_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'buy_signal_count': backtest_results.total_entry_signals,
-        'sell_signal_count': backtest_results.total_sell_signals,
-        'transaction_count': backtest_results.total_trades,
-        'profit_count': backtest_results.winning_trades,
-        'loss_count': backtest_results.losing_trades,
-        'profit_total_count': int(backtest_results.final_value - backtest_results.initial_value),
-        'profit_average': int((backtest_results.avg_win + backtest_results.avg_loss) / 2),
-        'profit_rate': int(backtest_results.win_rate)
-    }
-    result = BacktestResult.insert_or_update(result_data)
+    import math
+    
+    def safe_int(value, default=0):
+        """安全转换为整数"""
+        try:
+            if pd.isna(value) or not math.isfinite(value):
+                return default
+            return int(float(value))
+        except (ValueError, TypeError, OverflowError):
+            return default
+    
+    def safe_float(value, default=0.0):
+        """安全转换为浮点数"""
+        try:
+            if pd.isna(value) or not math.isfinite(value):
+                return default
+            return float(value)
+        except (ValueError, TypeError, OverflowError):
+            return default
+    
+    try:
+        # 插入回测结果表
+        profit_total = safe_float(backtest_results.final_value - backtest_results.initial_value)
+        profit_average = safe_float((backtest_results.avg_win + backtest_results.avg_loss) / 2) if (backtest_results.avg_win != 0 or backtest_results.avg_loss != 0) else 0
+        
+        result_data = {
+            'strategy_id': st.id,
+            'strategy_name': st.name,
+            'back_test_result_key': key,
+            'symbol': st.trade_pair,
+            'test_finished_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'buy_signal_count': safe_int(backtest_results.total_entry_signals),
+            'sell_signal_count': safe_int(backtest_results.total_sell_signals),
+            'transaction_count': safe_int(backtest_results.total_trades),
+            'profit_count': safe_int(backtest_results.winning_trades),
+            'loss_count': safe_int(backtest_results.losing_trades),
+            'profit_total_count': safe_int(profit_total),
+            'profit_average': safe_int(profit_average),
+            'profit_rate': safe_int(backtest_results.win_rate)
+        }
+        result = BacktestResult.insert_or_update(result_data)
 
-    # 插入交易记录表
-    for record in results[0].trade_records:
-        if record.pnl != 0:
-            record_data = {
-                'back_test_result_key': key,
-                'transaction_time': record.datetime,
-                'transaction_result': f"Price: {record.price}, Size: {record.size}, PnL: {record.pnl}",
-                'transaction_pnl': round(record.pnl, 2)
-            }
-            BacktestRecord.insert_or_update(record_data)
+        # 插入交易记录表
+        for record in results[0].trade_records:
+            try:
+                # 验证record的pnl值
+                record_pnl = safe_float(record.pnl) if hasattr(record, 'pnl') else 0
+                if record_pnl != 0:
+                    record_data = {
+                        'back_test_result_key': key,
+                        'transaction_time': record.datetime,
+                        'transaction_result': f"Price: {safe_float(record.price)}, Size: {safe_float(record.size)}, PnL: {record_pnl}",
+                        'transaction_pnl': round(record_pnl, 2)
+                    }
+                    BacktestRecord.insert_or_update(record_data)
+            except Exception as e:
+                print(f"插入交易记录时发生错误: {str(e)}")
+                continue
+                
+    except Exception as e:
+        print(f"记录回测结果时发生错误: {str(e)}")
+        return

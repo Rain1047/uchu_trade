@@ -1,223 +1,350 @@
-import React, { useState } from 'react';
+// components/AutoTradeConfig.js
+import React, { useState, useEffect } from 'react';
 import {
-    Box,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    IconButton,
-    TextField,
-    MenuItem,
-    Divider,
-    Tooltip,
-} from '@material-ui/core';
-import {
-    Add as AddIcon,
-    Delete as DeleteIcon,
-    Close as CloseIcon
-} from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
-import { TRADE_INDICATORS } from '../constants/balanceConstants';
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import { Close as CloseIcon, Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles((theme) => ({
-    dialogTitle: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: theme.spacing(2),
+// 自定义绿色主题按钮
+const GreenButton = styled(Button)({
+  color: '#2EE5AC',
+  borderColor: '#2EE5AC',
+  '&:hover': {
+    borderColor: '#2EE5AC',
+    backgroundColor: 'rgba(46, 229, 172, 0.08)',
+  },
+  '&.active': {
+    backgroundColor: '#2EE5AC',
+    color: '#000000',
+    '&:hover': {
+      backgroundColor: '#27CC98',
     },
-    closeButton: {
-        position: 'absolute',
-        right: theme.spacing(1),
-        top: theme.spacing(1),
-    },
-    content: {
-        padding: theme.spacing(2),
-        minHeight: '300px',
-    },
-    configItem: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing(2),
-        marginBottom: theme.spacing(2),
-        padding: theme.spacing(2),
-        backgroundColor: theme.palette.action.hover,
-        borderRadius: theme.shape.borderRadius,
-    },
-    addButton: {
-        marginTop: theme.spacing(2),
-    },
-    typeIndicator: {
-        padding: theme.spacing(0.5, 1),
-        borderRadius: theme.shape.borderRadius,
-        fontWeight: 500,
-        fontSize: '0.75rem',
-    },
-    stopLossIndicator: {
-        backgroundColor: theme.palette.error.dark,
-        color: theme.palette.error.contrastText,
-    },
-    limitOrderIndicator: {
-        backgroundColor: theme.palette.success.dark,
-        color: theme.palette.success.contrastText,
-    }
+  }
+});
+
+// 自定义深色主题下拉框
+const DarkSelect = styled(Select)(({ theme }) => ({
+  '& .MuiSelect-select': {
+    color: '#fff',
+  },
+  backgroundColor: '#1E1E1E',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#2EE5AC',
+  },
+  '& .MuiSelect-icon': {
+    color: '#fff',
+  },
 }));
 
-export const AutoTradeConfig = ({
-    type,
-    ccy,
-    onSave,
-    onClose,
-    existingConfigs = []
-}) => {
-    const classes = useStyles();
-    const [configs, setConfigs] = useState(
-        existingConfigs.filter(config => config.type === type)
-    );
+// 自定义深色主题输入标签
+const DarkInputLabel = styled(InputLabel)({
+  color: 'rgba(255, 255, 255, 0.7)',
+  '&.Mui-focused': {
+    color: '#2EE5AC',
+  },
+});
 
-    const getTypeLabel = () => {
-        return type === 'stop_loss' ? '止损' : '限价';
-    };
+const DarkTextField = styled(TextField)({
+  '& .MuiOutlinedInput-root': {
+    color: '#fff !important',
+    backgroundColor: '#1E1E1E',
+    '& fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#2EE5AC',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7) !important',
+    '&.Mui-focused': {
+      color: '#2EE5AC !important',
+    },
+  },
+  '&.Mui-disabled': {
+    '& .MuiOutlinedInput-root': {
+      color: '#fff !important',
+    },
+    '& .MuiInputLabel-root': {
+      color: 'rgba(255, 255, 255, 0.7) !important',
+    },
+    '& .MuiOutlinedInput-input': {
+      WebkitTextFillColor: '#fff !important',
+    },
+  },
+});
 
-    const getInitialConfig = () => ({
-        type,
-        indicator: '',
-        interval: '',
-        percentage: '',
-        amount: '',
-        ccy
-    });
+export const AutoTradeConfig = ({ ccy, initialType, onClose, onSave }) => {
+  const [activeType, setActiveType] = useState(initialType);
+  const [configs, setConfigs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    const handleAddConfig = () => {
-        setConfigs([...configs, getInitialConfig()]);
-    };
+  const menuProps = {
+    PaperProps: {
+      sx: {
+        bgcolor: '#1E1E1E',
+        '& .MuiMenuItem-root': {
+          color: '#fff',
+          '&:hover': {
+            bgcolor: 'rgba(46, 229, 172, 0.08)',
+          },
+          '&.Mui-selected': {
+            bgcolor: 'rgba(46, 229, 172, 0.16)',
+            '&:hover': {
+              bgcolor: 'rgba(46, 229, 172, 0.24)',
+            },
+          },
+        },
+      },
+    },
+  };
 
-    const handleRemoveConfig = (index) => {
-        setConfigs(configs.filter((_, i) => i !== index));
-    };
+  const fetchConfigs = async (type) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/balance/list_configs/${ccy}/${type}?type_=${type}`);
+      const result = await response.json();
+      if (result.success) {
+        setConfigs(result.data.filter(config => config.is_del === '0'));
+      }
+    } catch (error) {
+      console.error('Failed to fetch configs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleConfigChange = (index, field, value) => {
-        const newConfigs = [...configs];
-        newConfigs[index] = {
-            ...newConfigs[index],
-            [field]: value
-        };
-        setConfigs(newConfigs);
-    };
+  useEffect(() => {
+    fetchConfigs(activeType);
+  }, [activeType, ccy]);
 
-    const ConfigItem = ({ config, index }) => (
-        <Box className={classes.configItem}>
-            <Box className={classes.fieldsContainer}>
-                <TextField
-                    select
-                    label="指标"
-                    value={config.indicator || ''}
-                    onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    style={{ width: '120px' }}
-                >
-                    {TRADE_INDICATORS.map(indicator => (
-                        <MenuItem key={indicator.value} value={indicator.value}>
-                            {indicator.label}
-                        </MenuItem>
-                    ))}
-                </TextField>
 
-                <TextField
-                    label="间隔"
-                    value={config.interval || ''}
-                    onChange={(e) => handleConfigChange(index, 'interval', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    style={{ width: '100px' }}
-                />
+  const handleTypeChange = (type) => {
+    setActiveType(type);
+  };
 
-                <TextField
-                    label="金额"
-                    value={config.amount || ''}
-                    onChange={(e) => handleConfigChange(index, 'amount', e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    style={{ width: '120px' }}
-                />
-            </Box>
+  const handleConfigChange = (index, field, value) => {
+    const newConfigs = [...configs];
+    const config = { ...newConfigs[index] };
 
-            <Tooltip title="删除">
-                <IconButton
-                    size="small"
-                    onClick={() => handleRemoveConfig(index)}
-                    style={{ marginLeft: 'auto' }}
-                >
-                    <DeleteIcon />
-                </IconButton>
-            </Tooltip>
-        </Box>
-    );
+    // 处理百分比和数量互斥
+    if (field === 'percentage' && value) {
+      config.amount = '';
+    }
+    if (field === 'amount' && value) {
+      config.percentage = '';
+    }
 
-    return (
-        <>
-            <DialogTitle disableTypography className={classes.dialogTitle}>
-                <Box display="flex" alignItems="center">
-                    <Typography variant="h6">
-                        {ccy} - 自动{getTypeLabel()}配置
-                    </Typography>
-                    <Box
-                        ml={2}
-                        className={`${classes.typeIndicator} ${
-                            type === 'stop_loss' 
-                                ? classes.stopLossIndicator 
-                                : classes.limitOrderIndicator
-                        }`}
-                    >
-                        {getTypeLabel()}
-                    </Box>
-                </Box>
-                <IconButton className={classes.closeButton} onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
-            </DialogTitle>
+    config[field] = value;
+    newConfigs[index] = config;
+    setConfigs(newConfigs);
+  };
 
-            <DialogContent className={classes.content}>
-                <Box>
-                    {configs.map((config, index) => (
-                        <ConfigItem
-                            key={index}
-                            config={config}
-                            index={index}
-                        />
-                    ))}
+  const handleAddConfig = () => {
+    setConfigs([...configs, {
+      ccy,
+      type: activeType,
+      indicator: 'SMA',
+      indicator_val: '',
+      target_price: '',
+      percentage: '',
+      amount: '',
+      switch: '0',
+      exec_nums: '1', // 改为字符串
+      is_del: '0'
+    }]);
+  };
 
-                    <Button
-                        variant="outlined"
-                        startIcon={<AddIcon />}
-                        onClick={handleAddConfig}
-                        className={classes.addButton}
-                        fullWidth
-                    >
-                        添加配置
-                    </Button>
-                </Box>
-            </DialogContent>
+  const handleRemoveConfig = (index) => {
+    setConfigs(configs.filter((_, i) => i !== index));
+  };
 
-            <Divider />
+  const handleSave = async () => {
+   try {
+     const response = await fetch('http://localhost:8000/api/balance/save_config', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+         config_list: configs.filter(config => config.is_del !== '1').map(config => ({
+           id: config.id || null,
+           ccy,
+           type: activeType,
+           indicator: config.indicator,
+           indicator_val: config.indicator === 'USDT' ? '' : String(config.indicator_val || ''),
+           target_price: config.indicator === 'USDT' ? String(config.target_price || '') : '',
+           percentage: config.percentage ? String(config.percentage) : '',
+           amount: config.amount ? String(config.amount) : '',
+           switch: String(config.switch || '0'),
+           exec_nums: String(config.exec_nums || '1')
+         })),
+         type: activeType
+       })
+     });
 
-            <DialogActions>
-                <Button onClick={onClose}>
-                    取消
-                </Button>
-                <Button
-                    onClick={() => onSave(configs)}
-                    color="primary"
-                    variant="contained"
-                >
-                    保存
-                </Button>
-            </DialogActions>
-        </>
-    );
+     if (response.ok) {
+       const result = await response.json();
+       if (result.success) {
+         onClose();
+       }
+     }
+   } catch (error) {
+     console.error('Save failed:', error);
+   }
+  };
+
+  return (
+    <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', color: '#fff' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h6" sx={{ color: '#fff' }}>
+          配置详情 - {ccy}
+        </Typography>
+        <IconButton onClick={onClose} sx={{ color: '#fff' }}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      {/* Type Toggle */}
+      <Box sx={{ mb: 4 }}>
+        <GreenButton
+          className={activeType === 'limit_order' ? 'active' : ''}
+          onClick={() => handleTypeChange('limit_order')}
+          sx={{ mr: 1 }}
+        >
+          限价
+        </GreenButton>
+        <GreenButton
+          className={activeType === 'stop_loss' ? 'active' : ''}
+          onClick={() => handleTypeChange('stop_loss')}
+        >
+          止损
+        </GreenButton>
+      </Box>
+
+      {/* Config List */}
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        {configs.map((config, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: 'flex',
+              gap: 2,
+              mb: 2,
+              p: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: 1,
+              alignItems: 'center',
+            }}
+          >
+            <FormControl sx={{ minWidth: 120 }}>
+              <DarkInputLabel>指标</DarkInputLabel>
+              <DarkSelect
+                value={config.indicator}
+                label="指标"
+                onChange={(e) => handleConfigChange(index, 'indicator', e.target.value)}
+                MenuProps={menuProps}
+              >
+                <MenuItem value="SMA">SMA</MenuItem>
+                <MenuItem value="EMA">EMA</MenuItem>
+                <MenuItem value="USDT">USDT</MenuItem>
+              </DarkSelect>
+            </FormControl>
+
+            <DarkTextField
+              label={config.indicator === 'USDT' ? "目标价格" : "指标值"}
+              value={(config.indicator === 'USDT' ? config.target_price : config.indicator_val) || ''}
+              onChange={(e) => handleConfigChange(
+                index,
+                config.indicator === 'USDT' ? 'target_price' : 'indicator_val',
+                e.target.value
+              )}
+              type="number"
+              sx={{ width: 120 }}
+            />
+
+            <DarkTextField
+              label="百分比"
+              value={config.percentage || ''}
+              onChange={(e) => handleConfigChange(index, 'percentage', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+              disabled={!!config.amount}
+            />
+
+            <DarkTextField
+              label="数量"
+              value={config.amount || ''}
+              onChange={(e) => handleConfigChange(index, 'amount', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+              disabled={!!config.percentage}
+            />
+
+            <DarkTextField
+              label="执行次数"
+              value={config.exec_nums || 1}
+              onChange={(e) => handleConfigChange(index, 'exec_nums', e.target.value)}
+              type="number"
+              sx={{ width: 100 }}
+            />
+
+            <IconButton
+              onClick={() => handleRemoveConfig(index)}
+              sx={{
+                color: '#fff',
+                '&:hover': {
+                  color: '#ff4444',
+                },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Add Config Button */}
+      <GreenButton
+        fullWidth
+        startIcon={<AddIcon />}
+        onClick={handleAddConfig}
+        sx={{ my: 3 }}
+      >
+        添加配置
+      </GreenButton>
+
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <GreenButton onClick={onClose}>
+          取消
+        </GreenButton>
+        <GreenButton
+          className="active"
+          onClick={handleSave}
+        >
+          保存
+        </GreenButton>
+      </Box>
+    </Box>
+  );
 };

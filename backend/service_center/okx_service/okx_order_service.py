@@ -1,31 +1,57 @@
-import logging
-import uuid
-from datetime import datetime
-from typing import List, Dict, Any
-
-from backend._decorators import add_docstring
 from backend._utils import SymbolFormatUtils
-from backend.api_center.okx_api.okx_main import OKXAPIWrapper
+from backend.data_object_center.enum_obj import EnumTradeExecuteType, EnumExecSource, EnumAlgoOrderState, \
+    EnumAlgoOrdType
 from backend.data_object_center.spot_algo_order_record import SpotAlgoOrderRecord
-from backend.data_object_center.spot_trade_config import SpotTradeConfig
-from backend.data_object_center.swap_algo_order_record import SwapAlgoOrderRecord
-from backend.data_object_center.swap_attach_algo_orders_record import SwapAttachAlgoOrdersRecord
-from backend.data_object_center.enum_obj import EnumAlgoOrdType, EnumTdMode, EnumOrdType, EnumOrderState
-from backend.strategy_center.strategy_result import StrategyExecuteResult
-
-logger = logging.getLogger(__name__)
 
 
 class OKXOrderService:
+    @staticmethod
+    def save_or_update_limit_order_result(config: dict | None, result: dict):
+        if result.get('ordType') == EnumAlgoOrdType.CONDITIONAL.value:
+            result['px'] = result.get('slTriggerPx', '0')
 
-    def __init__(self):
-        self.okx = OKXAPIWrapper()
-        self.trade = self.okx.trade_api
-        self.funding = self.okx.funding_api
-        self.account = self.okx.account_api
+        print(f"insert result is {result}")
+        stop_loss_data = {
+            'ccy': result.get('ccy') if result.get('ccy') else SymbolFormatUtils.get_base_symbol(result.get('instId')),
+            'type': result.get('type'),
+            'config_id': config.get('id') if config else '',
+            'sz': result.get('sz'),
+            'amount': config.get('amount') if config else
+            str(float(result.get('sz')) * float(result.get('px'))),
+            'target_price': config.get('target_price', '') if config else result.get('px', ''),
+            'exec_price': result.get('avgPx'),
+            'ordId': result.get('ordId'),
+            'algoId': result.get('algoId'),
+            'status': result.get('state'),
+            'side': result.get('side'),
+            'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
+            'uTime': result.get('uTime'),
+            'cTime': result.get('cTime')
+        }
+        success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
+        print(f"Insert limit order: {'success' if success else 'failed'}")
 
-
-    def cancel_spot_unfinished_order(self, ):
-        self.trade.cancel_order()
-
-
+    @staticmethod
+    def save_or_update_stop_loss_result(config: dict | None, result: dict):
+        print(result)
+        stop_loss_data = {
+            'ccy': config.get('ccy') if config else
+            SymbolFormatUtils.get_base_symbol(result.get('instId')),
+            'type': result.get('type'),
+            'config_id': config.get('id') if config else '',
+            'sz': config.get('sz') if config else result.get('sz'),
+            'amount': config.get('amount') if config else
+            str(float(result.get('sz', '0')) * float(result.get('px', '0'))),
+            'target_price': config.get('target_price') if config else
+            result.get('px'),
+            'exec_price': result.get('avgPx'),
+            'ordId': result.get('ordId'),
+            'algoId': result.get('algoId'),
+            'status': result.get('state'),
+            'side': result.get('side'),
+            'exec_source': EnumExecSource.AUTO.value if config else EnumExecSource.MANUAL.value,
+            'uTime': result.get('uTime'),
+            'cTime': result.get('cTime')
+        }
+        success = SpotAlgoOrderRecord.insert_or_update(stop_loss_data)
+        print(f"Insert stop loss: {'success' if success else 'failed'}")
