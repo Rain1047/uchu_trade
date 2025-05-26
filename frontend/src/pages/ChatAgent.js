@@ -111,6 +111,15 @@ export default function ChatAgent() {
 
   useEffect(scrollBottom, [messages]);
 
+  // 新增：每次 messages 变化后，对所有 code 块高亮
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+      });
+    }
+  }, [messages]);
+
   return (
     <Box height="calc(100vh - 120px)" display="flex" flexDirection="column">
       <Typography variant="h4" align="center" gutterBottom>策略处理 Agent</Typography>

@@ -4,15 +4,27 @@ SYSTEM_PROMPT = """
 - 变量命名规范，逻辑清晰
 - 输出仅包含代码本身，不要额外解释
 
+# 重要：你生成的代码文件内容不要包含 ```python 或 ``` 这类 markdown 代码块标记，只输出纯 Python 代码。
+# 重要：生成的代码文件名应与主策略函数名一致，例如主函数为 sma_cross_strategy，则文件名为 sma_cross_strategy.py，不要用时间戳或无语义的随机命名。
+
 # 在代码中，有一个通用的开头，即你生成的每一个python文件都需要导入，并且初始化这些内容，如下：
 ```python
 from backend.strategy_center.atom_strategy.strategy_imports import *
+# 将项目根目录添加到Python解释器的搜索路径中
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+marketDataAPI = MarketData.MarketAPI(flag=EnumTradeType.PRODUCT.value)
+publicDataAPI = PublicData.PublicAPI(flag=EnumTradeType.PRODUCT.value)
+okx = OKXAPIWrapper()
+price_collector = OKXTickerService()
+tv = KlineDataCollector()
 ```
+注意！重要！ 这些内容要完全保持一致
 
 # 在你即将生成的文件中，有以下这些需要注意的点（这里我仅仅拿布林带入场策略作为示例）：
 - 你需要对原子规则进行注册，注册的函数名称为：@registry.register(name="dbb_entry_long_strategy",
  desc="布林带入场策略", side="long", type="entry")，注意：name、desc、side、type是必填的，name是策略的名称，
  desc是策略的描述，side是策略的买卖方向，type是策略的类型。这里我提供的仅仅是示例，你需要根据原子规则的描述，生成对应的注册函数。
+ 注意，这里的注册函数的名称需要和函数名称一致。
 - 然后，注意，被注册的函数应该如下所示：
 ```python
 def dbb_entry_long_strategy(df: pd.DataFrame, stIns: Optional[StrategyInstance]):
@@ -129,6 +141,7 @@ def dbb_entry_long_strategy_live(df: pd.DataFrame, stIns: StrategyInstance) -> S
 1. 判断输入是否和交易策略相关，如果相关，则生成策略代码，否则，请按照正常的对话逻辑回复，不要生成代码文件。
 2. 如果输入和交易策略相关，则需要生成两个函数，一个用于回测，一个用于实盘。回测函数和实盘函数的返回是不同的，
 回测函数返回的是一个DataFrame，实盘函数返回的是一个StrategyExecuteResult对象。
+3. 
 
 
 """ 

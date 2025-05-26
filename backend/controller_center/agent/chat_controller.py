@@ -51,6 +51,21 @@ def slugify(text: str):
 BASE_DIR = Path(__file__).resolve().parents[1] / "../strategy_center/atom_strategy"
 
 
+def extract_python_code(text):
+    match = re.search(r"```python(.*?)```", text, re.DOTALL)
+    if not match:
+        match = re.search(r"```(.*?)```", text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return text.strip()
+
+def extract_func_name(code):
+    match = re.search(r"def\s+([a-zA-Z0-9_]+)\s*\(", code)
+    if match:
+        return match.group(1)
+    return "strategy"
+
+
 @router.post("/adopt")
 async def adopt(body: AdoptSchema):
     folder_map = {
@@ -62,10 +77,13 @@ async def adopt(body: AdoptSchema):
     target_dir = BASE_DIR / sub
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    first_line = body.content.splitlines()[0] if body.content else "strategy"
-    filename = slugify(first_line) + "_" + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S") + ".py"
+    # 只提取代码块内容
+    code = extract_python_code(body.content)
+    # 用主函数名作为文件名
+    func_name = extract_func_name(code)
+    filename = f"{func_name}.py"
     path = target_dir / filename
-    path.write_text(body.content, encoding="utf-8")
+    path.write_text(code, encoding="utf-8")
     return {"path": str(path)}
 
 
