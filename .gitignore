@@ -27,6 +27,3 @@ yarn-debug.log*
 yarn-error.log*
 *.pyc
 __pycache__/
-# 忽略所有文件类
-*.pdf
-*.txt

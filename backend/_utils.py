@@ -4,7 +4,7 @@ from datetime import timedelta, timezone
 import json
 import os
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional
 import yfinance as yf
 
 from sqlalchemy import create_engine
@@ -14,55 +14,6 @@ from datetime import datetime
 import uuid
 import time
 import random
-
-# --------------------- SSE Manager ---------------------
-import asyncio
-
-
-class LogConfig:
-    """统一的日志配置类"""
-    _instance = None
-    _initialized = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(LogConfig, cls).__new__(cls)
-        return cls._instance
-
-    @classmethod
-    def setup(cls, level: int = logging.INFO):
-        """设置日志配置"""
-        if cls._initialized:
-            return
-
-        # 创建日志格式
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-
-        # 配置根日志记录器
-        root_logger = logging.getLogger()
-        root_logger.setLevel(level)
-
-        # 添加控制台处理器
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
-
-        # 添加文件处理器
-        log_dir = Path(__file__).parent.parent / 'logs'
-        log_dir.mkdir(exist_ok=True)
-        file_handler = logging.FileHandler(log_dir / 'app.log')
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
-
-        cls._initialized = True
-
-    @staticmethod
-    def get_logger(name: str) -> logging.Logger:
-        """获取指定名称的日志记录器"""
-        return logging.getLogger(name)
 
 
 class SymbolFormatUtils:
@@ -84,15 +35,13 @@ class DateUtils:
     @staticmethod
     def current_time2string():
         now = datetime.now()
-        logger = LogConfig.get_logger(__name__)
-        logger.debug(f"当前时间: {now}")
+        print(now)
         return now.strftime("%Y-%m-%d")
 
     @staticmethod
     def past_time2string(days):
         date = datetime.now() - timedelta(days=days)
-        logger = LogConfig.get_logger(__name__)
-        logger.debug(f"过去时间: {date}")
+        print("past_time: " + str(date))
         return date.strftime("%Y-%m-%d")
 
     @staticmethod
@@ -150,6 +99,7 @@ class CheckUtils:
 
 class DatabaseUtils:
     _instance = None
+    _session = None
     _engine = None
     _Session = None
 
@@ -172,31 +122,30 @@ class DatabaseUtils:
             project_root = cls.get_project_root()
             # 构建数据库文件的绝对路径
             db_absolute_path = project_root / 'backend' / 'data_center' / 'trade_db.db'
-            logger = LogConfig.get_logger(__name__)
-            logger.info(f"数据库路径: {db_absolute_path}")
+            print(db_absolute_path)
             # 创建数据库连接引擎
-            cls._engine = create_engine(f'sqlite:///{db_absolute_path}', connect_args={"check_same_thread": False})
-            # 创建会话工厂，关闭自动 commit 与 flush，降低并发锁冲突
-            cls._Session = sessionmaker(autocommit=False, autoflush=False, bind=cls._engine)
-            logger.info("数据库设置完成")
+            cls._engine = create_engine(f'sqlite:///{db_absolute_path}')
+            # 创建会话类
+            cls._Session = sessionmaker(bind=cls._engine)
+            logging.info("Database setup complete.")
         except Exception as e:
-            logger = LogConfig.get_logger(__name__)
-            logger.error(f"数据库设置出错: {e}")
+            print(f"Error during database setup: {e}")
             pass
 
     @staticmethod
     def get_db_session():
-        """获取新的数据库会话，调用方应在使用完毕后关闭或提交。"""
-        if DatabaseUtils._engine is None or DatabaseUtils._Session is None:
-            DatabaseUtils._setup()
-        return DatabaseUtils._Session()
+        if DatabaseUtils._session is None:
+            # Ensure that _setup() has been called and _Session has been initialized
+            if DatabaseUtils._engine is None or DatabaseUtils._Session is None:
+                DatabaseUtils._setup()
+            DatabaseUtils._session = DatabaseUtils._Session()
+        return DatabaseUtils._session
 
     @staticmethod
     def get_project_root():
         # 获取当前脚本所在文件夹的绝对路径
         current_dir = Path(__file__).resolve().parent
-        logger = LogConfig.get_logger(__name__)
-        logger.info(f"当前目录: {current_dir}")
+        print(current_dir)
         # 返回项目根目录的绝对路径
         return current_dir.parents[0]
 
@@ -244,8 +193,7 @@ class FormatUtils:
             # 尝试解析数据，如果数据格式不正确，这里会抛出异常
             return json.loads(data)
         except json.JSONDecodeError as e:
-            logger = LogConfig.get_logger(__name__)
-            logger.error(f"JSON 解析错误: {e}")
+            print(f"JSON 解析错误: {e}")
             return None
 
     @staticmethod
@@ -281,8 +229,7 @@ class FormatUtils:
                 if hasattr(instance, snake_case_key):
                     setattr(instance, snake_case_key, FormatUtils.convert_value(value))
                 else:
-                    logger = LogConfig.get_logger(__name__)
-                    logger.warning(f"警告: {snake_case_key} 不是 {model_class.__name__} 的属性")
+                    print(f"警告: {snake_case_key} 不是 {model_class.__name__} 的属性")
 
         return instance
 
@@ -325,34 +272,3 @@ class FormatUtils:
 # 示例用法
 if __name__ == "__main__":
     print(DatabaseUtils.get_db_session())
-
-
-class SSEManager:
-    """管理所有 SSE 连接（cid -> asyncio.Queue）"""
-
-    _channels: Dict[str, "asyncio.Queue[dict]"] = {}
-
-    @classmethod
-    def create_channel(cls):
-        cid = uuid.uuid4().hex[:12]
-        q: "asyncio.Queue[dict]" = asyncio.Queue()
-        cls._channels[cid] = q
-        return cid, q
-
-    @classmethod
-    def get_queue(cls, cid: str):
-        return cls._channels.get(cid)
-
-    @classmethod
-    async def generator(cls, cid: str):
-        queue = cls.get_queue(cid)
-        if queue is None:
-            yield {"event": "end", "data": ""}
-            return
-        while True:
-            msg = await queue.get()
-            yield msg
-            if msg.get("event") == "end":
-                # 关闭后移除
-                cls._channels.pop(cid, None)
-                break

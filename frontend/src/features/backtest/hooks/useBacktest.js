@@ -39,7 +39,6 @@ export const useBacktest = () => {
   const fetchSymbols = async () => {
     try {
       const data = await fetchBacktestData.getSymbols();
-      console.log('Symbols data:', data);
       if (data.success) {
         setSymbols(data.data);
         if (data.data.length > 0) {
@@ -47,7 +46,6 @@ export const useBacktest = () => {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch symbols:', err);
       setError('Failed to fetch symbols');
     }
   };
@@ -55,7 +53,6 @@ export const useBacktest = () => {
   const fetchStrategies = async () => {
     try {
       const data = await fetchBacktestData.getStrategies(selectedSymbol);
-      console.log('Strategies data:', data);
       if (data.success) {
         setStrategies(data.data);
         if (data.data.length > 0) {
@@ -63,7 +60,6 @@ export const useBacktest = () => {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch strategies:', err);
       setError('Failed to fetch strategies');
     }
   };
@@ -71,13 +67,11 @@ export const useBacktest = () => {
   const fetchBacktestKeys = async () => {
     try {
       const data = await fetchBacktestData.getKeys(selectedStrategy, selectedSymbol);
-      console.log('Backtest keys data:', data);
       if (data.success && data.data.length > 0) {
         setBacktestKeys(data.data);
         setSelectedKey(data.data[0]);
       }
     } catch (err) {
-      console.error('Failed to fetch backtest keys:', err);
       setError('Failed to fetch backtest keys');
     }
   };
@@ -90,13 +84,9 @@ export const useBacktest = () => {
         fetchBacktestData.getDetails(selectedKey)
       ]);
 
-      console.log('Records data:', recordsData);
-      console.log('Details data:', detailsData);
-
       if (recordsData.success) setRecords(recordsData.data);
       if (detailsData.success) setDetails(detailsData.data);
     } catch (err) {
-      console.error('Failed to fetch records and details:', err);
       setError('Failed to fetch records and details');
     } finally {
       setLoading(false);
@@ -109,7 +99,6 @@ export const useBacktest = () => {
     setRunningBacktest(true);
     try {
       const result = await fetchBacktestData.runBacktest(selectedStrategy);
-      console.log('Run backtest result:', result);
       if (result.success) {
         setSelectedKey(result.data.key);
         await fetchRecordsAndDetails();
@@ -120,6 +109,7 @@ export const useBacktest = () => {
       setRunningBacktest(false);
     }
   };
+
 
   return {
     symbols,

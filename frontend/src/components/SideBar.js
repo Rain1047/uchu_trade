@@ -64,18 +64,19 @@ const SideBar = ({ open, setOpen }) => {
     const classes = useStyles();
 
     const menuItems = [
-        {
-            text: 'Agent',
-            icon: <SettingsIcon />,
-            path: '/'
-        },
+        //
+        // {
+        //     text: 'History',
+        //     icon: <HistoryIcon />,
+        //     path: '/trade/history'
+        // },
         {
             text: 'Record',
             icon: <HistoryIcon />,
             path: '/record'
         },
         {
-            text: 'Balance',
+            text: 'Balance',  // 新增 Balance 菜单项
             icon: <AccountBalanceIcon />,
             path: '/balance'
         },
@@ -84,11 +85,12 @@ const SideBar = ({ open, setOpen }) => {
             icon: <SettingsIcon />,
             path: '/strategy'
         },
+
         {
-            text: 'Backtest',
+            text: 'Backtest',  // 新增 Balance 菜单项
             icon: <AssessmentIcon />,
             path: '/backtest'
-        }
+        },
     ];
 
     return (

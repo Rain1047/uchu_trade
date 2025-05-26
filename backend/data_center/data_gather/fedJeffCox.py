@@ -7,11 +7,6 @@ from sqlalchemy import exists
 from backend.data_object_center.fn_instance import FnInstance
 from backend._utils import DatabaseUtils
 
-# 设置请求头
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-}
-
 
 def get_jeff_cox_list():
     """
@@ -21,9 +16,7 @@ def get_jeff_cox_list():
     div = "RiverCard-standardBreakerCard RiverCard-specialReportsRiver RiverCard-card"
 
     # 发送HTTP请求并获取页面内容
-    response = requests.get(url, headers=headers)
-    print("Jeff Cox List response:", response)
-
+    response = requests.get(url)
     fed_list = []
     # 检查请求是否成功
     if response.status_code == 200:
@@ -47,7 +40,7 @@ def store_jeff_cox_detail():
     print("Jeff Cox List:", jeff_cox_list)
     session = DatabaseUtils.get_db_session()
     for link in jeff_cox_list:
-        response = requests.get(link, headers=headers)
+        response = requests.get(link)
         if response.status_code == 200:
             # 使用BeautifulSoup解析HTML
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -102,3 +95,4 @@ def store_jeff_cox_detail():
 
 if __name__ == "__main__":
     print(store_jeff_cox_detail())
+

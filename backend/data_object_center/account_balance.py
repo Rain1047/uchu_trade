@@ -9,12 +9,6 @@ from backend.data_object_center.enum_obj import EnumTradeExecuteType
 
 Base = declarative_base()
 session = DatabaseUtils.get_db_session()
-# 配置日志格式
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 logger = logging.getLogger(__name__)
 
 

@@ -4,9 +4,6 @@ from bs4 import BeautifulSoup
 import requests
 from openai import OpenAI
 import g4f
-from backend._utils import LogConfig
-
-logger = LogConfig.get_logger(__name__)
 
 
 def get_fed_news_links(url, div_class):
@@ -19,10 +16,10 @@ def get_fed_news_links(url, div_class):
 
         for div in key_points_divs:
             link = div.find('a', class_='RiverCard-mediaContainer')['href']
-            logger.info(f"找到新闻链接: {link}")
+            print(link)
             fed_news_links.append(link)
     else:
-        logger.error(f"无法获取页面内容，状态码：{response.status_code}")
+        print("无法获取页面内容，状态码：", response.status_code)
 
     return fed_news_links
 
@@ -45,8 +42,8 @@ def create_prompt(role, content):
 def call_g4f(content, prompt):
     g4f.debug.logging = True  # Enable logging
     g4f.check_version = False  # Disable automatic version checking
-    logger.info("开始分析" + g4f.version)  # Check version
-    logger.info(g4f.Provider.Ails.params)  # Supported args
+    print("start analysis" + g4f.version)  # Check version
+    print(g4f.Provider.Ails.params)  # Supported args
 
     # Automatic selection of provider
     response = g4f.ChatCompletion.create(
@@ -81,7 +78,7 @@ def process_fed_news(links, target_date):
         date_obj = date(year, month, day)
 
         if target_date == date_obj:
-            logger.info(f"今日联邦新闻： {link}")
+            print("今日联邦新闻： {}".format(link))
             # 需要处理item，调用OpenAI API接口
             # 此处可以添加处理item的代码，调用OpenAI API等
             response = requests.get(link)
@@ -99,30 +96,30 @@ def process_fed_news(links, target_date):
                 if author_div:
                     # 获取 Jeff Cox 的姓名
                     author_name = soup.find('a', class_='Author-authorName').text
-                    logger.info(f"作者姓名: {author_name}")
+                    print("Author Name:", author_name)
 
                 # 打印div元素的内容
                 if key_points_div:
                     res = key_points_div.get_text()
-                    logger.info(f"Key Points结果为：{res}")
+                    print("Key Points结果为：{}".format(res))
                     prompt = get_prompt(prompt="key")
                     # 在这里调用g4f
                     # key_point_analysis = call_g4f(result, prompt)
-                    # logger.info(key_point_analysis)
+                    # print(key_point_analysis)
                 else:
-                    logger.warning("未找到文章的的Key Points。")
+                    print("未找到文章的的Key Points。")
 
                 if info_div:
                     info = info_div.get_text()
-                    logger.info(f"文章结果为：{info}")
+                    print("文章结果为：{}".format(info))
                     prompt = get_prompt(prompt="content")
                     # 在这里调用g4f
                     # info_analysis = call_g4f(info, prompt)
-                    # logger.info(info_analysis)
+                    # print(info_analysis)
                 else:
-                    logger.warning("没有找到该文章的内容")
+                    print("没有找到该文章的内容")
             else:
-                logger.error(f"无法获取页面内容，状态码：{response.status_code}")
+                print("无法获取页面内容，状态码：", response.status_code)
 
 
 if __name__ == "__main__":

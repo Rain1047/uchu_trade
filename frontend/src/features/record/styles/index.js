@@ -5,8 +5,7 @@ import {makeStyles} from "@material-ui/core/styles";
 
 // 新增 FormControl 样式组件
 export const DarkFormControl = styled(FormControl)(({ theme }) => ({
-  width: '100%',
-  minWidth: 'unset',
+  minWidth: '180px',
   '& .MuiInputLabel-root': {
     color: 'rgba(255, 255, 255, 0.7)',
     '&.Mui-focused': {
@@ -22,8 +21,7 @@ export const DarkFormControl = styled(FormControl)(({ theme }) => ({
 export const DarkSelect = styled(Select)(({ theme }) => ({
   backgroundColor: '#1E1E1E',
   color: '#fff',
-  width: '100%',
-  minWidth: 'unset',
+  minWidth: '180px',
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
@@ -136,18 +134,15 @@ export const StyledTableContainer = styled(TableContainer)({
 // 表格容器的样式
 export const tableStyles = {
   container: {
-    padding: '16px 24px',
     p: 3,
     bgcolor: '#121212',
     minHeight: '100vh'
   },
   searchArea: {
-    display: 'grid',
-    gridTemplateColumns: '200px 150px 120px 120px 150px auto auto', // 对应表格列宽
-    gap: '16px',
-    alignItems: 'center',
-    padding: '0 16px', // 与表格保持相同的内边距
-    marginBottom: '20px'
+    display: 'flex',
+    gap: 2,
+    mb: 3,
+    alignItems: 'center'
   },
   textField: {
     width: 200

@@ -6,12 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/agent.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/agent.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controller_center/backtest/backtest_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data_center/trade_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data_center/trade_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/strategy_center/atom_strategy/exit_strategy/dbb_exit_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/strategy_center/atom_strategy/exit_strategy/dbb_exit_strategy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,23 +27,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Rain1047&quot;
-  }
-}</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;git@github.com:Rain1047/uchu_trade.git&quot;,
     &quot;accountId&quot;: &quot;367d11a5-1d22-44c0-9af3-c637c64bd74f&quot;
   }
 }</component>
-  <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 1
-}</component>
-  <component name="ProjectId" id="2stooAmSvHmLaZfGjh9yS1uWD3d" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -54,9 +41,6 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Notification.DisplayName-DoNotAsk-cosyStickyNotifications&quot;: &quot;TONGYI Lingma Notification Sticky Group&quot;,
-    &quot;Notification.DoNotAsk-cosyStickyNotifications&quot;: &quot;true&quot;,
-    &quot;Python.backtest_main.executor&quot;: &quot;Run&quot;,
     &quot;Python.balance_controller.executor&quot;: &quot;Run&quot;,
     &quot;Python.fedJeffCox.executor&quot;: &quot;Run&quot;,
     &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
@@ -65,18 +49,11 @@
     &quot;Python.spot_limit_order_task.executor&quot;: &quot;Run&quot;,
     &quot;Python.spot_main_task.executor&quot;: &quot;Run&quot;,
     &quot;Python.spot_order_record_task.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/src/features/record/utils&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.start.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/rain/PycharmProjects/uchu_trade/frontend/node_modules/typescript/lib&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -88,13 +65,8 @@
       <recent name="$PROJECT_DIR$/backend/service_center/okx_service" />
     </key>
   </component>
-  <component name="RunAnythingCache">
-    <option name="myCommands">
-      <command value="npm run start" />
-    </option>
-  </component>
-  <component name="RunManager" selected="Python.fedJeffCox">
-    <configuration name="backtest_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.main_controller">
+    <configuration name="balance_controller" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="uchu_trade" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -103,12 +75,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/backtest_center" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/controller_center/balance" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/backtest_center/backtest_main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/controller_center/balance/balance_controller.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -186,28 +158,72 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/frontend/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="start" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
+    <configuration name="spot_main_task" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="uchu_trade" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks/spot_main_task.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.fedJeffCox" />
-        <item itemvalue="npm.start" />
         <item itemvalue="Python.main_controller" />
-        <item itemvalue="Python.backtest_main" />
         <item itemvalue="Python.record_controller" />
+        <item itemvalue="Python.balance_controller" />
+        <item itemvalue="Python.fedJeffCox" />
+        <item itemvalue="Python.spot_main_task" />
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
+    <task id="LOCAL-00020" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735627679169</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1735627679170</updated>
+    </task>
+    <task id="LOCAL-00021" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735661259011</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1735661259011</updated>
+    </task>
+    <task id="LOCAL-00022" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735662086495</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1735662086495</updated>
+    </task>
+    <task id="LOCAL-00023" summary="[交易记录后端开发]">
+      <option name="closed" value="true" />
+      <created>1735662668227</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1735662668227</updated>
+    </task>
     <task id="LOCAL-00024" summary="[交易记录后端开发]">
       <option name="closed" value="true" />
       <created>1735664323731</created>
@@ -576,72 +592,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736610773271</updated>
     </task>
-    <task id="LOCAL-00070" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1737295628757</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1737295628757</updated>
-    </task>
-    <task id="LOCAL-00071" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1737384810468</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
-      <option name="project" value="LOCAL" />
-      <updated>1737384810468</updated>
-    </task>
-    <task id="LOCAL-00072" summary="[交易记录后端开发]">
-      <option name="closed" value="true" />
-      <created>1737474525545</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1737474525545</updated>
-    </task>
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="34a034cd-65d7-41ce-a3e6-a70543b04e8c" name="Changes" comment="[交易记录后端开发]" />
-      <created>1739284408496</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1739284408496</updated>
-      <workItem from="1739284408889" duration="14348000" />
-      <workItem from="1739893535863" duration="11115000" />
-      <workItem from="1742056683362" duration="3485000" />
-      <workItem from="1742393550437" duration="4279000" />
-      <workItem from="1742570848711" duration="1745000" />
-      <workItem from="1743001634815" duration="212000" />
-      <workItem from="1743001865460" duration="4800000" />
-      <workItem from="1743353777402" duration="8463000" />
-      <workItem from="1746626188614" duration="4911000" />
-      <workItem from="1747922841159" duration="2793000" />
-      <workItem from="1748165209795" duration="19000" />
-    </task>
-    <option name="localTasksCounter" value="73" />
+    <option name="localTasksCounter" value="70" />
     <servers />
-  </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="master" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
@@ -654,13 +613,12 @@
     <option name="LAST_COMMIT_MESSAGE" value="[交易记录后端开发]" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/uchu_trade$fedJeffCox.coverage" NAME="fedJeffCox Coverage Results" MODIFIED="1743354225854" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_center/data_gather" />
+    <SUITE FILE_PATH="coverage/uchu_trade$fedJeffCox.coverage" NAME="fedJeffCox Coverage Results" MODIFIED="1736060616627" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_center/data_gather" />
     <SUITE FILE_PATH="coverage/uchu_trade$record_controller.coverage" NAME="record_controller Coverage Results" MODIFIED="1736087083495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/record" />
-    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1743002879814" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/uchu_trade$main_controller.coverage" NAME="main_controller Coverage Results" MODIFIED="1736616096452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_order_record_task.coverage" NAME="spot_order_record_task Coverage Results" MODIFIED="1735702979987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_main_task.coverage" NAME="spot_main_task Coverage Results" MODIFIED="1735740629026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_limit_order_task.coverage" NAME="spot_limit_order_task Coverage Results" MODIFIED="1735618468792" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/schedule_center/tasks/trade_tasks" />
-    <SUITE FILE_PATH="coverage/uchu_trade$backtest_main.coverage" NAME="backtest_main Coverage Results" MODIFIED="1743002809079" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/backtest_center" />
     <SUITE FILE_PATH="coverage/uchu_trade$balance_controller.coverage" NAME="balance_controller Coverage Results" MODIFIED="1736077382807" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/controller_center/balance" />
     <SUITE FILE_PATH="coverage/uchu_trade$spot_algo_order_record.coverage" NAME="spot_algo_order_record Coverage Results" MODIFIED="1735616883468" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/data_object_center" />
   </component>

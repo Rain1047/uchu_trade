@@ -3,19 +3,17 @@ import '@fontsource/inter';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
 import TradeHistoryTable from "./features/trade/components/history";
-import { darkTheme } from "./theme";
+import { darkTheme} from "./theme";
 import './index.css';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import './styles/global.css';
 import Layout from './components/Layout';
-import { Container, Typography } from "@material-ui/core";
+import {Container, Typography} from "@material-ui/core";
 import StrategyPage from "./features/strategy"
 import BalanceList from "./features/balance"
 import Backtest from "./features/backtest";
 import StrategyFilesPage from "./features/strategyfiles";
-import { TradeRecordTable } from "./features/record"
-import AgentUpload from "./pages/AgentUpload";
-import ChatAgent from "./pages/ChatAgent";
+import {TradeRecordTable} from "./features/record"
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -46,30 +44,26 @@ class ErrorBoundary extends React.Component {
     }
 }
 
+
 function App() {
-    return (
-        <ErrorBoundary>
+  return (
+      <ErrorBoundary>
             <ThemeProvider theme={darkTheme}>
                 <Router>
                     <Layout>
-                        <React.Suspense fallback={<div style={{color:'#fff',textAlign:'center',marginTop:40}}>Loading...</div>}>
-                            <Routes>
-                                <Route path="/" element={<AgentUpload />} />
-                                <Route path="/trade/history" element={<TradeHistoryTable />} />
-                                <Route path="/strategy" element={<StrategyPage />} />
-                                <Route path="/balance" element={<BalanceList />} />
-                                <Route path="/backtest" element={<Backtest />} />
-                                <Route path="/strategyfiles" element={<StrategyFilesPage />} />
-                                <Route path="/record" element={<TradeRecordTable />} />
-                                <Route path="/agent/upload" element={<AgentUpload />} />
-                                <Route path="/agent/chat" element={<ChatAgent/>} />
-                            </Routes>
-                        </React.Suspense>
+                        <Routes>
+                            <Route path="/trade/history" element={<TradeHistoryTable />} />
+                            <Route path="/strategy" element={<StrategyPage />} />
+                            <Route path="/balance" element={<BalanceList />} />
+                            <Route path="/backtest" element={<Backtest />} />
+                            <Route path="/strategyfiles" element={<StrategyFilesPage />} />
+                            <Route path="/record" element={<TradeRecordTable />} />
+                        </Routes>
                     </Layout>
                 </Router>
             </ThemeProvider>
         </ErrorBoundary>
-    );
+  );
 }
 
 export default App;

@@ -29,20 +29,4 @@ class StrategyUtils:
 
         return df[mask].index[-1]
 
-    @staticmethod
-    def calculate_position(entry_price, stop_loss_price, leverage, max_loss_per_trade):
-        """
-        计算标准仓位
-        :param entry_price: 入场价格
-        :param stop_loss_price: 止损价格
-        :param leverage: 杠杆率
-        :param max_loss_per_trade: 每笔最大亏损金额
-        :return: 仓位大小
-        """
-        risk_per_unit = abs(entry_price - stop_loss_price)
-        if risk_per_unit < 1e-8:
-            return 0  # 避免除零
-        position = (max_loss_per_trade / risk_per_unit) * leverage
-        return max(0, position)
-
 

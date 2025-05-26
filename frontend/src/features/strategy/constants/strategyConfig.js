@@ -1,4 +1,4 @@
-export const TRADING_PAIRS = ['BTC-USDT', 'ETH-USDT', 'BNB-USDT', 'SOL-USDT'];
+export const TRADING_PAIRS = ['BTC-USDT', 'ETH-USDT', 'BNB-USDT'];
 export const TIME_WINDOWS = ['1m', '5m', '15m', '30m', '1h', '4h', '1d'];
 export const TRADING_SIDES = ['long', 'short'];
 export const STOP_LOSS_TYPES = ['trailing_stop', 'stop_limit'];

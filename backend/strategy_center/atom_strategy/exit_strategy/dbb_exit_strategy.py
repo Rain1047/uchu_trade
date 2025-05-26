@@ -50,23 +50,12 @@ def dbb_exit_strategy_for_live(df: DataFrame, algoOrdRecord: Optional[SwapAlgoOr
     slice_df = df.loc[start_index:end_index]
     exceeded_upper_band2 = (slice_df['close'] > slice_df['upper_band2']).any()
 
-    # 获取当前止损价
-    current_stop_loss = float(algoOrdRecord.sl_trigger_px) if algoOrdRecord.sl_trigger_px else 0
-    current_sma20 = df.iloc[-1]['sma20']
-
     if exceeded_upper_band2:
-        # 如果突破过第二层布林带，使用第一层布林带上轨作为止损
+        # Set stop loss and exit price to the latest upper_band1
         exit_price = df.iloc[-1]['upper_band1']
-        print("Exit price (upper_band1):", exit_price)
+        print("Exit price:", exit_price)
     else:
-        # 如果没有突破过第二层布林带，只有当MA20升高时才更新止损价
-        if current_sma20 > current_stop_loss:
-            exit_price = current_sma20
-            print("Exit price (new MA20):", exit_price)
-        else:
-            exit_price = current_stop_loss
-            print("Exit price (previous stop loss):", exit_price)
-
+        exit_price = df.iloc[-1]['sma20']
     strategy_execute_result.stop_loss_price = exit_price
     strategy_execute_result.exit_price = exit_price
 
@@ -82,7 +71,6 @@ def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
 
     df['sell_sig'] = 0
     df['sell_price'] = df['sma20']
-    df['prev_sell_price'] = df['sell_price'].shift(1)  # 添加上一期的止损价
 
     for i in range(1, len(df)):
         if df.iloc[:i]['entry_sig'].sum() == 0:
@@ -95,17 +83,9 @@ def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
             continue
 
         if (segment['close'] > segment['upper_band2']).any():
-            # 如果突破过第二层布林带，使用第一层布林带上轨作为止损
             df.loc[df.index[i], 'sell_price'] = df.loc[df.index[i - 1], 'upper_band1']
         else:
-            # 如果没有突破过第二层布林带，只有当MA20升高时才更新止损价
-            current_sma20 = df.loc[df.index[i], 'sma20']
-            prev_sell_price = df.loc[df.index[i], 'prev_sell_price']
-            
-            if current_sma20 > prev_sell_price:
-                df.loc[df.index[i], 'sell_price'] = current_sma20
-            else:
-                df.loc[df.index[i], 'sell_price'] = prev_sell_price
+            df.loc[df.index[i], 'sell_price'] = df.loc[df.index[i - 1], 'sma20']
 
         current_close = df.loc[df.index[i], 'close']
         current_sell_price = df.loc[df.index[i], 'sell_price']
@@ -113,8 +93,6 @@ def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
         if pd.notna(current_sell_price):
             df.loc[df.index[i], 'sell_sig'] = 1 if current_close < current_sell_price else 0
 
-    # 删除临时列
-    df.drop('prev_sell_price', axis=1, inplace=True)
     return df
 
 
