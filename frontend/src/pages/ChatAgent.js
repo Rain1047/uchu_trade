@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, TextField, IconButton, Typography, Paper, Button } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import SendIcon from '@material-ui/icons/Send';
 import { chatStream, adoptStrategy } from '../api/agent';
 import { marked } from 'marked';
@@ -16,15 +17,78 @@ marked.setOptions({
   }
 });
 
-const MessageItem = ({ role, content, discarded }) => (
-  <Box mb={2} display="flex" justifyContent={role === 'user' ? 'flex-end' : 'flex-start'}>
-    <Paper style={{ padding: 12, maxWidth: '80%', background: role === 'user' ? '#2563eb' : discarded ? '#555' : '#1e1e1e', opacity: discarded ? 0.5 : 1 }}>
+const useStyles = makeStyles(() => ({
+  chatMsg: {
+    animation: '$fadeIn 0.35s ease',
+    display: 'flex',
+    marginBottom: 16,
+    width: '100%',
+    padding: '0 16px',
+  },
+  '@keyframes fadeIn': {
+    from: { opacity: 0, transform: 'translateY(12px)' },
+    to: { opacity: 1, transform: 'none' },
+  },
+  chatBubble: {
+    padding: '14px 20px',
+    maxWidth: '65%',
+    wordBreak: 'break-word',
+    fontSize: '1.05rem',
+    borderRadius: 16,
+    boxShadow: '0 2px 8px rgba(0,0,0,.1)',
+    color: '#fff',
+  },
+  userBubble: {
+    background: 'linear-gradient(135deg, rgba(52,199,89,0.8), rgba(52,199,89,0.6))',
+    borderBottomRightRadius: 6,
+    marginLeft: 'auto',
+  },
+  aiBubble: {
+    background: 'linear-gradient(135deg, rgba(52,199,89,0.3), rgba(52,199,89,0.2))',
+    borderBottomLeftRadius: 6,
+    marginRight: 'auto',
+  },
+  inputRow: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 20,
+    width: '100%',
+    maxWidth: 800,
+    alignSelf: 'center',
+    padding: '0 20px',
+  },
+  inputText: {
+    flex: 1,
+    maxWidth: 600,
+  },
+  actionsRow: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  chatContainer: {
+    width: '100%',
+    maxWidth: 1000,
+    alignSelf: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+}));
+
+const MessageItem = ({ role, content, discarded, classes }) => (
+  <Box className={classes.chatMsg}>
+    <div className={`${classes.chatBubble} ${role === 'user' ? classes.userBubble : classes.aiBubble}`} style={{ opacity: discarded ? 0.5 : 1 }}>
       <div
         className="markdown-preview"
         dangerouslySetInnerHTML={{ __html: marked(content) }}
       />
       {discarded && <Typography variant="caption" color="error">已废弃</Typography>}
-    </Paper>
+    </div>
   </Box>
 );
 
@@ -34,6 +98,7 @@ export default function ChatAgent() {
   const listRef = useRef();
   const [showActions, setShowActions] = useState(false);
   const [adoptType, setAdoptType] = useState('entry');
+  const classes = useStyles();
 
   const scrollBottom = () => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
@@ -121,27 +186,31 @@ export default function ChatAgent() {
   }, [messages]);
 
   return (
-    <Box height="calc(100vh - 120px)" display="flex" flexDirection="column">
-      <Typography variant="h4" align="center" gutterBottom>策略处理 Agent</Typography>
-      <Box ref={listRef} flex={1} overflow="auto" px={2} py={1}>
+    <Box height="calc(100vh - 120px)" display="flex" flexDirection="column" alignItems="center">
+      <Box className={classes.chatContainer}>
+        <Typography variant="h4" align="center" gutterBottom>策略处理 Agent</Typography>
+      </Box>
+      <Box className={classes.chatContainer} ref={listRef} flex={1} overflow="auto" px={2} py={1}>
         {messages.map((m, idx) => (
-          <MessageItem key={idx} role={m.role.startsWith('assistant') ? 'assistant' : m.role} content={m.content} discarded={m.discarded} />
+          <MessageItem key={idx} role={m.role.startsWith('assistant') ? 'assistant' : m.role} content={m.content} discarded={m.discarded} classes={classes} />
         ))}
       </Box>
-      <Box display="flex" px={2} py={1}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="输入策略描述或后续指令..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-        />
-        <IconButton color="primary" onClick={() => handleSend()}><SendIcon /></IconButton>
+      <Box className={classes.chatContainer}>
+        <Box className={classes.inputRow}>
+          <TextField
+            className={classes.inputText}
+            variant="outlined"
+            placeholder="输入策略描述或后续指令..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+          />
+          <IconButton color="primary" onClick={() => handleSend()} style={{ borderRadius: 12, width: 40, height: 40 }}><SendIcon /></IconButton>
+        </Box>
       </Box>
 
       {showActions && (
-        <Box display="flex" justifyContent="center" gap={2} py={1} alignItems="center">
+        <Box className={classes.actionsRow} py={1}>
           <Button variant="contained" color="primary" size="small" onClick={handleAdopt}>采纳</Button>
           <TextField
             select

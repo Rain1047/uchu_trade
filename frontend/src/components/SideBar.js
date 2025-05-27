@@ -88,6 +88,11 @@ const SideBar = ({ open, setOpen }) => {
             text: 'Backtest',
             icon: <AssessmentIcon />,
             path: '/backtest'
+        },
+        {
+            text: 'Enhanced Backtest',
+            icon: <ShowChartIcon />,
+            path: '/enhanced-backtest'
         }
     ];
 

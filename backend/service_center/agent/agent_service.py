@@ -19,7 +19,7 @@ class AgentService:
     """封装文件上传、任务调度、进度更新逻辑"""
 
     def __init__(self):
-        base_dir = Path(__file__).resolve().parents[3] / "strategy_center/strategy_materials"
+        base_dir = Path(__file__).resolve().parents[2] / "strategy_center/strategy_materials"
         self.raw_books_dir = base_dir / "raw_books"
         self.extracted_text_dir = base_dir / "extracted_text"
         self.processed_rules_dir = base_dir / "processed_rules"
@@ -38,7 +38,7 @@ class AgentService:
     @staticmethod
     def save_upload(file_name: str, file_bytes: bytes) -> UploadFile:
         """保存文件到 raw_books 并持久化元数据"""
-        stored_path = Path(__file__).resolve().parents[3] / "strategy_center/strategy_materials/raw_books" / file_name
+        stored_path = Path(__file__).resolve().parents[2] / "strategy_center/strategy_materials/raw_books" / file_name
         stored_path.write_bytes(file_bytes)
         upload = UploadFile(
             filename=file_name,

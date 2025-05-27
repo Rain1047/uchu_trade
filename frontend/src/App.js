@@ -12,6 +12,7 @@ import { Container, Typography } from "@material-ui/core";
 import StrategyPage from "./features/strategy"
 import BalanceList from "./features/balance"
 import Backtest from "./features/backtest";
+import BacktestInterface from "./components/BacktestInterface";
 import StrategyFilesPage from "./features/strategyfiles";
 import { TradeRecordTable } from "./features/record"
 import AgentUpload from "./pages/AgentUpload";
@@ -59,6 +60,7 @@ function App() {
                                 <Route path="/strategy" element={<StrategyPage />} />
                                 <Route path="/balance" element={<BalanceList />} />
                                 <Route path="/backtest" element={<Backtest />} />
+                                <Route path="/enhanced-backtest" element={<BacktestInterface />} />
                                 <Route path="/strategyfiles" element={<StrategyFilesPage />} />
                                 <Route path="/record" element={<TradeRecordTable />} />
                                 <Route path="/agent/upload" element={<AgentUpload />} />

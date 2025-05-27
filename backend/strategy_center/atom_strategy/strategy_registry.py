@@ -100,6 +100,7 @@ registry = StrategyRegistry()
 
 # 确保在导入其他模块前先创建实例
 from backend.strategy_center.atom_strategy.entry_strategy.dbb_entry_strategy import *
+from backend.strategy_center.atom_strategy.entry_strategy.sma_cross_entry_long_strategy import *
 from backend.strategy_center.atom_strategy.exit_strategy.dbb_exit_strategy import *
 from backend.strategy_center.atom_strategy.filter_strategy.sma_diff_increasing_filter_strategy import *
 from backend.strategy_center.atom_strategy.filter_strategy.sma_perfect_order_filter_strategy import *

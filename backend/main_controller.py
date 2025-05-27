@@ -19,6 +19,9 @@ from backend.controller_center.strategy_files.strategy_files_controller import r
 from backend.controller_center.record.record_controller import router as record_router
 from backend.controller_center.agent.agent_controller import router as agent_router
 from backend.controller_center.agent.chat_controller import router as chat_router
+from backend.api_center.universal_backtest_api import router as universal_backtest_router
+from backend.controller_center.backtest.enhanced_backtest_controller import router as enhanced_backtest_router
+from backend.controller_center.strategy.llm_strategy_controller import router as llm_strategy_router
 from backend.data_object_center.base import Base, engine
 
 # 导入所有模型类以确保表被创建
@@ -55,6 +58,9 @@ app.include_router(strategy_files_router, prefix="/api/strategy-files", tags=["s
 app.include_router(record_router, prefix="/api/record", tags=["record"])
 app.include_router(agent_router, prefix="/api/agent", tags=["agent"])
 app.include_router(chat_router, prefix="/api/agent", tags=["agent-chat"])
+app.include_router(universal_backtest_router, tags=["universal-backtest"])
+app.include_router(enhanced_backtest_router, tags=["enhanced-backtest"])
+app.include_router(llm_strategy_router, tags=["llm-strategy"])
 
 # 配置 CORS
 app.add_middleware(
