@@ -135,11 +135,12 @@ export default function ChatAgent() {
         const last = prev[prev.length - 1];
         if (last && last.role === 'assistant_stream') {
           last.role = 'assistant';
+          const hasPython = last.content.includes('```python');
+          setShowActions(hasPython);
           return [...prev.slice(0, -1), last];
         }
         return prev;
       });
-      setShowActions(true);
       es.close();
     });
   };
@@ -227,6 +228,9 @@ export default function ChatAgent() {
           <Button variant="text" size="small" onClick={handleDiscard}>废弃</Button>
         </Box>
       )}
+      <Box position="fixed" bottom={24} left={24}>
+        <Button variant="outlined" color="primary" size="small" onClick={() => console.log('debug')}>调试</Button>
+      </Box>
     </Box>
   );
 } 

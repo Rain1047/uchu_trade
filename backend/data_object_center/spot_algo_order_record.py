@@ -7,8 +7,9 @@ from backend._decorators import singleton
 from backend._utils import DatabaseUtils, LogConfig
 from backend.controller_center.balance.balance_request import TradeRecordPageRequest
 from backend.data_object_center.enum_obj import EnumOrderState, EnumExecSource, EnumTradeExecuteType
+from backend.data_object_center.base import Base, engine, Session
+from backend._utils import SymbolFormatUtils
 
-Base = declarative_base()
 session = DatabaseUtils.get_db_session()
 logger = LogConfig.get_logger(__name__)
 
@@ -37,6 +38,8 @@ class SpotAlgoOrderRecord(Base):
     side = Column(String, comment='订单方向')
     note = Column(String, comment='交易日志')
 
+    strategy_instance_id = Column(Integer, comment='策略实例ID')
+
     def to_dict(self) -> Dict:
         """转换为字典格式"""
         return {
@@ -58,6 +61,9 @@ class SpotAlgoOrderRecord(Base):
             'uTime': self.uTime.strftime('%Y-%m-%d %H:%M:%S') if self.uTime else None,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S') if self.create_time else None,
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None,
+            'strategy_instance_id': self.strategy_instance_id,
+            'instId': f"{self.ccy}-USDT",
+            'slTriggerPx': self.target_price
         }
 
     @classmethod
@@ -504,6 +510,59 @@ class SpotAlgoOrderRecord(Base):
             logger.error(f"更新记录状态失败: {str(e)}", exc_info=True)
             return False
 
+    @classmethod
+    def get_active_orders_by_strategy(cls, strategy_instance_id: int, symbol: str):
+        """获取策略实例的活跃订单"""
+        session = Session()
+        try:
+            # 活跃状态包括：live, partially_filled
+            active_states = ['live', 'partially_filled']
+            records = session.query(cls).filter(
+                cls.strategy_instance_id == strategy_instance_id,
+                cls.ccy == symbol,
+                cls.status.in_(active_states)
+            ).all()
+            return [r.to_dict() for r in records]
+        except Exception as e:
+            print(f"Error getting active orders: {e}")
+            return []
+        finally:
+            session.close()
+    
+    @classmethod
+    def create_from_api_response(cls, api_response: dict, strategy_instance_id: int = None):
+        """从API响应创建记录"""
+        session = Session()
+        try:
+            # 从API响应中提取数据
+            base_symbol = SymbolFormatUtils.get_base_symbol(api_response.get('instId', ''))
+            
+            record = cls(
+                ccy=base_symbol,
+                type=api_response.get('ordType', ''),
+                strategy_instance_id=strategy_instance_id,
+                sz=api_response.get('sz', '0'),
+                amount=str(float(api_response.get('sz', '0')) * float(api_response.get('px', '0'))),
+                target_price=api_response.get('px', ''),
+                exec_price=api_response.get('avgPx', ''),
+                ordId=api_response.get('ordId', ''),
+                algoId=api_response.get('algoId', ''),
+                status=api_response.get('state', ''),
+                side=api_response.get('side', ''),
+                exec_source='auto',
+                uTime=api_response.get('uTime', ''),
+                cTime=api_response.get('cTime', '')
+            )
+            session.add(record)
+            session.commit()
+            return record.to_dict()
+        except Exception as e:
+            session.rollback()
+            print(f"Error creating order from API response: {e}")
+            return None
+        finally:
+            session.close()
+
 
 if __name__ == '__main__':
     data = {
@@ -561,3 +620,6 @@ if __name__ == '__main__':
 
     # result = SpotAlgoOrderRecord.insert_or_update(data)
     # print("Insert/Update result:", result)
+
+# 创建表
+Base.metadata.create_all(engine)

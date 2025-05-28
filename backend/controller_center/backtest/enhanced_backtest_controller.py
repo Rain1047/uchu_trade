@@ -260,4 +260,37 @@ async def get_system_status():
         
     except Exception as e:
         logger.error(f"获取系统状态失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f'获取系统状态失败: {str(e)}') 
+        raise HTTPException(status_code=500, detail=f'获取系统状态失败: {str(e)}')
+
+
+def run_backtest_core(**kwargs):
+    """
+    核心回测函数，供其他模块调用
+    
+    参数与BacktestRequest相同：
+    - entry_strategy: str
+    - exit_strategy: str  
+    - filter_strategy: Optional[str]
+    - symbols: List[str]
+    - timeframe: str
+    - initial_cash: float
+    - risk_percent: float
+    - commission: float
+    - save_to_db: bool
+    - description: str
+    """
+    try:
+        # 创建回测运行器
+        runner = EnhancedBacktestRunner()
+        
+        # 执行回测
+        results = runner.run_complete_backtest(**kwargs)
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"回测执行失败: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e)
+        } 

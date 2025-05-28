@@ -21,6 +21,7 @@ import {
     AccountBalance as AccountBalanceIcon,
     Assessment as AssessmentIcon,
     Receipt as ReceiptIcon,
+    Schedule as ScheduleIcon,
 } from '@material-ui/icons';
 
 const drawerWidth = 240;
@@ -93,6 +94,11 @@ const SideBar = ({ open, setOpen }) => {
             text: 'Enhanced Backtest',
             icon: <ShowChartIcon />,
             path: '/enhanced-backtest'
+        },
+        {
+            text: 'Strategy Instance',
+            icon: <ScheduleIcon />,
+            path: '/strategy-instance'
         }
     ];
 

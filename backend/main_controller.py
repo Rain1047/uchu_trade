@@ -22,12 +22,18 @@ from backend.controller_center.agent.chat_controller import router as chat_route
 from backend.api_center.universal_backtest_api import router as universal_backtest_router
 from backend.controller_center.backtest.enhanced_backtest_controller import router as enhanced_backtest_router
 from backend.controller_center.strategy.llm_strategy_controller import router as llm_strategy_router
+from backend.controller.strategy_instance_controller import router as strategy_instance_router
 from backend.data_object_center.base import Base, engine
 
 # 导入所有模型类以确保表被创建
 from backend.data_object_center.agent.system_prompt import SystemPrompt
 from backend.data_object_center.agent.upload_file import UploadFile
 from backend.data_object_center.agent.strategy_job import StrategyJob
+from backend.data_object_center.strategy_instance import StrategyInstance
+from backend.data_object_center.strategy_execution_record import StrategyExecutionRecord
+
+# 导入策略调度器
+from backend.schedule_center.strategy_scheduler import strategy_scheduler
 
 import uvicorn
 
@@ -61,6 +67,7 @@ app.include_router(chat_router, prefix="/api/agent", tags=["agent-chat"])
 app.include_router(universal_backtest_router, tags=["universal-backtest"])
 app.include_router(enhanced_backtest_router, tags=["enhanced-backtest"])
 app.include_router(llm_strategy_router, tags=["llm-strategy"])
+app.include_router(strategy_instance_router, tags=["strategy-instance"])
 
 # 配置 CORS
 app.add_middleware(
@@ -70,6 +77,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """应用启动时执行"""
+    logger.info("启动策略调度器...")
+    strategy_scheduler.start()
+    logger.info("策略调度器启动完成")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时执行"""
+    logger.info("停止策略调度器...")
+    strategy_scheduler.stop()
+    logger.info("策略调度器已停止")
 
 
 @app.get("/")

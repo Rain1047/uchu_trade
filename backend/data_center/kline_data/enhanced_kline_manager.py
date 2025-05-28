@@ -442,6 +442,18 @@ class EnhancedKlineManager:
         
         return timeframes
     
+    def get_kline_data(self, symbol: str, timeframe: str, limit: Optional[int] = None, 
+                      start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[pd.DataFrame]:
+        """获取K线数据（简单接口）"""
+        # 加载原始数据
+        df = self.load_raw_data(symbol, timeframe, start_date, end_date)
+        
+        # 如果指定了limit，返回最新的limit条数据
+        if df is not None and limit is not None and limit > 0:
+            return df.tail(limit)
+        
+        return df
+    
     def get_data_info(self, symbol: str, timeframe: str) -> Optional[Dict]:
         """获取数据信息"""
         filepath = self.get_data_file_path(symbol, timeframe)

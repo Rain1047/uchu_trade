@@ -17,6 +17,8 @@ import StrategyFilesPage from "./features/strategyfiles";
 import { TradeRecordTable } from "./features/record"
 import AgentUpload from "./pages/AgentUpload";
 import ChatAgent from "./pages/ChatAgent";
+import StrategyInstance from "./pages/StrategyInstance";
+import StrategyInstanceDetail from "./pages/StrategyInstanceDetail";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -65,6 +67,8 @@ function App() {
                                 <Route path="/record" element={<TradeRecordTable />} />
                                 <Route path="/agent/upload" element={<AgentUpload />} />
                                 <Route path="/agent/chat" element={<ChatAgent/>} />
+                                <Route path="/strategy-instance" element={<StrategyInstance />} />
+                                <Route path="/strategy-instance/:id" element={<StrategyInstanceDetail />} />
                             </Routes>
                         </React.Suspense>
                     </Layout>
