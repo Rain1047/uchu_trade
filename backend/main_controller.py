@@ -22,7 +22,7 @@ from backend.controller_center.agent.chat_controller import router as chat_route
 from backend.api_center.universal_backtest_api import router as universal_backtest_router
 from backend.controller_center.backtest.enhanced_backtest_controller import router as enhanced_backtest_router
 from backend.controller_center.strategy.llm_strategy_controller import router as llm_strategy_router
-from backend.controller.strategy_instance_controller import router as strategy_instance_router
+from backend.controller_center.strategy.strategy_instance_controller import router as strategy_instance_router
 from backend.data_object_center.base import Base, engine
 
 # 导入所有模型类以确保表被创建

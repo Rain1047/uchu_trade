@@ -19,6 +19,13 @@ def dbb_entry_long_strategy(df: pd.DataFrame, stIns: Optional[StrategyInstance])
 
 
 def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
+    # 如果缺少布林带列则即时计算（period=20, 2σ）
+    if 'upper_band1' not in df.columns or 'upper_band2' not in df.columns:
+        sma20 = df['close'].rolling(window=20).mean()
+        std20 = df['close'].rolling(window=20).std()
+        df['upper_band1'] = sma20 + std20 * 2
+        df['upper_band2'] = sma20 + std20 * 3
+
     # Initialize buy_sig column with zeros
     df['entry_sig'] = 0
     df['entry_price'] = 0
@@ -42,7 +49,7 @@ def dbb_entry_long_strategy_backtest(df: pd.DataFrame):
     # Clean up temporary columns
     df.drop(['prev_open_1', 'prev_upper_band1_1',
              'debug_condition1', 'debug_condition2',
-             'debug_condition3'], axis=1, inplace=True)
+             'debug_condition3'], axis=1, inplace=True, errors='ignore')
 
     return df
 

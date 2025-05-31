@@ -124,7 +124,6 @@ class BinanceKlineFetcher:
         # —— 写入数据库 ——
         try:
             from backend.data_object_center.kline_record import KlineRecord, DatabaseUtils
-            session = DatabaseUtils.get_db_session()
             records = []
             for _, row in combined.iterrows():
                 records.append(
@@ -139,7 +138,7 @@ class BinanceKlineFetcher:
                         volume=row.get('volume', 0)
                     )
                 )
-            KlineRecord.bulk_upsert(session, records)
+            KlineRecord.bulk_upsert(records)
             logger.info(f"[Fetcher] 已同步 {symbol} {timeframe} 数据到数据库, 行数 {len(combined)}")
         except Exception as e:
             logger.error(f"[Fetcher] 写入数据库失败: {e}")

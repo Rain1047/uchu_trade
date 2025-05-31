@@ -7,61 +7,96 @@ import json
 
 @dataclass
 class BacktestConfig:
-    """回测配置类 - 支持灵活的策略组合"""
-    
+    """回测配置类"""
     # 策略配置
-    entry_strategy: str  # 入场策略名称
-    exit_strategy: str   # 出场策略名称
-    filter_strategy: Optional[str] = None  # 过滤策略名称（可选）
+    entry_strategy: str  # 入场策略代码
+    exit_strategy: str   # 出场策略代码
+    symbols: List[str]  # 交易对列表
+    timeframe: str      # 时间框架
     
-    # 交易配置
-    symbols: List[str] = field(default_factory=list)  # 交易对列表，支持多选
-    timeframe: str = "1h"  # 时间窗口
-    
-    # 回测参数
-    initial_cash: float = 100000.0  # 初始资金
-    risk_percent: float = 2.0  # 风险百分比
-    commission: float = 0.001  # 手续费
-    
-    # 时间范围
-    start_date: Optional[str] = None  # 开始日期 YYYY-MM-DD
-    end_date: Optional[str] = None    # 结束日期 YYYY-MM-DD
-    
-    # 策略参数（可选）
-    strategy_params: Dict[str, Any] = field(default_factory=dict)
-    
-    # 元数据
-    created_at: Optional[str] = None
-    description: Optional[str] = None
+    filter_strategy: Optional[str] = None  # 过滤策略代码（可选）
+    initial_cash: float = 10000.0  # 初始资金
+    risk_percent: float = 1.0      # 风险比例（百分比）
+    commission: float = 0.001      # 手续费率
+    start_date: Optional[str] = None  # 开始日期
+    end_date: Optional[str] = None    # 结束日期
+    description: Optional[str] = None  # 回测描述
+    tags: List[str] = field(default_factory=list)  # 标签
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     
     def __post_init__(self):
-        if self.created_at is None:
-            self.created_at = datetime.now().isoformat()
+        """初始化后的处理"""
+        # 验证必填字段
+        if not self.entry_strategy:
+            raise ValueError("入场策略不能为空")
+        if not self.exit_strategy:
+            raise ValueError("出场策略不能为空")
+        if not self.symbols:
+            raise ValueError("交易对列表不能为空")
+        if not self.timeframe:
+            raise ValueError("时间框架不能为空")
+            
+        # 验证数值范围
+        if self.initial_cash <= 0:
+            raise ValueError("初始资金必须大于0")
+        if not 0 < self.risk_percent <= 100:
+            raise ValueError("风险比例必须在0-100之间")
+        if not 0 <= self.commission <= 1:
+            raise ValueError("手续费率必须在0-1之间")
+            
+        # 验证日期格式
+        if self.start_date:
+            try:
+                datetime.strptime(self.start_date, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError("开始日期格式无效，应为YYYY-MM-DD")
+        if self.end_date:
+            try:
+                datetime.strptime(self.end_date, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError("结束日期格式无效，应为YYYY-MM-DD")
+                
+        # 验证日期范围
+        if self.start_date and self.end_date:
+            start = datetime.strptime(self.start_date, "%Y-%m-%d")
+            end = datetime.strptime(self.end_date, "%Y-%m-%d")
+            if start >= end:
+                raise ValueError("开始日期必须早于结束日期")
     
     def generate_key(self) -> str:
-        """生成唯一的配置键"""
-        # 创建配置的哈希值作为唯一标识
+        """生成配置的唯一键"""
+        # 创建配置字典
         config_dict = {
             'entry_strategy': self.entry_strategy,
             'exit_strategy': self.exit_strategy,
             'filter_strategy': self.filter_strategy,
-            'symbols': sorted(self.symbols),  # 排序确保一致性
+            'symbols': sorted(self.symbols),  # 排序以确保顺序一致
             'timeframe': self.timeframe,
-            'strategy_params': self.strategy_params
+            'initial_cash': self.initial_cash,
+            'risk_percent': self.risk_percent,
+            'commission': self.commission,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'parameters': self.parameters
         }
         
+        # 转换为JSON字符串
         config_str = json.dumps(config_dict, sort_keys=True)
-        return hashlib.md5(config_str.encode()).hexdigest()[:12]
+        
+        # 生成MD5哈希
+        return hashlib.md5(config_str.encode()).hexdigest()
     
     def get_display_name(self) -> str:
         """获取显示名称"""
-        symbols_str = "+".join(self.symbols[:3])  # 最多显示3个交易对
-        if len(self.symbols) > 3:
-            symbols_str += f"+{len(self.symbols)-3}more"
-        
-        filter_part = f"_F{self.filter_strategy}" if self.filter_strategy else ""
-        
-        return f"E{self.entry_strategy}_X{self.exit_strategy}{filter_part}_{symbols_str}_{self.timeframe}"
+        name_parts = [
+            self.entry_strategy,
+            self.exit_strategy
+        ]
+        if self.filter_strategy:
+            name_parts.append(self.filter_strategy)
+            
+        return "/".join(name_parts)
     
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
@@ -76,65 +111,45 @@ class BacktestConfig:
             'commission': self.commission,
             'start_date': self.start_date,
             'end_date': self.end_date,
-            'strategy_params': self.strategy_params,
-            'created_at': self.created_at,
             'description': self.description,
-            'key': self.generate_key(),
-            'display_name': self.get_display_name()
+            'tags': self.tags,
+            'parameters': self.parameters,
+            'created_at': self.created_at
         }
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'BacktestConfig':
         """从字典创建实例"""
-        # 移除不属于构造函数的字段
-        data_copy = data.copy()
-        data_copy.pop('key', None)
-        data_copy.pop('display_name', None)
-        
-        return cls(**data_copy)
+        return cls(**data)
+    
+    def __str__(self) -> str:
+        """字符串表示"""
+        return f"BacktestConfig({self.get_display_name()})"
 
 
 @dataclass
 class BacktestResult:
-    """回测结果类"""
-    
-    config_key: str  # 对应的配置键
-    symbol: str      # 单个交易对的结果
-    
-    # 基础指标
+    """单个交易对的回测结果"""
+    config_key: str
+    symbol: str
     initial_value: float
     final_value: float
     total_return: float
     annual_return: float
-    
-    # 风险指标
     sharpe_ratio: float
     max_drawdown: float
     max_drawdown_amount: float
-    
-    # 交易统计
     total_trades: int
     winning_trades: int
     losing_trades: int
     win_rate: float
     avg_win: float
     avg_loss: float
-    
-    # 信号统计
     total_entry_signals: int
     total_sell_signals: int
-    signal_execution_rate: float  # 信号执行率
-    
-    # 时间信息
+    signal_execution_rate: float
     backtest_date: str
     duration_days: int
-    
-    # 额外信息
-    notes: Optional[str] = None
-    
-    def __post_init__(self):
-        if not hasattr(self, 'backtest_date') or self.backtest_date is None:
-            self.backtest_date = datetime.now().isoformat()
     
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
@@ -158,40 +173,31 @@ class BacktestResult:
             'total_sell_signals': self.total_sell_signals,
             'signal_execution_rate': self.signal_execution_rate,
             'backtest_date': self.backtest_date,
-            'duration_days': self.duration_days,
-            'notes': self.notes
+            'duration_days': self.duration_days
         }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'BacktestResult':
+        """从字典创建实例"""
+        return cls(**data)
 
 
 @dataclass
 class BacktestSummary:
-    """多交易对回测汇总结果"""
-    
+    """回测汇总结果"""
     config_key: str
     config: BacktestConfig
-    
-    # 汇总指标
     total_symbols: int
     avg_return: float
     best_symbol: str
     worst_symbol: str
     best_return: float
     worst_return: float
-    
-    # 整体统计
     total_trades_all: int
     avg_win_rate: float
     avg_sharpe: float
-    
-    # 个别结果
     individual_results: List[BacktestResult]
-    
-    # 时间信息
     created_at: str
-    
-    def __post_init__(self):
-        if not hasattr(self, 'created_at') or self.created_at is None:
-            self.created_at = datetime.now().isoformat()
     
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
@@ -209,4 +215,31 @@ class BacktestSummary:
             'avg_sharpe': self.avg_sharpe,
             'individual_results': [r.to_dict() for r in self.individual_results],
             'created_at': self.created_at
-        } 
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'BacktestSummary':
+        """从字典创建实例"""
+        # 转换配置
+        config = BacktestConfig.from_dict(data['config'])
+        
+        # 转换单个结果
+        individual_results = [
+            BacktestResult.from_dict(r) for r in data['individual_results']
+        ]
+        
+        return cls(
+            config_key=data['config_key'],
+            config=config,
+            total_symbols=data['total_symbols'],
+            avg_return=data['avg_return'],
+            best_symbol=data['best_symbol'],
+            worst_symbol=data['worst_symbol'],
+            best_return=data['best_return'],
+            worst_return=data['worst_return'],
+            total_trades_all=data['total_trades_all'],
+            avg_win_rate=data['avg_win_rate'],
+            avg_sharpe=data['avg_sharpe'],
+            individual_results=individual_results,
+            created_at=data['created_at']
+        ) 

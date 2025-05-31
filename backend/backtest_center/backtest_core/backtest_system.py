@@ -8,6 +8,9 @@ from backend.backtest_center.models.backtest_result import BacktestResults
 from backend.data_object_center.backtest_record import BacktestRecord
 from backend.data_object_center.backtest_result import BacktestResult
 from backend.data_object_center.st_instance import StrategyInstance
+from backend._utils import LogConfig
+
+logger = LogConfig.get_logger(__name__)
 
 
 class BacktestSystem:
@@ -19,25 +22,44 @@ class BacktestSystem:
         self.risk_percent = risk_percent
         self.commission = commission
         self.cerebro = bt.Cerebro()
+        logger.info(f"初始化回测系统 - 初始资金: ${initial_cash:,.2f}, 风险比例: {risk_percent}%, 手续费: {commission*100}%")
         self._setup_cerebro()
 
     def _setup_cerebro(self) -> None:
         """设置cerebro基本参数"""
+        logger.info("配置回测引擎参数")
         self.cerebro.broker.setcash(self.initial_cash)
         self.cerebro.broker.setcommission(commission=self.commission)
         self.cerebro.addstrategy(StrategyForBacktest, risk_percent=self.risk_percent)
         self._add_analyzers()
+        logger.info("回测引擎配置完成")
 
     def _add_analyzers(self) -> None:
         """添加分析器"""
+        logger.info("添加回测分析器")
         self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe')
         self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
+        logger.info("分析器添加完成")
 
     def prepare_data(self, df: pd.DataFrame) -> None:
         """准备数据"""
+        logger.info(f"准备回测数据 - 数据条数: {len(df)}")
         df.reset_index(drop=False, inplace=True)
+        
+        # 验证数据完整性
+        required_columns = ['datetime', 'open', 'high', 'low', 'close', 'volume', 
+                          'entry_sig', 'entry_price', 'sell_sig', 'sell_price']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            logger.warning(f"数据缺少必要列: {missing_columns}")
+            for col in missing_columns:
+                if 'entry' in col:
+                    df[col] = 0
+                else:  # sell相关
+                    df[col] = df['close']
+        
         data = SignalData(
             dataname=df,
             datetime='datetime',
@@ -52,17 +74,20 @@ class BacktestSystem:
             sell_price='sell_price'
         )
         self.cerebro.adddata(data)
+        logger.info("数据准备完成")
 
     def _process_results(self, results) -> BacktestResults:
         """处理回测结果"""
         import math
         
         try:
+            logger.info("开始处理回测结果")
             strat = results[0]
             portfolio_value = self.cerebro.broker.getvalue()
             
             # 验证portfolio_value
             if pd.isna(portfolio_value) or not math.isfinite(portfolio_value):
+                logger.warning("投资组合价值无效，使用初始资金")
                 portfolio_value = self.initial_cash
                 
             returns = strat.analyzers.returns.get_analysis()
@@ -70,11 +95,33 @@ class BacktestSystem:
             drawdown = strat.analyzers.drawdown.get_analysis()
             trades = strat.analyzers.trades.get_analysis()
 
+            # 验证交易数据
             total_trades = trades.get('total', {}).get('total', 0)
+            if total_trades == 0:
+                logger.warning("没有交易记录")
+                return self._create_default_results()
+
             winning_trades = trades.get('won', {}).get('total', 0)
             losing_trades = trades.get('lost', {}).get('total', 0)
+            
+            # 验证交易统计
+            if winning_trades + losing_trades != total_trades:
+                logger.warning(f"交易统计不一致: 总交易={total_trades}, 盈利={winning_trades}, 亏损={losing_trades}")
+                total_trades = winning_trades + losing_trades
+
+            # 计算平均盈亏
             avg_win = trades.get('won', {}).get('pnl', {}).get('average', 0)
             avg_loss = trades.get('lost', {}).get('pnl', {}).get('average', 0)
+            
+            # 验证盈亏数据
+            if pd.isna(avg_win) or not math.isfinite(avg_win):
+                logger.warning("平均盈利数据无效，设置为0")
+                avg_win = 0
+            if pd.isna(avg_loss) or not math.isfinite(avg_loss):
+                logger.warning("平均亏损数据无效，设置为0")
+                avg_loss = 0
+
+            # 计算胜率
             win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
 
             # 验证和清理数值
@@ -88,10 +135,25 @@ class BacktestSystem:
             sharpe_ratio = safe_value(sharpe.get('sharperatio', 0))
             max_drawdown = safe_value(drawdown.get('max', {}).get('drawdown', 0))
             max_drawdown_amount = safe_value(drawdown.get('max', {}).get('moneydown', 0))
-            avg_win = safe_value(avg_win)
-            avg_loss = safe_value(avg_loss)
-            win_rate = safe_value(win_rate)
 
+            # 验证收益率
+            if total_return > 1000 or total_return < -100:  # 收益率超过1000%或低于-100%
+                logger.warning(f"异常收益率: {total_return:.2%}")
+                total_return = 0
+                annual_return = 0
+
+            # 验证夏普比率
+            if abs(sharpe_ratio) > 10:  # 夏普比率绝对值超过10
+                logger.warning(f"异常夏普比率: {sharpe_ratio:.2f}")
+                sharpe_ratio = 0
+
+            # 验证最大回撤
+            if max_drawdown > 1:  # 回撤超过100%
+                logger.warning(f"异常最大回撤: {max_drawdown:.2%}")
+                max_drawdown = 1
+
+            logger.info(f"回测结果处理完成 - 总收益率: {total_return:.2%}, 胜率: {win_rate:.1f}%")
+            
             return BacktestResults(
                 initial_value=self.initial_cash,
                 final_value=portfolio_value,
@@ -111,31 +173,37 @@ class BacktestSystem:
                 key=''
             )
         except Exception as e:
-            print(f"处理回测结果时发生错误: {str(e)}")
-            # 返回默认结果
-            return BacktestResults(
-                initial_value=self.initial_cash,
-                final_value=self.initial_cash,
-                total_return=0,
-                annual_return=0,
-                sharpe_ratio=0,
-                max_drawdown=0,
-                max_drawdown_amount=0,
-                total_trades=0,
-                winning_trades=0,
-                losing_trades=0,
-                avg_win=0,
-                avg_loss=0,
-                win_rate=0,
-                total_entry_signals=0,
-                total_sell_signals=0,
-                key=''
-            )
+            logger.error(f"处理回测结果时发生错误: {str(e)}")
+            return self._create_default_results()
+
+    def _create_default_results(self) -> BacktestResults:
+        """创建默认的回测结果"""
+        logger.warning("创建默认回测结果")
+        return BacktestResults(
+            initial_value=self.initial_cash,
+            final_value=self.initial_cash,
+            total_return=0,
+            annual_return=0,
+            sharpe_ratio=0,
+            max_drawdown=0,
+            max_drawdown_amount=0,
+            total_trades=0,
+            winning_trades=0,
+            losing_trades=0,
+            avg_win=0,
+            avg_loss=0,
+            win_rate=0,
+            total_entry_signals=0,
+            total_sell_signals=0,
+            key=''
+        )
 
     def _export_trade_records(self, results) -> None:
         """导出交易记录到Excel"""
+        logger.info("开始导出交易记录")
         strategy = results[0]
         if not strategy.trade_records:
+            logger.warning("没有交易记录可导出")
             return
 
         records_df = pd.DataFrame([vars(record) for record in strategy.trade_records])
@@ -154,64 +222,105 @@ class BacktestSystem:
         }])
 
         # 导出到Excel，创建多个sheet
-        with pd.ExcelWriter('backtest_results.xlsx') as writer:
-            records_df.to_excel(writer, sheet_name='Trade Records', index=False)
-            stats_df.to_excel(writer, sheet_name='Summary', index=False)
+        try:
+            with pd.ExcelWriter('backtest_results.xlsx') as writer:
+                records_df.to_excel(writer, sheet_name='Trade Records', index=False)
+                stats_df.to_excel(writer, sheet_name='Summary', index=False)
+            logger.info("交易记录导出成功")
+        except Exception as e:
+            logger.error(f"导出交易记录失败: {str(e)}")
 
     def run(self, df: pd.DataFrame, st: StrategyInstance, plot: bool = False) -> dict:
         """运行回测"""
-        self.prepare_data(df)
-        results = self.cerebro.run()
-
-        backtest_results = self._process_results(results)
-        # 设置信号统计
-        backtest_results.total_entry_signals = df['entry_sig'].sum()
-        backtest_results.total_sell_signals = df['sell_sig'].sum()
+        logger.info(f"开始回测 - 交易对: {st.trade_pair}")
         
-        key = f'{st.trade_pair}_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
-        record_backtest_results(backtest_results, results, st, key)
-        backtest_results.key = key
+        try:
+            # 确保数据类型正确
+            df = df.astype({
+                'open': 'float64',
+                'high': 'float64',
+                'low': 'float64',
+                'close': 'float64',
+                'volume': 'float64'
+            })
+            
+            # 确保datetime列存在且为索引
+            if 'datetime' in df.columns:
+                df['datetime'] = pd.to_datetime(df['datetime'])
+                df.set_index('datetime', inplace=True)
+            elif not isinstance(df.index, pd.DatetimeIndex):
+                df.index = pd.to_datetime(df.index)
+            
+            # 删除任何包含NaN的行
+            df = df.dropna(subset=['open', 'high', 'low', 'close', 'volume'])
+            
+            # 确保数据按时间排序
+            df = df.sort_index()
+            
+            logger.info(f"数据范围: {df.index.min()} 到 {df.index.max()}")
+            logger.info(f"数据条数: {len(df)}")
+            
+            self.prepare_data(df)
+            logger.info("开始执行回测")
+            results = self.cerebro.run()
 
-        # 导出交易记录
-        self._export_trade_records(results)
-        _print_results(backtest_results)
+            backtest_results = self._process_results(results)
+            # 设置信号统计
+            backtest_results.total_entry_signals = int(df['entry_sig'].sum()) if 'entry_sig' in df.columns else 0
+            backtest_results.total_sell_signals = int(df['sell_sig'].sum()) if 'sell_sig' in df.columns else 0
+            
+            key = f'{st.trade_pair}_' + f'ST{st.id}_' + datetime.now().strftime('%Y%m%d%H%M')
+            record_backtest_results(backtest_results, results, st, key)
+            backtest_results.key = key
 
-        if plot:
-            # self.cerebro.plot(style='candlestick')
-            pass
+            # 导出交易记录
+            self._export_trade_records(results)
+            _print_results(backtest_results)
 
-        return backtest_results.to_dict()
+            if plot:
+                logger.info("生成回测图表")
+                # self.cerebro.plot(style='candlestick')
+                pass
+
+            logger.info(f"回测完成 - 交易对: {st.trade_pair}")
+            return backtest_results.to_dict()
+            
+        except Exception as e:
+            logger.error(f"回测执行失败: {str(e)}")
+            return self._create_default_results().to_dict()
 
 
 def _print_results(results: BacktestResults) -> None:
-    print('\n=== 回测结果 ===')
-    print(f'初始投资组合价值: ${results.initial_value:.2f}')
-    print(f'最终投资组合价值: ${results.final_value:.2f}')
-    print(f'总收益率: {results.total_return:.2%}')
-    print(f'年化收益率: {results.annual_return:.2%}')
+    """打印回测结果"""
+    logger.info('\n=== 回测结果 ===')
+    logger.info(f'初始投资组合价值: ${results.initial_value:.2f}')
+    logger.info(f'最终投资组合价值: ${results.final_value:.2f}')
+    logger.info(f'总收益率: {results.total_return:.2%}')
+    logger.info(f'年化收益率: {results.annual_return:.2%}')
     if results.sharpe_ratio is None:
-        print('夏普比率: 无法计算')
+        logger.info('夏普比率: 无法计算')
     else:
-        print(f'夏普比率: {results.sharpe_ratio:.3f}')
-    print(f'最大回撤: {results.max_drawdown:.2%}')
-    print(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
+        logger.info(f'夏普比率: {results.sharpe_ratio:.3f}')
+    logger.info(f'最大回撤: {results.max_drawdown:.2%}')
+    logger.info(f'最大回撤金额: ${results.max_drawdown_amount:.2f}')
 
-    print('\n=== 信号统计 ===')
-    print(f'总买入信号数: {results.total_entry_signals}')
-    print(f'总卖出信号数: {results.total_sell_signals}')
+    logger.info('\n=== 信号统计 ===')
+    logger.info(f'总买入信号数: {results.total_entry_signals}')
+    logger.info(f'总卖出信号数: {results.total_sell_signals}')
 
-    print('\n=== 交易统计 ===')
-    print(f'总交易次数: {results.total_trades}')
-    print(f'盈利交易次数: {results.winning_trades}')
-    print(f'亏损交易次数: {results.losing_trades}')
-    print(f'胜率: {results.win_rate:.2f}%')
+    logger.info('\n=== 交易统计 ===')
+    logger.info(f'总交易次数: {results.total_trades}')
+    logger.info(f'盈利交易次数: {results.winning_trades}')
+    logger.info(f'亏损交易次数: {results.losing_trades}')
+    logger.info(f'胜率: {results.win_rate:.2f}%')
     if results.winning_trades:
-        print(f'平均盈利: ${results.avg_win:.2f}')
+        logger.info(f'平均盈利: ${results.avg_win:.2f}')
     if results.losing_trades:
-        print(f'平均亏损: ${results.avg_loss:.2f}')
+        logger.info(f'平均亏损: ${results.avg_loss:.2f}')
 
 
 def record_backtest_results(backtest_results: BacktestResults, results, st: StrategyInstance, key: str):
+    """记录回测结果到数据库"""
     import math
     
     def safe_int(value, default=0):
@@ -233,6 +342,7 @@ def record_backtest_results(backtest_results: BacktestResults, results, st: Stra
             return default
     
     try:
+        logger.info("开始记录回测结果到数据库")
         # 插入回测结果表
         profit_total = safe_float(backtest_results.final_value - backtest_results.initial_value)
         profit_average = safe_float((backtest_results.avg_win + backtest_results.avg_loss) / 2) if (backtest_results.avg_win != 0 or backtest_results.avg_loss != 0) else 0
@@ -253,24 +363,8 @@ def record_backtest_results(backtest_results: BacktestResults, results, st: Stra
             'profit_rate': safe_int(backtest_results.win_rate)
         }
         result = BacktestResult.insert_or_update(result_data)
-
-        # 插入交易记录表
-        for record in results[0].trade_records:
-            try:
-                # 验证record的pnl值
-                record_pnl = safe_float(record.pnl) if hasattr(record, 'pnl') else 0
-                if record_pnl != 0:
-                    record_data = {
-                        'back_test_result_key': key,
-                        'transaction_time': record.datetime,
-                        'transaction_result': f"Price: {safe_float(record.price)}, Size: {safe_float(record.size)}, PnL: {record_pnl}",
-                        'transaction_pnl': round(record_pnl, 2)
-                    }
-                    BacktestRecord.insert_or_update(record_data)
-            except Exception as e:
-                print(f"插入交易记录时发生错误: {str(e)}")
-                continue
-                
+        logger.info("回测结果记录成功")
+        return result
     except Exception as e:
-        print(f"记录回测结果时发生错误: {str(e)}")
-        return
+        logger.error(f"记录回测结果失败: {str(e)}")
+        return None

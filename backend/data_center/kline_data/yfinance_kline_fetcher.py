@@ -86,14 +86,21 @@ class YFinanceKlineFetcher:
         # 写入数据库
         try:
             from backend.data_object_center.kline_record import KlineRecord, DatabaseUtils
-            session = DatabaseUtils.get_db_session()
-            records = [
-                KlineRecord(symbol=symbol.upper(), timeframe=timeframe, datetime=row['datetime'],
-                             open=row['open'], high=row['high'], low=row['low'], close=row['close'],
-                             volume=row.get('volume', 0))
-                for _, row in df.iterrows()
-            ]
-            KlineRecord.bulk_upsert(session, records)
+            records = []
+            for _, row in df.iterrows():
+                records.append(
+                    KlineRecord(
+                        symbol=symbol.upper(),
+                        timeframe=timeframe,
+                        datetime=row.name.to_pydatetime() if hasattr(row.name, 'to_pydatetime') else row.name,
+                        open=float(row['open']),
+                        high=float(row['high']),
+                        low=float(row['low']),
+                        close=float(row['close']),
+                        volume=float(row['volume'])
+                    )
+                )
+            KlineRecord.bulk_upsert(records)
             logger.info(f"[YF] 已同步 {symbol} {timeframe} 数据到数据库")
         except Exception as e:
             logger.error(f"[YF] 写入数据库失败: {e}") 

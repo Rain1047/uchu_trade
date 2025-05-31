@@ -80,6 +80,15 @@ def dbb_exit_strategy_for_backtest(df: DataFrame) -> DataFrame:
     if df.empty:
         return df
 
+    # 若缺指标列，先计算
+    if 'sma20' not in df.columns:
+        df['sma20'] = df['close'].rolling(window=20).mean()
+    if 'upper_band1' not in df.columns or 'upper_band2' not in df.columns:
+        sma20 = df['close'].rolling(window=20).mean()
+        std20 = df['close'].rolling(window=20).std()
+        df['upper_band1'] = sma20 + std20 * 2
+        df['upper_band2'] = sma20 + std20 * 3
+
     df['sell_sig'] = 0
     df['sell_price'] = df['sma20']
     df['prev_sell_price'] = df['sell_price'].shift(1)  # 添加上一期的止损价

@@ -61,13 +61,13 @@ const StrategyInstanceDetail = () => {
       ]);
 
       if (instanceRes.data.success) {
-        setInstance(instanceRes.data.instance);
+        setInstance(instanceRes.data.data);
       } else {
         setError(instanceRes.data.error);
       }
 
       if (executionsRes.data.success) {
-        setExecutions(executionsRes.data.executions);
+        setExecutions(executionsRes.data.data || []);
       }
     } catch (err) {
       setError('加载数据失败');

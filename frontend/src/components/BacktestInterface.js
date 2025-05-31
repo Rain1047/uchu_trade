@@ -29,7 +29,8 @@ import {
   Checkbox,
   ListItemText,
   OutlinedInput,
-  CircularProgress
+  CircularProgress,
+  Pagination
 } from '@mui/material';
 import {
   Add,
@@ -44,6 +45,29 @@ import {
 } from '@mui/icons-material';
 import http from '../api/http';
 import { useNavigate } from 'react-router-dom';
+
+// CSS样式定义
+const styles = `
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 169, 77, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 169, 77, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 169, 77, 0);
+  }
+}
+`;
+
+// 注入样式
+const injectStyles = () => {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = styles;
+  document.head.appendChild(styleElement);
+  return () => document.head.removeChild(styleElement);
+};
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -68,13 +92,17 @@ const BacktestInterface = () => {
   const [error, setError] = useState(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  // 分页相关
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [total, setTotal] = useState(0);
   
   // 策略和交易对
   const [entryStrategies, setEntryStrategies] = useState([]);
   const [exitStrategies, setExitStrategies] = useState([]);
   const [filterStrategies, setFilterStrategies] = useState([]);
   const [availableSymbols, setAvailableSymbols] = useState([]);
-  
+
   // 新回测配置
   const [newBacktest, setNewBacktest] = useState({
     entryStrategy: '',
@@ -89,12 +117,13 @@ const BacktestInterface = () => {
   });
 
   // 加载回测记录
-  const loadBacktestRecords = async () => {
+  const loadBacktestRecords = async (pageNum = page) => {
     setLoading(true);
     try {
-      const response = await http.get('/api/enhanced-backtest/records');
+      const response = await http.get(`/api/enhanced-backtest/records?page=${pageNum}&page_size=${pageSize}`);
       if (response.data.success) {
         setBacktestRecords(response.data.records || []);
+        setTotal(response.data.total || 0);
       } else {
         setError(response.data.error);
       }
@@ -131,11 +160,33 @@ const BacktestInterface = () => {
     }
   };
 
+  // 注入CSS样式
   useEffect(() => {
-    loadBacktestRecords();
+    const cleanup = injectStyles();
+    return cleanup;
+  }, []);
+
+  // 自动刷新hook
+  useEffect(() => {
+    // 检查是否有运行中的回测
+    const hasRunningBacktests = backtestRecords.some(record => 
+      record.status === 'running' || record.status === 'analyzing'
+    );
+    
+    if (hasRunningBacktests) {
+      const interval = setInterval(() => {
+        loadBacktestRecords();
+      }, 30000); // 每30秒刷新一次
+      
+      return () => clearInterval(interval);
+    }
+  }, [backtestRecords]);
+
+  useEffect(() => {
+    loadBacktestRecords(page);
     loadStrategies();
     loadSymbols();
-  }, []);
+  }, [page]);
 
   // 创建回测
   const handleCreateBacktest = async () => {
@@ -159,6 +210,7 @@ const BacktestInterface = () => {
       
       if (response.data.success) {
         setCreateDialogOpen(false);
+        // 立即加载回测记录以显示新创建的记录
         loadBacktestRecords();
         // 重置表单
         setNewBacktest({
@@ -172,11 +224,15 @@ const BacktestInterface = () => {
           riskPercent: 2.0,
           commission: 0.001
         });
+        // 显示成功消息
+        setError(null);
+        alert(`回测已开始执行，记录ID: ${response.data.record_id}`);
       } else {
-        setError(response.data.error || '回测失败');
+        setError(response.data.error || '回测创建失败');
       }
     } catch (error) {
-      setError('创建回测失败');
+      console.error('Create backtest error:', error);
+      setError(error.response?.data?.detail || '创建回测失败');
     } finally {
       setIsRunning(false);
     }
@@ -239,22 +295,42 @@ const BacktestInterface = () => {
 
   // 获取回测时间段文本
   const getPeriodText = (period) => {
+    const today = new Date('2025-06-01'); // 假设今天为2025年6月1日
+    let startDate;
+    
     switch (period) {
       case '1m':
-        return '最近一月';
+        startDate = new Date(today);
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
       case '3m':
-        return '最近三月';
+        startDate = new Date(today);
+        startDate.setMonth(startDate.getMonth() - 3);
+        break;
       case '1y':
-        return '最近一年';
+        startDate = new Date(today);
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
       default:
         return period;
     }
+    
+    const formatDate = (date) => {
+      return date.toISOString().split('T')[0]; // yyyy-MM-dd format
+    };
+    
+    return `${formatDate(startDate)} ~ ${formatDate(today)}`;
   };
 
   // 格式化策略组合
   const formatStrategyCombo = (record) => {
-    const combo = `${record.entry_strategy}/${record.exit_strategy}`;
-    return record.filter_strategy ? `${combo}/${record.filter_strategy}` : combo;
+    return (
+      <Box sx={{ lineHeight: 1.2 }}>
+        <div>{record.entry_strategy}</div>
+        <div>/{record.exit_strategy}</div>
+        {record.filter_strategy && <div>/{record.filter_strategy}</div>}
+      </Box>
+    );
   };
 
   // 格式化运行时间
@@ -268,6 +344,11 @@ const BacktestInterface = () => {
     return `${Math.floor(diff / 3600)}小时`;
   };
 
+  // 分页切换
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* 页面标题 */}
@@ -276,10 +357,29 @@ const BacktestInterface = () => {
           <Typography variant="h5" sx={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center' }}>
             <Assessment sx={{ mr: 1, color: '#5eddac' }} />
             策略回测
-          </Typography>
+            {/* 运行状态指示器 */}
+            {backtestRecords.filter(r => r.status === 'running' || r.status === 'analyzing').length > 0 && (
+              <Chip 
+                label={`${backtestRecords.filter(r => r.status === 'running' || r.status === 'analyzing').length} 个运行中`}
+                size="small"
+                sx={{ 
+                  ml: 2,
+                  background: '#ffa94d',
+                  color: '#181c1f',
+                  fontWeight: 600,
+                  animation: 'pulse 2s infinite'
+                }}
+              />
+            )}
+      </Typography>
           <Typography variant="body2" sx={{ color: '#ccc', mt: 1 }}>
             测试策略组合的历史表现
-          </Typography>
+            {backtestRecords.filter(r => r.status === 'running' || r.status === 'analyzing').length > 0 && (
+              <span style={{ color: '#ffa94d', marginLeft: '8px' }}>
+                • 自动刷新中 (30秒)
+              </span>
+            )}
+      </Typography>
         </Box>
         <Box>
           <Button
@@ -290,7 +390,11 @@ const BacktestInterface = () => {
           >
             创建回测
           </Button>
-          <IconButton onClick={loadBacktestRecords} sx={{ color: '#5eddac' }}>
+          <IconButton 
+            onClick={loadBacktestRecords} 
+            sx={{ color: '#5eddac' }}
+            title="手动刷新"
+          >
             <Refresh />
           </IconButton>
         </Box>
@@ -371,26 +475,24 @@ const BacktestInterface = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '60px' }}>ID</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '120px' }}>策略组合</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '150px' }}>策略组合</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>交易对</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '80px' }}>频率</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '100px' }}>状态</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '120px' }}>回测时间段</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>获利/亏损/胜率</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>盈利均值/亏损均值/盈亏比</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '200px' }}>回测时间段</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '100px' }}>操作</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <CircularProgress sx={{ color: '#5eddac' }} />
                 </TableCell>
               </TableRow>
             ) : backtestRecords.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ color: '#ccc', py: 4 }}>
+                <TableCell colSpan={7} align="center" sx={{ color: '#ccc', py: 4 }}>
                   暂无回测记录
                 </TableCell>
               </TableRow>
@@ -398,7 +500,7 @@ const BacktestInterface = () => {
               backtestRecords.map((record) => (
                 <TableRow key={record.id} hover>
                   <TableCell sx={{ color: '#fff' }}>{record.id}</TableCell>
-                  <TableCell sx={{ color: '#fff', fontSize: '13px' }}>
+                  <TableCell sx={{ color: '#fff', fontSize: '12px', maxWidth: '150px' }}>
                     {formatStrategyCombo(record)}
                   </TableCell>
                   <TableCell sx={{ color: '#fff', fontSize: '13px' }}>
@@ -418,15 +520,6 @@ const BacktestInterface = () => {
                   </TableCell>
                   <TableCell sx={{ color: '#fff' }}>
                     {getPeriodText(record.backtest_period)}
-                  </TableCell>
-                  <TableCell sx={{ color: '#fff' }}>
-                    {record.winning_trades || 0}/{record.losing_trades || 0}/
-                    {record.win_rate ? `${record.win_rate.toFixed(1)}%` : '0%'}
-                  </TableCell>
-                  <TableCell sx={{ color: '#fff' }}>
-                    {record.avg_win_profit ? `$${record.avg_win_profit.toFixed(2)}` : '$0'}/
-                    {record.avg_loss_profit ? `$${Math.abs(record.avg_loss_profit).toFixed(2)}` : '$0'}/
-                    {record.profit_loss_ratio ? record.profit_loss_ratio.toFixed(2) : '-'}
                   </TableCell>
                   <TableCell>
                     <IconButton 
@@ -451,6 +544,26 @@ const BacktestInterface = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* 分页控件 */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+        {total > pageSize && (
+          <Pagination
+            count={Math.ceil(total / pageSize)}
+            page={page}
+            onChange={handlePageChange}
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: '#ccc',
+                '&.Mui-selected': {
+                  background: '#5eddac',
+                  color: '#181c1f'
+                }
+              }
+            }}
+          />
+        )}
+      </Box>
 
       {/* 创建回测对话框 */}
       <Dialog 
@@ -614,18 +727,18 @@ const BacktestInterface = () => {
                 <Select
                   value={newBacktest.backtestPeriod}
                   onChange={(e) => setNewBacktest({ ...newBacktest, backtestPeriod: e.target.value })}
-                  sx={{ 
+                sx={{ 
                     color: '#fff',
-                    '& .MuiFilledInput-root': {
-                      background: '#23272a',
-                      '&:hover': { background: '#2a2f33' },
-                      '&.Mui-focused': { background: '#23272a' }
-                    },
+                  '& .MuiFilledInput-root': {
+                    background: '#23272a',
+                    '&:hover': { background: '#2a2f33' },
+                    '&.Mui-focused': { background: '#23272a' }
+                  },
                     '& .MuiSelect-icon': { color: '#5eddac' },
-                    '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
-                    '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
-                    '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
-                  }}
+                  '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
+                  '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
+                  '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
+                }}
                   MenuProps={MenuProps}
                 >
                   <MenuItem value="1m">最近一月</MenuItem>

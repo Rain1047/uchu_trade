@@ -51,7 +51,6 @@ class SystemPromptSchema(BaseModel):
     content: str
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
 
@@ -64,7 +63,7 @@ class UploadFileSchema(BaseModel):
     # 前端可根据 id 构造下载/预览链接
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class StrategyJobSchema(BaseModel):
@@ -74,7 +73,7 @@ class StrategyJobSchema(BaseModel):
     message: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ----------------------- SystemPrompt CRUD -------------------------
 @router.get("/prompts", response_model=List[SystemPromptSchema])

@@ -90,7 +90,7 @@ const StrategyInstance = () => {
     try {
       const response = await http.get('/api/strategy-instance/list');
       if (response.data.success) {
-        setInstances(response.data.instances);
+        setInstances(response.data.data || []);
       } else {
         setError(response.data.error);
       }
@@ -148,7 +148,16 @@ const StrategyInstance = () => {
 
       // 准备提交数据
       const submitData = {
-        ...newInstance,
+        strategy_id: `${newInstance.entry_strategy}_${newInstance.exit_strategy}_${newInstance.schedule_frequency}`,
+        strategy_name: newInstance.strategy_name,
+        strategy_type: 'combination',
+        strategy_params: {
+          entry_strategy: newInstance.entry_strategy,
+          exit_strategy: newInstance.exit_strategy,
+          filter_strategy: newInstance.filter_strategy || null
+        },
+        schedule_frequency: newInstance.schedule_frequency,
+        symbols: newInstance.symbols,
         entry_per_trans: newInstance.entry_per_trans ? Number(newInstance.entry_per_trans) : null,
         loss_per_trans: newInstance.loss_per_trans ? Number(newInstance.loss_per_trans) : null,
         commission: Number(newInstance.commission)

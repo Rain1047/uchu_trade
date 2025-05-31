@@ -1,11 +1,16 @@
 from sqlalchemy import Column, Integer, String, delete, select, Float
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session
+from typing import List, Optional, TYPE_CHECKING
 
-from backend._utils import DatabaseUtils
+from backend._utils import DatabaseUtils, LogConfig
 
 Base = declarative_base()
-session = DatabaseUtils.get_db_session()
+logger = LogConfig.get_logger(__name__)
 
+if TYPE_CHECKING:
+    from typing import TypeVar
+    BacktestRecordType = TypeVar('BacktestRecordType', bound='BacktestRecord')
 
 class BacktestRecord(Base):
     __tablename__ = 'backtest_record'
@@ -25,55 +30,53 @@ class BacktestRecord(Base):
             'transaction_pnl': self.transaction_pnl
         }
 
-    @classmethod
-    def list_all(cls):
-        stmt = select(cls)
-        return [record.to_dict() for record in stmt]
-
-    @classmethod
-    def list_by_key(cls, back_test_result_key: str) -> list:
-        stmt = select(cls).where(cls.back_test_result_key == back_test_result_key)
+    @staticmethod
+    @DatabaseUtils.execute_in_transaction
+    def list_all(session: Session) -> List[dict]:
+        """获取所有回测记录"""
+        stmt = select(BacktestRecord)
         records = session.execute(stmt).scalars().all()
         return [record.to_dict() for record in records]
 
-    @classmethod
-    def get_by_id(cls, id: int):
-        stmt = select(cls).where(cls.id == id)
+    @staticmethod
+    @DatabaseUtils.execute_in_transaction
+    def list_by_key(session: Session, back_test_result_key: str) -> List[dict]:
+        """根据回测结果键获取回测记录"""
+        stmt = select(BacktestRecord).where(BacktestRecord.back_test_result_key == back_test_result_key)
+        records = session.execute(stmt).scalars().all()
+        return [record.to_dict() for record in records]
+
+    @staticmethod
+    @DatabaseUtils.execute_in_transaction
+    def get_by_id(session: Session, id: int) -> Optional['BacktestRecord']:
+        """根据ID获取回测记录"""
+        stmt = select(BacktestRecord).where(BacktestRecord.id == id)
         return session.execute(stmt).scalar_one_or_none()
 
-    @classmethod
-    def insert_or_update(cls, data: dict):
-        # 检查是否已存在相同 back_test_result_key 和 transaction_time 的记录
-        # existing = session.query(cls).filter(
-        #     cls.back_test_result_key == data['back_test_result_key'],
-        #     cls.transaction_time == data['transaction_time']
-        # ).first()
-        #
-        # if existing:
-        #     # 更新现有记录
-        #     for key, value in data.items():
-        #         setattr(existing, key, value)
-        #     result = existing
-        # else:
-        # 插入新记录
-        result = cls(**data)
-        session.add(result)
+    @staticmethod
+    @DatabaseUtils.execute_in_transaction
+    def bulk_insert(session: Session, records: List[dict]) -> bool:
+        """批量插入回测记录"""
+        try:
+            for record_data in records:
+                record = BacktestRecord(**record_data)
+                session.add(record)
+            return True
+        except Exception as e:
+            logger.error(f"批量插入回测记录失败: {e}")
+            raise
 
-        session.commit()
-        return result
-
-    @classmethod
-    def delete_by_id(cls, id: int):
-        stmt = delete(cls).where(cls.id == id)
-        session.execute(stmt)
-        session.commit()
-
-    @classmethod
-    def delete_all(cls):
-        stmt = delete(cls)
-        session.execute(stmt)
-        session.commit()
-
+    @staticmethod
+    @DatabaseUtils.execute_in_transaction
+    def delete_by_key(session: Session, back_test_result_key: str) -> bool:
+        """删除指定回测结果键的记录"""
+        try:
+            stmt = delete(BacktestRecord).where(BacktestRecord.back_test_result_key == back_test_result_key)
+            session.execute(stmt)
+            return True
+        except Exception as e:
+            logger.error(f"删除回测记录失败: {e}")
+            raise
 
 if __name__ == '__main__':
     BacktestRecord.delete_all()

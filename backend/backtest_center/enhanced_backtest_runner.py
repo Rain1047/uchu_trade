@@ -9,8 +9,12 @@
 import sys
 import os
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 import logging
+import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
+from pathlib import Path
 
 # 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -21,6 +25,7 @@ from backend.data_object_center.backtest_result import BacktestResult as DBBackt
 from backend.backtest_center.universal_backtest_engine import universal_engine
 from backend.strategy_center.atom_strategy.strategy_registry import registry
 from backend._utils import LogConfig
+from backend.backtest_center.backtest_summary import BacktestSummary
 
 logger = LogConfig.get_logger(__name__)
 
@@ -31,99 +36,48 @@ class EnhancedBacktestRunner:
     def __init__(self):
         self.data_manager = EnhancedKlineManager()
         self.logger = logging.getLogger(__name__)
+        # 使用全局通用回测引擎实例
+        self.engine = universal_engine
         
-    def run_complete_backtest(self, 
-                            entry_strategy: str,
-                            exit_strategy: str,
-                            filter_strategy: Optional[str] = None,
-                            symbols: List[str] = None,
-                            timeframe: str = "4h",
-                            initial_cash: float = 100000.0,
-                            risk_percent: float = 2.0,
-                            commission: float = 0.001,
-                            start_date: Optional[str] = None,
-                            end_date: Optional[str] = None,
-                            save_to_db: bool = True,
-                            description: str = "增强回测") -> Dict:
-        """
-        运行完整的回测流程
-        
-        Args:
-            entry_strategy: 入场策略名称
-            exit_strategy: 出场策略名称
-            filter_strategy: 过滤策略名称（可选）
-            symbols: 交易对列表
-            timeframe: 时间框架
-            initial_cash: 初始资金
-            risk_percent: 风险百分比
-            commission: 手续费
-            start_date: 开始日期
-            end_date: 结束日期
-            save_to_db: 是否保存到数据库
-            description: 描述
-            
-        Returns:
-            Dict: 回测结果汇总
-        """
-        
-        self.logger.info("🚀 开始增强回测流程")
-        
-        # 1. 验证策略是否存在
-        if not self._validate_strategies(entry_strategy, exit_strategy, filter_strategy):
-            return {"success": False, "error": "策略验证失败"}
-        
-        # 2. 获取可用交易对（如果未指定）
-        if symbols is None:
-            symbols = self._get_default_symbols()
-        
-        # 3. 验证数据可用性
-        valid_symbols = self._validate_symbols_data(symbols, timeframe)
-        if not valid_symbols:
-            return {"success": False, "error": "没有可用的交易对数据"}
-        
-        self.logger.info(f"📊 将测试 {len(valid_symbols)} 个交易对: {valid_symbols}")
-        
-        # 4. 创建回测配置
-        config = BacktestConfig(
-            entry_strategy=entry_strategy,
-            exit_strategy=exit_strategy,
-            filter_strategy=filter_strategy,
-            symbols=valid_symbols,
-            timeframe=timeframe,
-            initial_cash=initial_cash,
-            risk_percent=risk_percent,
-            commission=commission,
-            start_date=start_date,
-            end_date=end_date,
-            description=description
-        )
-        
-        self.logger.info(f"⚙️ 回测配置: {config.get_display_name()}")
-        self.logger.info(f"🔑 配置键: {config.generate_key()}")
-        
-        # 5. 运行回测
+    def run_complete_backtest(self, config: BacktestConfig) -> Optional[BacktestSummary]:
+        """运行完整的回测流程"""
         try:
-            summary = universal_engine.run_backtest(config)
+            logger.info("🚀 开始增强回测流程")
             
-            # 6. 保存到数据库（如果需要）
-            if save_to_db and summary.individual_results:
-                self._save_results_to_database(summary, config)
+            # 验证数据可用性
+            available_data = {}
+            for symbol in config.symbols:
+                df = self.data_manager.get_kline_data(symbol, config.timeframe)
+                if df is not None and len(df) >= 100:
+                    available_data[symbol] = df
+                    logger.info(f"✅ {symbol}: {len(df)} 条数据可用")
+                else:
+                    logger.warning(f"❌ {symbol}: 数据不足")
             
-            # 7. 生成报告
-            report = self._generate_report(summary, config)
+            if not available_data:
+                logger.error("没有足够的可用数据")
+                return None
             
-            self.logger.info("✅ 回测完成!")
-            return {
-                "success": True,
-                "config_key": config.generate_key(),
-                "summary": summary,
-                "report": report,
-                "config": config
-            }
+            logger.info(f"📊 将测试 {len(available_data)} 个交易对: {list(available_data.keys())}")
+            logger.info(f"⚙️ 回测配置: {config.entry_strategy}/{config.exit_strategy}/{config.filter_strategy}")
+            
+            # 生成配置键
+            config_key = config.generate_key()
+            logger.info(f"🔑 配置键: {config_key}")
+            
+            # 运行回测
+            summary = self.engine.run_backtest(config)
+            
+            if summary:
+                logger.info("✅ 回测完成!")
+                return summary
+            else:
+                logger.error("❌ 回测失败")
+                return None
             
         except Exception as e:
-            self.logger.error(f"❌ 回测失败: {str(e)}")
-            return {"success": False, "error": str(e)}
+            logger.error(f"回测执行出错: {str(e)}")
+            return None
     
     def _validate_strategies(self, entry_strategy: str, exit_strategy: str, filter_strategy: Optional[str]) -> bool:
         """验证策略是否存在"""
@@ -182,17 +136,19 @@ class EnhancedBacktestRunner:
         self.logger.info("💾 保存结果到数据库...")
         
         try:
+            from backend.data_object_center.backtest_result import BacktestResult as DBBacktestResult
             for result in summary.individual_results:
                 # 生成数据库记录的键
                 db_key = f"{result.symbol}_{config.generate_key()}_{datetime.now().strftime('%Y%m%d%H%M')}"
                 
                 # 构造数据库记录
+                now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 db_data = {
                     'back_test_result_key': db_key,
                     'symbol': result.symbol,
                     'strategy_id': config.generate_key(),
                     'strategy_name': config.get_display_name(),
-                    'test_finished_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'test_finished_time': now_str,
                     'buy_signal_count': result.total_entry_signals,
                     'sell_signal_count': result.total_sell_signals,
                     'transaction_count': result.total_trades,
@@ -201,13 +157,17 @@ class EnhancedBacktestRunner:
                     'profit_total_count': result.total_return,
                     'profit_average': result.total_return / result.total_trades if result.total_trades > 0 else 0,
                     'profit_rate': result.total_return * 100,  # 转换为百分比
+                    'gmt_create': now_str,
+                    'gmt_modified': now_str,
                 }
-                
-                # 保存到数据库
-                from backend.data_object_center.backtest_result import BacktestResult as DBBacktestResult
-                DBBacktestResult.insert_or_update(db_data)
-                self.logger.info(f"✅ 已保存 {result.symbol} 的结果到数据库")
-                
+                # 检查是否已存在
+                exist = DBBacktestResult.get_by_key(db_key)
+                if exist:
+                    DBBacktestResult.update(db_key, db_data)
+                    self.logger.info(f"✅ 已更新 {result.symbol} 的结果到数据库")
+                else:
+                    DBBacktestResult.create(db_data)
+                    self.logger.info(f"✅ 已保存 {result.symbol} 的结果到数据库")
         except Exception as e:
             self.logger.error(f"❌ 保存到数据库失败: {str(e)}")
     
@@ -313,15 +273,21 @@ def run_demo_backtest():
         filter_strategy="sma_perfect_order_filter_strategy",
         symbols=symbols[:2],  # 测试前2个交易对
         timeframe="4h",
+        initial_cash=100000.0,
+        risk_percent=2.0,
+        commission=0.001,
+        start_date=None,
+        end_date=None,
+        save_to_db=True,
         description="增强回测系统演示"
     )
     
-    if result["success"]:
+    if result:
         print("\n✅ 回测成功完成!")
-        print(f"配置键: {result['config_key']}")
+        print(f"配置键: {result.config_key}")
         
         # 打印报告
-        report = result["report"]
+        report = runner._generate_report(result, result.config)
         print(f"\n📊 回测报告:")
         print(f"=" * 40)
         
@@ -340,7 +306,7 @@ def run_demo_backtest():
                 if key != "交易对":
                     print(f"    {key}: {value}")
     else:
-        print(f"\n❌ 回测失败: {result['error']}")
+        print(f"\n❌ 回测失败")
 
 
 if __name__ == "__main__":

@@ -172,8 +172,19 @@ class IndicatorCalculator:
 class EnhancedKlineManager:
     """增强的K线数据管理器"""
     
-    def __init__(self, data_dir: Optional[str] = None):
+    def __init__(self, data_dir: Optional[str] = None, timezone_mode: str = "UTC-4"):
+        """
+        初始化增强的K线数据管理器
+        
+        Args:
+            data_dir: 数据目录路径
+            timezone_mode: 时区模式，支持:
+                - "UTC+8": 中国时间，日线以8:00为边界
+                - "UTC-4": 美国东部时间，日线以0:00为边界
+                - "UTC": 标准UTC时间
+        """
         self.logger = logging.getLogger(__name__)
+        self.timezone_mode = timezone_mode
         
         # 设置数据目录
         if data_dir is None:
@@ -200,7 +211,7 @@ class EnhancedKlineManager:
         # 缓存大小限制
         self.max_cache_size = 50
         
-        self.logger.info(f"EnhancedKlineManager initialized with data_dir: {self.data_dir}")
+        self.logger.info(f"EnhancedKlineManager initialized with data_dir: {self.data_dir}, timezone: {timezone_mode}")
     
     def normalize_timeframe(self, timeframe: str) -> Optional[TimeFrameConfig]:
         """标准化时间框架格式"""
@@ -245,7 +256,40 @@ class EnhancedKlineManager:
     
     def load_raw_data(self, symbol: str, timeframe: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[pd.DataFrame]:
         """加载原始K线数据"""
-        # —— 先尝试数据库 ——
+        # 生成缓存键
+        cache_key = f"{symbol}_{timeframe}_{start_date}_{end_date}_{self.timezone_mode}"
+        
+        # 检查缓存
+        if cache_key in self._data_cache:
+            self.logger.debug(f"Loading data from cache: {cache_key}")
+            return self._data_cache[cache_key].copy()
+        
+        df = None
+        
+        # 如果指定了时间范围，优先使用OKX API获取实时数据
+        if start_date and end_date:
+            try:
+                from backend.data_center.kline_data.okx_kline_fetcher import OkxKlineFetcher
+                okx_fetcher = OkxKlineFetcher(self.data_dir, timezone_mode=self.timezone_mode)
+                df = okx_fetcher.get_historical_data(symbol, timeframe, start_date, end_date)
+                
+                if df is not None and len(df) > 0:
+                    self.logger.info(f"从OKX获取到{len(df)}条数据: {symbol} {timeframe} (时区: {self.timezone_mode})")
+                    self.logger.info(f"时间范围: {df.index.min()} 到 {df.index.max()}")
+                    
+                    # 标准化列名
+                    df = self._standardize_columns(df)
+                    
+                    # 缓存数据
+                    self._cache_data(cache_key, df)
+                    
+                    return df.copy()
+                else:
+                    self.logger.warning(f"OKX返回空数据: {symbol} {timeframe}")
+            except Exception as e:
+                self.logger.error(f"OKX获取数据失败: {e}")
+        
+        # 尝试从数据库获取
         try:
             from backend.data_object_center.kline_record import KlineRecord, DatabaseUtils
             session = DatabaseUtils.get_db_session()
@@ -258,99 +302,90 @@ class EnhancedKlineManager:
             if end_date:
                 query = query.filter(KlineRecord.datetime <= end_date)
             records = query.order_by(KlineRecord.datetime).all()
-            if records:
-                df_db = pd.DataFrame([r.to_dict() for r in records])
-                df_db.set_index('datetime', inplace=True)
-                self.logger.info(f"Loaded {len(df_db)} records from DB for {symbol} {timeframe}")
-                # 如果数据足够，直接返回
-                if len(df_db) >= 100:
-                    return df_db.copy()
+            
+            if records and len(records) >= 50:
+                df = pd.DataFrame([r.to_dict() for r in records])
+                df.set_index('datetime', inplace=True)
+                self.logger.info(f"从数据库加载{len(df)}条记录: {symbol} {timeframe}")
+                
+                # 标准化列名
+                df = self._standardize_columns(df)
+                
+                # 缓存数据
+                self._cache_data(cache_key, df)
+                
+                return df.copy()
             else:
-                df_db = None
+                self.logger.info(f"数据库中数据不足: {symbol} {timeframe}")
+                
         except Exception as e:
-            self.logger.error(f"DB load error: {e}")
+            self.logger.error(f"数据库查询失败: {e}")
         
-        # 生成缓存键
-        cache_key = f"{symbol}_{timeframe}_{start_date}_{end_date}"
-        
-        # 检查缓存
-        if cache_key in self._data_cache:
-            self.logger.debug(f"Loading data from cache: {cache_key}")
-            return self._data_cache[cache_key].copy()
-        
-        # 获取文件路径
+        # 最后尝试从文件加载（仅作为备用）
         filepath = self.get_data_file_path(symbol, timeframe)
-        if filepath is None or not os.path.exists(filepath):
-            # 跳过 Binance 拉取，直接转 yfinance / OKX
-            pass
+        if filepath and os.path.exists(filepath):
+            try:
+                df = pd.read_csv(filepath)
+                
+                # 标准化列名
+                df = self._standardize_columns(df)
+                
+                # 处理时间列
+                if 'datetime' in df.columns:
+                    df['datetime'] = pd.to_datetime(df['datetime'])
+                    df = df.set_index('datetime')
+                elif df.index.name == 'datetime':
+                    df.index = pd.to_datetime(df.index)
+                
+                # 应用时间过滤
+                if start_date:
+                    df = df[df.index >= start_date]
+                if end_date:
+                    df = df[df.index <= end_date]
+                
+                if len(df) >= 50:
+                    # 确保数据按时间排序
+                    df = df.sort_index()
+                    
+                    # 缓存数据
+                    self._cache_data(cache_key, df)
+                    
+                    self.logger.info(f"从文件加载{len(df)}条记录: {symbol} {timeframe}")
+                    return df.copy()
+                else:
+                    self.logger.warning(f"文件数据经过时间过滤后不足: {len(df)} < 50")
+                    
+            except Exception as e:
+                self.logger.error(f"文件加载失败 {filepath}: {e}")
         
-        try:
-            # 读取数据
-            df = pd.read_csv(filepath)
-            
-            # 标准化列名
-            df = self._standardize_columns(df)
-            
-            # 处理时间列
-            if 'datetime' in df.columns:
-                df['datetime'] = pd.to_datetime(df['datetime'])
-                df = df.set_index('datetime')
-            elif df.index.name == 'datetime':
-                df.index = pd.to_datetime(df.index)
-            
-            # 应用时间过滤
-            if start_date:
-                df = df[df.index >= start_date]
-            if end_date:
-                df = df[df.index <= end_date]
-            
-            # 如果过滤后数据不足，则尝试再次拉取缺失区间
-            if len(df) < 100:
-                # 直接使用 yfinance 备选
-                try:
-                    from backend.data_center.kline_data.yfinance_kline_fetcher import YFinanceKlineFetcher
-                    yfetch = YFinanceKlineFetcher(self.data_dir)
-                    yfetch.download_historical(symbol, timeframe, start_date, end_date)
-                    filepath = self.get_data_file_path(symbol, timeframe)
-                    if os.path.exists(filepath):
-                        df = pd.read_csv(filepath)
-                        df = self._standardize_columns(df)
-                        if 'datetime' in df.columns:
-                            df['datetime'] = pd.to_datetime(df['datetime'])
-                            df = df.set_index('datetime')
-                        df = df.sort_index()
-                except Exception as e2:
-                    self.logger.error(f"YF fetch failed: {e2}")
-            
-            # —— 最终尝试 OKX ——
-            if len(df) < 100:
-                try:
-                    from backend.data_center.kline_data.okx_kline_fetcher import OkxKlineFetcher
-                    okxf = OkxKlineFetcher(self.data_dir)
-                    okxf.download_historical(symbol, timeframe)
-                    filepath = self.get_data_file_path(symbol, timeframe)
-                    if os.path.exists(filepath):
-                        df = pd.read_csv(filepath)
-                        df = self._standardize_columns(df)
-                        if 'datetime' in df.columns:
-                            df['datetime'] = pd.to_datetime(df['datetime'])
-                            df = df.set_index('datetime')
-                        df = df.sort_index()
-                except Exception as e3:
-                    self.logger.error(f"OKX fetch failed: {e3}")
-            
-            # 确保数据按时间排序
-            df = df.sort_index()
-            
-            # 缓存数据
-            self._cache_data(cache_key, df)
-            
-            self.logger.info(f"Loaded {len(df)} records for {symbol} {timeframe}")
-            return df.copy()
-            
-        except Exception as e:
-            self.logger.error(f"Error loading data for {symbol} {timeframe}: {e}")
-            return None
+        # 如果所有方法都失败，再次尝试用OKX获取更多历史数据
+        if df is None or len(df) < 50:
+            try:
+                from backend.data_center.kline_data.okx_kline_fetcher import OkxKlineFetcher
+                okx_fetcher = OkxKlineFetcher(self.data_dir)
+                
+                # 如果没有指定时间范围，获取最近的数据
+                if not start_date and not end_date:
+                    df = okx_fetcher.get_recent_data(symbol, timeframe, periods=300)
+                else:
+                    df = okx_fetcher.get_historical_data(symbol, timeframe, start_date, end_date)
+                
+                if df is not None and len(df) > 0:
+                    self.logger.info(f"OKX备用获取成功: {symbol} {timeframe}, {len(df)}条")
+                    
+                    # 标准化列名
+                    df = self._standardize_columns(df)
+                    
+                    # 缓存数据
+                    self._cache_data(cache_key, df)
+                    
+                    return df.copy()
+                    
+            except Exception as e:
+                self.logger.error(f"OKX备用获取失败: {e}")
+        
+        self.logger.error(f"无法获取数据: {symbol} {timeframe}")
+        return None
     
     def _standardize_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """标准化列名"""
@@ -503,17 +538,55 @@ class EnhancedKlineManager:
         
         return timeframes
     
-    def get_kline_data(self, symbol: str, timeframe: str, limit: Optional[int] = None, 
-                      start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[pd.DataFrame]:
-        """获取K线数据（简单接口）"""
-        # 加载原始数据
-        df = self.load_raw_data(symbol, timeframe, start_date, end_date)
+    def _convert_data_types(self, df: pd.DataFrame) -> pd.DataFrame:
+        """转换数据类型"""
+        if df is None or df.empty:
+            return df
         
-        # 如果指定了limit，返回最新的limit条数据
-        if df is not None and limit is not None and limit > 0:
-            return df.tail(limit)
-        
-        return df
+        try:
+            # 确保数值列为float64类型
+            numeric_columns = ['open', 'high', 'low', 'close', 'volume']
+            for col in numeric_columns:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors='coerce').astype('float64')
+            
+            # 确保datetime列为datetime类型
+            if 'datetime' in df.columns:
+                df['datetime'] = pd.to_datetime(df['datetime'])
+            elif not isinstance(df.index, pd.DatetimeIndex):
+                df.index = pd.to_datetime(df.index)
+            
+            # 删除任何包含NaN的行
+            df = df.dropna(subset=numeric_columns)
+            
+            # 确保数据按时间排序
+            df = df.sort_index()
+            
+            return df
+        except Exception as e:
+            self.logger.error(f"数据类型转换失败: {str(e)}")
+            return df
+
+    def get_kline_data(self, symbol: str, timeframe: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[pd.DataFrame]:
+        """获取K线数据"""
+        try:
+            # 从数据库加载数据
+            df = self.load_raw_data(symbol, timeframe, start_date, end_date)
+            
+            # 如果数据库没有数据，尝试从yfinance下载
+            if df is None or len(df) < 50:
+                df = self.load_raw_data(symbol, timeframe, start_date, end_date)
+            
+            if df is not None:
+                df = self._convert_data_types(df)
+            
+            if df is not None:
+                self.logger.info(f"{symbol} {timeframe} final rows: {len(df)}, range: {df.index.min()} - {df.index.max()}")
+            
+            return df
+        except Exception as e:
+            self.logger.error(f"获取 {symbol} {timeframe} 数据失败: {str(e)}")
+            return None
     
     def get_data_info(self, symbol: str, timeframe: str) -> Optional[Dict]:
         """获取数据信息"""

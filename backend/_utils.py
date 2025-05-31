@@ -9,6 +9,7 @@ import yfinance as yf
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import QueuePool
 import pandas as pd
 from datetime import datetime
 import uuid
@@ -20,48 +21,41 @@ import asyncio
 
 
 class LogConfig:
-    """统一的日志配置类"""
-    _instance = None
-    _initialized = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(LogConfig, cls).__new__(cls)
-        return cls._instance
-
-    @classmethod
-    def setup(cls, level: int = logging.INFO):
+    """日志配置"""
+    
+    @staticmethod
+    def setup():
         """设置日志配置"""
-        if cls._initialized:
-            return
-
-        # 创建日志格式
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-
-        # 配置根日志记录器
+        # 创建日志目录
+        log_dir = Path('logs')
+        log_dir.mkdir(exist_ok=True)
+        
+        # 设置日志格式
+        log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        date_format = '%Y-%m-%d %H:%M:%S'
+        
+        # 设置根日志记录器
         root_logger = logging.getLogger()
-        root_logger.setLevel(level)
-
+        root_logger.setLevel(logging.INFO)
+        
         # 添加控制台处理器
         console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
+        console_handler.setLevel(logging.INFO)
+        console_formatter = logging.Formatter(log_format, date_format)
+        console_handler.setFormatter(console_formatter)
         root_logger.addHandler(console_handler)
-
+        
         # 添加文件处理器
-        log_dir = Path(__file__).parent.parent / 'logs'
-        log_dir.mkdir(exist_ok=True)
-        file_handler = logging.FileHandler(log_dir / 'app.log')
-        file_handler.setFormatter(formatter)
+        log_file = log_dir / f'app_{datetime.now().strftime("%Y%m%d")}.log'
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        file_formatter = logging.Formatter(log_format, date_format)
+        file_handler.setFormatter(file_formatter)
         root_logger.addHandler(file_handler)
-
-        cls._initialized = True
-
+    
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
-        """获取指定名称的日志记录器"""
+        """获取日志记录器"""
         return logging.getLogger(name)
 
 
@@ -152,6 +146,7 @@ class DatabaseUtils:
     _instance = None
     _engine = None
     _Session = None
+    _pool = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -163,26 +158,36 @@ class DatabaseUtils:
     def get_engine():
         project_root = DatabaseUtils.get_project_root()
         db_absolute_path = project_root / 'backend' / 'trade_db.db'
-        return create_engine(f'sqlite:///{db_absolute_path}')
+        return create_engine(
+            f'sqlite:///{db_absolute_path}',
+            poolclass=QueuePool,
+            pool_size=20,
+            max_overflow=10,
+            pool_timeout=30,
+            pool_recycle=1800,
+            connect_args={"check_same_thread": False}
+        )
 
     @classmethod
     def _setup(cls):
         try:
-            # 获取项目根目录的绝对路径
             project_root = cls.get_project_root()
-            # 构建数据库文件的绝对路径
             db_absolute_path = project_root / 'backend' / 'trade_db.db'
             logger = LogConfig.get_logger(__name__)
             logger.info(f"数据库路径: {db_absolute_path}")
-            # 创建数据库连接引擎
-            cls._engine = create_engine(f'sqlite:///{db_absolute_path}', connect_args={"check_same_thread": False})
-            # 创建会话工厂，关闭自动 commit 与 flush，降低并发锁冲突
-            cls._Session = sessionmaker(autocommit=False, autoflush=False, bind=cls._engine)
+            
+            cls._engine = cls.get_engine()
+            cls._Session = sessionmaker(
+                autocommit=False,
+                autoflush=False,
+                bind=cls._engine,
+                expire_on_commit=False
+            )
             logger.info("数据库设置完成")
         except Exception as e:
             logger = LogConfig.get_logger(__name__)
             logger.error(f"数据库设置出错: {e}")
-            pass
+            raise
 
     @staticmethod
     def get_db_session():
@@ -192,27 +197,45 @@ class DatabaseUtils:
         return DatabaseUtils._Session()
 
     @staticmethod
-    def get_project_root():
-        # 获取当前脚本所在文件夹的绝对路径
-        current_dir = Path(__file__).resolve().parent
-        logger = LogConfig.get_logger(__name__)
-        logger.info(f"当前目录: {current_dir}")
-        # 返回项目根目录的绝对路径
-        return current_dir.parents[0]
-
-    @staticmethod
     def save(data_object):
+        """保存数据对象，自动处理事务"""
         session = DatabaseUtils.get_db_session()
         try:
             session.add(data_object)
             session.commit()
+            return True
         except Exception as e:
             session.rollback()
-            print(f"保存数据时出错: {e}")
+            logger = LogConfig.get_logger(__name__)
+            logger.error(f"保存数据时出错: {e}")
             raise
         finally:
-            # 这里不再关闭 session，因为我们使用单例模式管理它
-            pass
+            session.close()
+
+    @staticmethod
+    def execute_in_transaction(func):
+        """事务装饰器，用于确保函数在事务中执行"""
+        def wrapper(*args, **kwargs):
+            session = DatabaseUtils.get_db_session()
+            try:
+                result = func(session, *args, **kwargs)
+                session.commit()
+                return result
+            except Exception as e:
+                session.rollback()
+                logger = LogConfig.get_logger(__name__)
+                logger.error(f"事务执行出错: {e}")
+                raise
+            finally:
+                session.close()
+        return wrapper
+
+    @staticmethod
+    def get_project_root():
+        current_dir = Path(__file__).resolve().parent
+        logger = LogConfig.get_logger(__name__)
+        logger.info(f"当前目录: {current_dir}")
+        return current_dir.parents[0]
 
 
 class UuidUtils:

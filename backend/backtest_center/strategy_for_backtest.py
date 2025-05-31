@@ -3,9 +3,11 @@ from typing import Optional, Any
 import backtrader as bt
 import math
 import pandas as pd
+from backend._utils import LogConfig
 
 from backend.backtest_center.models.trade_record import TradeRecord
 
+logger = LogConfig.get_logger(__name__)
 
 class StrategyForBacktest(bt.Strategy):
     """改进后的DBB策略，使用动态止损单管理"""
@@ -47,32 +49,25 @@ class StrategyForBacktest(bt.Strategy):
         # 调试信息
         self.missed_signals = []
 
+        logger.info("策略初始化完成")
+
     def log(self, txt: str, dt: Optional[Any] = None):
-        dt = dt or self.datas[0].datetime.date(0)
-        print(f'{dt.isoformat()} {txt}')
+        """记录策略日志"""
+        dt = dt or self.datas[0].datetime.datetime(0)
+        logger.info(f'{dt.isoformat()} - {txt}')
 
     def notify_order(self, order):
         """订单状态更新处理"""
         if order.status in [order.Submitted, order.Accepted]:
             return
 
-        # 打印止损单状态
-        if order.status == order.Canceled:
-            if order.status == order.Canceled:
-                # 通过exectype判断订单类型更准确
-                order_type = "止损单" if order.exectype == bt.Order.Stop else "入场单"
-                # self.log(f"订单取消详情 - 订单类型: {order_type}, 当前价格: {self.dataclose[0]:.2f}, "
-                #          f"订单价格: {order.price:.2f}, exectype: {order.exectype}")
-        if order.status == order.Completed:
-            # 记录交易
-            trade_record = TradeRecord(
-                datetime=self.data.datetime.date(0).isoformat(),
-                action='BUY' if order.isbuy() else 'SELL',
-                price=order.executed.price,
-                size=order.executed.size,
-                value=order.executed.value,
-                commission=order.executed.comm
-            )
+        if order.status in [order.Completed]:
+            trade_record = type('TradeRecord', (), {
+                'datetime': self.datas[0].datetime.datetime(0),
+                'price': order.executed.price,
+                'size': order.executed.size,
+                'pnl': 0
+            })()
 
             if order.isbuy():
                 self.buy_price = order.executed.price
@@ -97,8 +92,10 @@ class StrategyForBacktest(bt.Strategy):
                     # 更新统计
                     if profit > 0:
                         self.winning_trades += 1
+                        logger.info(f"盈利交易 #{self.trade_count + 1} - 收益: ${profit:.2f}")
                     else:
                         self.losing_trades += 1
+                        logger.info(f"亏损交易 #{self.trade_count + 1} - 亏损: ${abs(profit):.2f}")
                     self.trade_count += 1
                     # 重置状态
                     self.buy_price = None
@@ -107,8 +104,7 @@ class StrategyForBacktest(bt.Strategy):
             self.trade_records.append(trade_record)
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            # self.log(f'订单失败 - 状态: {order.getstatusname()}')
-            pass
+            logger.warning(f'订单失败 - 状态: {order.getstatusname()}')
 
         # 重置相关订单引用
         if order == self.entry_order:
@@ -174,53 +170,80 @@ class StrategyForBacktest(bt.Strategy):
     def next(self):
         """
         改进的策略执行逻辑
-        - 添加更多的状态检查
-        - 改进止损单管理
+        - 添加信号验证
+        - 简化止损单管理
+        - 增加交易状态检查
         """
         # 统计信号
         if self.entry_sig[0] == 1:
             self.entry_signal_count += 1
+            logger.info(f"检测到入场信号 - 价格: {self.dataclose[0]:.2f}")
 
         current_price = self.dataclose[0]
+        
+        # 验证价格有效性
+        if pd.isna(current_price) or current_price <= 0:
+            logger.warning(f"无效价格: {current_price}")
+            return
 
-        # 处理入场信号 - 不再检查是否有仓位
+        # 处理入场信号
         if (self.entry_sig[0] == 1 and  # 有入场信号
-                not self.entry_order):  # 没有待执行的入场订单
-
+                not self.entry_order and  # 没有待执行的入场订单
+                not self.position):  # 没有持仓
+            
+            # 验证入场价格
+            entry_price = self.entry_price[0]
+            if pd.isna(entry_price) or entry_price <= 0:
+                logger.warning(f"无效入场价格: {entry_price}")
+                return
+                
             # 计算新的仓位大小
-            size = self.calculate_position_size(current_price)
-
+            size = self.calculate_position_size(entry_price)
+            
             if size > 0:
-                self.log(f'创建买入订单 - 价格: {current_price:.2f}, '
+                logger.info(f'创建买入订单 - 价格: {entry_price:.2f}, '
                          f'数量: {size:.8f}, '
                          f'当前持仓: {self.position.size if self.position else 0}')
-                self.entry_order = self.buy(size=size)
+                self.entry_order = self.buy(size=size, price=entry_price)
 
-                # if self.p.debug:
-                #     self.log(f'买入信号详情 - '
-                #              f'可用资金: {self.broker.getcash():.2f}, '
-                #              f'总资产: {self.broker.getvalue():.2f}, '
-                #              f'现有持仓: {self.position.size if self.position else 0}')
+        # 处理出场信号
+        if self.position and self.sell_sig[0] == 1:
+            # 验证出场价格
+            sell_price = self.sell_price[0]
+            if pd.isna(sell_price) or sell_price <= 0:
+                logger.warning(f"无效出场价格: {sell_price}")
+                return
+                
+            logger.info(f'创建卖出订单 - 价格: {sell_price:.2f}, '
+                     f'数量: {self.position.size:.8f}')
+            self.sell(size=self.position.size, price=sell_price)
+            return
 
-        # 止损单管理 - 只要有仓位就管理止损单
+        # 止损单管理
         if self.position:
             # 获取最新止损价
             stop_price = self.sell_price[0]
-
+            
+            # 验证止损价格
+            if pd.isna(stop_price) or stop_price <= 0:
+                return
+                
             # 检查是否需要更新止损单
             if not self.stop_order:
                 # 没有止损单，创建新的
-                self.place_stop_order()
+                self.stop_order = self.sell(
+                    size=self.position.size,
+                    exectype=bt.Order.Stop,
+                    price=stop_price
+                )
             elif abs(self.stop_order.price - stop_price) > 0.01:
                 # 止损价格有变化，更新止损单
                 self.cancel(self.stop_order)
-                self.place_stop_order()
-
-            # if self.p.debug:
-            #     self.log(f'仓位状态 - '
-            #              f'持仓量: {self.position.size:.8f}, '
-            #              f'当前价格: {current_price:.2f}, '
-            #              f'止损价格: {stop_price:.2f}')
+                self.stop_order = self.sell(
+                    size=self.position.size,
+                    exectype=bt.Order.Stop,
+                    price=stop_price
+                )
 
     def calculate_position_size(self, price: float) -> float:
         """
