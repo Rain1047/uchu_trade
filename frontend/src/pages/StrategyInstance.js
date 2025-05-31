@@ -128,7 +128,33 @@ const StrategyInstance = () => {
   // 创建实例
   const handleCreate = async () => {
     try {
-      const response = await http.post('/api/strategy-instance/create', newInstance);
+      // 验证必填字段
+      if (!newInstance.strategy_name || !newInstance.entry_strategy || !newInstance.exit_strategy) {
+        setError('请填写策略名称、入场策略和出场策略');
+        return;
+      }
+
+      // 验证交易对
+      if (!newInstance.symbols || newInstance.symbols.length === 0) {
+        setError('请选择至少一个交易对');
+        return;
+      }
+
+      // 验证资金设置
+      if (!newInstance.entry_per_trans && !newInstance.loss_per_trans) {
+        setError('请设置每笔入场资金或每笔最大损失');
+        return;
+      }
+
+      // 准备提交数据
+      const submitData = {
+        ...newInstance,
+        entry_per_trans: newInstance.entry_per_trans ? Number(newInstance.entry_per_trans) : null,
+        loss_per_trans: newInstance.loss_per_trans ? Number(newInstance.loss_per_trans) : null,
+        commission: Number(newInstance.commission)
+      };
+
+      const response = await http.post('/api/strategy-instance/create', submitData);
       if (response.data.success) {
         setCreateDialogOpen(false);
         loadInstances();
@@ -358,10 +384,42 @@ const StrategyInstance = () => {
 
       {/* 标签页 */}
       <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
-        <Tab label={`全部 (${instances.length})`} />
-        <Tab label={`运行中 (${instances.filter(i => i.status === 'running').length})`} />
-        <Tab label={`已停止 (${instances.filter(i => i.status === 'stopped').length})`} />
-        <Tab label={`已暂停 (${instances.filter(i => i.status === 'paused').length})`} />
+        <Tab 
+          label={`全部 (${instances.length})`} 
+          sx={{ 
+            color: '#fff',
+            '&:hover': { color: '#5eddac' },
+            '&.Mui-selected': { color: '#5eddac' },
+            '& .MuiTabs-indicator': { backgroundColor: '#5eddac' }
+          }}
+        />
+        <Tab 
+          label={`运行中 (${instances.filter(i => i.status === 'running').length})`} 
+          sx={{ 
+            color: '#fff',
+            '&:hover': { color: '#5eddac' },
+            '&.Mui-selected': { color: '#5eddac' },
+            '& .MuiTabs-indicator': { backgroundColor: '#5eddac' }
+          }}
+        />
+        <Tab 
+          label={`已停止 (${instances.filter(i => i.status === 'stopped').length})`} 
+          sx={{ 
+            color: '#fff',
+            '&:hover': { color: '#5eddac' },
+            '&.Mui-selected': { color: '#5eddac' },
+            '& .MuiTabs-indicator': { backgroundColor: '#5eddac' }
+          }}
+        />
+        <Tab 
+          label={`已暂停 (${instances.filter(i => i.status === 'paused').length})`} 
+          sx={{ 
+            color: '#fff',
+            '&:hover': { color: '#5eddac' },
+            '&.Mui-selected': { color: '#5eddac' },
+            '& .MuiTabs-indicator': { backgroundColor: '#5eddac' }
+          }}
+        />
       </Tabs>
 
       {/* 实例列表 */}

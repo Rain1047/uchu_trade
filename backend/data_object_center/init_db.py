@@ -2,6 +2,8 @@ from backend.data_object_center.base import Base, engine, Session
 from backend.data_object_center.strategy_instance import StrategyInstance
 from backend.data_object_center.backtest_result import BacktestResult
 from backend.data_object_center.backtest_record import BacktestRecord
+from backend.data_object_center.enhanced_backtest_record import EnhancedBacktestRecord
+from backend.data_object_center.strategy_execution_record import StrategyExecutionRecord
 
 def init_db():
     """初始化数据库，创建所有表"""
@@ -49,5 +51,6 @@ def init_db():
     finally:
         session.close()
 
-if __name__ == '__main__':
-    init_db() 
+if __name__ == "__main__":
+    init_db()
+    print("数据库初始化完成") 

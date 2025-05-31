@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Button,
+  Container,
   Typography,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -19,31 +11,38 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Card,
+  CardContent,
   Alert,
-  CircularProgress,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  OutlinedInput,
-  ListItemText,
   Checkbox,
-  Container
+  ListItemText,
+  OutlinedInput,
+  CircularProgress
 } from '@mui/material';
 import {
-  PlayArrow,
+  Add,
   Refresh,
+  Info,
+  Assessment,
   TrendingUp,
   SwapHoriz,
-  GpsFixed,
-  AccountBalance,
-  ExpandMore,
-  Settings,
-  Assessment,
-  Info
+  ShowChart,
+  Timer
 } from '@mui/icons-material';
 import http from '../api/http';
+import { useNavigate } from 'react-router-dom';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -62,26 +61,48 @@ const MenuProps = {
 };
 
 const BacktestInterface = () => {
-  // 状态管理
+  const navigate = useNavigate();
+  const [backtestRecords, setBacktestRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  
+  // 策略和交易对
   const [entryStrategies, setEntryStrategies] = useState([]);
   const [exitStrategies, setExitStrategies] = useState([]);
   const [filterStrategies, setFilterStrategies] = useState([]);
   const [availableSymbols, setAvailableSymbols] = useState([]);
-  const [backtestResult, setBacktestResult] = useState(null);
-  const [error, setError] = useState(null);
-
-  // 回测配置
-  const [config, setConfig] = useState({
+  
+  // 新回测配置
+  const [newBacktest, setNewBacktest] = useState({
     entryStrategy: '',
     exitStrategy: '',
     filterStrategy: '',
     symbols: [],
     timeframe: '4h',
+    backtestPeriod: '1m', // 1m, 3m, 1y
     initialCash: 100000,
     riskPercent: 2.0,
     commission: 0.001
   });
+
+  // 加载回测记录
+  const loadBacktestRecords = async () => {
+    setLoading(true);
+    try {
+      const response = await http.get('/api/enhanced-backtest/records');
+      if (response.data.success) {
+        setBacktestRecords(response.data.records || []);
+      } else {
+        setError(response.data.error);
+      }
+    } catch (err) {
+      setError('加载回测记录失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 加载策略列表
   const loadStrategies = async () => {
@@ -93,7 +114,6 @@ const BacktestInterface = () => {
         setFilterStrategies(response.data.strategies.filter || []);
       }
     } catch (error) {
-      setError('加载策略列表失败');
       console.error('Load strategies error:', error);
     }
   };
@@ -106,136 +126,156 @@ const BacktestInterface = () => {
         setAvailableSymbols(response.data.symbols || []);
       }
     } catch (error) {
-      setError('加载交易对列表失败');
       console.error('Load symbols error:', error);
     }
   };
 
-  // 运行回测
-  const runBacktest = async () => {
-    if (!canRunBacktest()) {
-      setError('请完善回测配置');
-      return;
-    }
+  useEffect(() => {
+    loadBacktestRecords();
+    loadStrategies();
+    loadSymbols();
+  }, []);
 
-    setIsRunning(true);
-    setBacktestResult(null);
-    setError(null);
-
+  // 创建回测
+  const handleCreateBacktest = async () => {
     try {
+      setIsRunning(true);
       const requestData = {
-        entry_strategy: config.entryStrategy,
-        exit_strategy: config.exitStrategy,
-        filter_strategy: config.filterStrategy || null,
-        symbols: config.symbols,
-        timeframe: config.timeframe,
-        initial_cash: config.initialCash,
-        risk_percent: config.riskPercent,
-        commission: config.commission,
+        entry_strategy: newBacktest.entryStrategy,
+        exit_strategy: newBacktest.exitStrategy,
+        filter_strategy: newBacktest.filterStrategy || null,
+        symbols: newBacktest.symbols,
+        timeframe: newBacktest.timeframe,
+        backtest_period: newBacktest.backtestPeriod,
+        initial_cash: newBacktest.initialCash,
+        risk_percent: newBacktest.riskPercent,
+        commission: newBacktest.commission,
         save_to_db: true,
-        description: 'React前端界面回测'
+        description: '前端创建的回测'
       };
 
       const response = await http.post('/api/enhanced-backtest/run', requestData);
       
       if (response.data.success) {
-        setBacktestResult(response.data);
-        // 滚动到结果区域
-        setTimeout(() => {
-          const resultElement = document.getElementById('backtest-results');
-          if (resultElement) {
-            resultElement.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
+        setCreateDialogOpen(false);
+        loadBacktestRecords();
+        // 重置表单
+        setNewBacktest({
+          entryStrategy: '',
+          exitStrategy: '',
+          filterStrategy: '',
+          symbols: [],
+          timeframe: '4h',
+          backtestPeriod: '1m',
+          initialCash: 100000,
+          riskPercent: 2.0,
+          commission: 0.001
+        });
       } else {
         setError(response.data.error || '回测失败');
       }
     } catch (error) {
-      setError('回测请求失败');
-      console.error('Backtest error:', error);
+      setError('创建回测失败');
     } finally {
       setIsRunning(false);
     }
   };
 
-  // 重置配置
-  const resetConfig = () => {
-    setConfig({
-      entryStrategy: '',
-      exitStrategy: '',
-      filterStrategy: '',
-      symbols: [],
-      timeframe: '4h',
-      initialCash: 100000,
-      riskPercent: 2.0,
-      commission: 0.001
-    });
-    setBacktestResult(null);
-    setError(null);
+  // 查看详情
+  const handleViewDetails = (recordId) => {
+    navigate(`/enhanced-backtest/${recordId}`);
   };
 
-  // 检查是否可以运行回测
-  const canRunBacktest = () => {
-    return config.entryStrategy && 
-           config.exitStrategy && 
-           config.symbols.length > 0 && 
-           config.timeframe &&
-           !isRunning;
+  // 获取状态颜色
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'running':
+        return '#ffa94d';
+      case 'analyzing':
+        return '#5eddac';
+      case 'completed':
+        return '#5eddac';
+      case 'failed':
+        return '#ff6b6b';
+      default:
+        return '#ccc';
+    }
   };
 
-  // 格式化百分比
-  const formatPercent = (value) => {
-    if (value === null || value === undefined) return 'N/A';
-    return (value * 100).toFixed(2) + '%';
+  // 获取状态文本
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'running':
+        return '运行中';
+      case 'analyzing':
+        return '分析中';
+      case 'completed':
+        return '已完成';
+      case 'failed':
+        return '失败';
+      default:
+        return '未知';
+    }
   };
 
-  // 格式化日期时间
-  const formatDateTime = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString('zh-CN');
+  // 获取回测时间段文本
+  const getPeriodText = (period) => {
+    switch (period) {
+      case '1m':
+        return '最近一月';
+      case '3m':
+        return '最近三月';
+      case '1y':
+        return '最近一年';
+      default:
+        return period;
+    }
   };
 
-  // 获取收益率颜色（绿色正数，红色负数）
-  const getReturnColor = (value) => {
-    if (value > 0) return '#5eddac';
-    if (value < 0) return '#ff6b6b';
-    return '#fff';
+  // 格式化策略组合
+  const formatStrategyCombo = (record) => {
+    const combo = `${record.entry_strategy}/${record.exit_strategy}`;
+    return record.filter_strategy ? `${combo}/${record.filter_strategy}` : combo;
   };
 
-  // 处理配置变化
-  const handleConfigChange = (field, value) => {
-    setConfig(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  // 格式化运行时间
+  const formatRunTime = (startTime, endTime) => {
+    if (!startTime || !endTime) return '-';
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diff = Math.floor((end - start) / 1000); // 秒
+    if (diff < 60) return `${diff}秒`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟`;
+    return `${Math.floor(diff / 3600)}小时`;
   };
-
-  // 处理多选交易对变化
-  const handleSymbolChange = (event) => {
-    const value = event.target.value;
-    setConfig(prev => ({
-      ...prev,
-      symbols: typeof value === 'string' ? value.split(',') : value
-    }));
-  };
-
-  // 组件挂载时加载数据
-  useEffect(() => {
-    loadStrategies();
-    loadSymbols();
-  }, []);
 
   return (
-    <Container maxWidth="md" style={{ paddingTop: 32, paddingBottom: 32 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* 页面标题 */}
-      <Typography variant="h5" component="h1" align="left" gutterBottom sx={{ fontWeight: 600, mb: 2, color: '#fff' }}>
-        <Assessment sx={{ mr: 1, fontSize: 28, verticalAlign: 'middle', color: '#5eddac' }} />
-        backtest4u
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 3, color: '#ccc' }}>
-        选择策略组合，配置参数，一键运行回测
-      </Typography>
-      <Divider sx={{ mb: 3, background: '#23272a' }} />
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center' }}>
+            <Assessment sx={{ mr: 1, color: '#5eddac' }} />
+            策略回测
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#ccc', mt: 1 }}>
+            测试策略组合的历史表现
+          </Typography>
+        </Box>
+        <Box>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setCreateDialogOpen(true)}
+            sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600, mr: 2 }}
+          >
+            创建回测
+          </Button>
+          <IconButton onClick={loadBacktestRecords} sx={{ color: '#5eddac' }}>
+            <Refresh />
+          </IconButton>
+        </Box>
+      </Box>
 
       {/* 错误提示 */}
       {error && (
@@ -244,23 +284,162 @@ const BacktestInterface = () => {
         </Alert>
       )}
 
-      {/* 配置面板 */}
-      <Card sx={{ mb: 4, background: '#181c1f', color: '#fff', borderRadius: 2, boxShadow: 'none' }}>
-        <CardHeader
-          avatar={<Settings sx={{ color: '#5eddac' }} />}
-          title={<Typography variant="h6" sx={{ color: '#fff', fontWeight: 500 }}>回测配置</Typography>}
-          sx={{ background: 'transparent', borderBottom: '1px solid #23272a' }}
-        />
-        <CardContent sx={{ background: '#181c1f', color: '#fff' }}>
-          <Grid container spacing={3}>
-            {/* 策略选择 */}
+      {/* 统计卡片 */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ background: '#23272a', color: '#fff' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Assessment sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
+                <Box>
+                  <Typography variant="h6">{backtestRecords.length}</Typography>
+                  <Typography variant="body2" sx={{ color: '#ccc' }}>总回测数</Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ background: '#23272a', color: '#fff' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <ShowChart sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
+                <Box>
+                  <Typography variant="h6">
+                    {backtestRecords.filter(r => r.status === 'running').length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#ccc' }}>运行中</Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ background: '#23272a', color: '#fff' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TrendingUp sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
+                <Box>
+                  <Typography variant="h6">
+                    {backtestRecords.filter(r => r.total_return > 0).length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#ccc' }}>盈利策略</Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ background: '#23272a', color: '#fff' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Timer sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
+                <Box>
+                  <Typography variant="h6">
+                    {Math.max(...backtestRecords.map(r => r.win_rate || 0)).toFixed(1)}%
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#ccc' }}>最高胜率</Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* 回测记录列表 */}
+      <TableContainer component={Paper} sx={{ background: '#181c1f' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '60px' }}>ID</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>策略组合</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '80px' }}>频率</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '100px' }}>状态</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '120px' }}>回测时间段</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>获利/亏损/胜率</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>盈利均值/亏损均值/盈亏比</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '80px' }}>操作</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                  <CircularProgress sx={{ color: '#5eddac' }} />
+                </TableCell>
+              </TableRow>
+            ) : backtestRecords.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ color: '#ccc', py: 4 }}>
+                  暂无回测记录
+                </TableCell>
+              </TableRow>
+            ) : (
+              backtestRecords.map((record) => (
+                <TableRow key={record.id} hover>
+                  <TableCell sx={{ color: '#fff' }}>{record.id}</TableCell>
+                  <TableCell sx={{ color: '#fff', fontSize: '13px' }}>
+                    {formatStrategyCombo(record)}
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{record.timeframe}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={getStatusText(record.status)} 
+                      size="small"
+                      sx={{ 
+                        background: getStatusColor(record.status), 
+                        color: '#181c1f',
+                        fontWeight: 600 
+                      }} 
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {getPeriodText(record.backtest_period)}
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {record.winning_trades || 0}/{record.losing_trades || 0}/
+                    {record.win_rate ? `${record.win_rate.toFixed(1)}%` : '0%'}
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {record.avg_win_profit ? `$${record.avg_win_profit.toFixed(2)}` : '$0'}/
+                    {record.avg_loss_profit ? `$${Math.abs(record.avg_loss_profit).toFixed(2)}` : '$0'}/
+                    {record.profit_loss_ratio ? record.profit_loss_ratio.toFixed(2) : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleViewDetails(record.id)} 
+                      sx={{ color: '#5eddac' }}
+                    >
+                      <Info />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* 创建回测对话框 */}
+      <Dialog 
+        open={createDialogOpen} 
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { background: '#23272a', color: '#fff' }
+        }}
+      >
+        <DialogTitle>创建回测</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={4}>
               <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
                 <InputLabel sx={{ color: '#aaa' }}>入场策略</InputLabel>
                 <Select
-                  value={config.entryStrategy}
-                  label="入场策略"
-                  onChange={(e) => handleConfigChange('entryStrategy', e.target.value)}
+                  value={newBacktest.entryStrategy}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, entryStrategy: e.target.value })}
                   sx={{ 
                     color: '#fff',
                     '& .MuiFilledInput-root': {
@@ -277,25 +456,18 @@ const BacktestInterface = () => {
                 >
                   {entryStrategies.map((strategy) => (
                     <MenuItem key={strategy.name} value={strategy.name}>
-                      <Box>
-                        <Typography variant="body1">{strategy.name}</Typography>
-                        <Typography variant="caption" sx={{ color: '#ccc' }}>
-                          {strategy.desc}
-                        </Typography>
-                      </Box>
+                      {strategy.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} md={4}>
               <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
                 <InputLabel sx={{ color: '#aaa' }}>出场策略</InputLabel>
                 <Select
-                  value={config.exitStrategy}
-                  label="出场策略"
-                  onChange={(e) => handleConfigChange('exitStrategy', e.target.value)}
+                  value={newBacktest.exitStrategy}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, exitStrategy: e.target.value })}
                   sx={{ 
                     color: '#fff',
                     '& .MuiFilledInput-root': {
@@ -312,25 +484,18 @@ const BacktestInterface = () => {
                 >
                   {exitStrategies.map((strategy) => (
                     <MenuItem key={strategy.name} value={strategy.name}>
-                      <Box>
-                        <Typography variant="body1">{strategy.name}</Typography>
-                        <Typography variant="caption" sx={{ color: '#ccc' }}>
-                          {strategy.desc}
-                        </Typography>
-                      </Box>
+                      {strategy.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} md={4}>
               <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
                 <InputLabel sx={{ color: '#aaa' }}>过滤策略（可选）</InputLabel>
                 <Select
-                  value={config.filterStrategy}
-                  label="过滤策略（可选）"
-                  onChange={(e) => handleConfigChange('filterStrategy', e.target.value)}
+                  value={newBacktest.filterStrategy}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, filterStrategy: e.target.value })}
                   sx={{ 
                     color: '#fff',
                     '& .MuiFilledInput-root': {
@@ -348,34 +513,21 @@ const BacktestInterface = () => {
                   <MenuItem value="">无</MenuItem>
                   {filterStrategies.map((strategy) => (
                     <MenuItem key={strategy.name} value={strategy.name}>
-                      <Box>
-                        <Typography variant="body1">{strategy.name}</Typography>
-                        <Typography variant="caption" sx={{ color: '#ccc' }}>
-                          {strategy.desc}
-                        </Typography>
-                      </Box>
+                      {strategy.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-
-            {/* 交易对和时间窗口 */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
                 <InputLabel sx={{ color: '#aaa' }}>交易对（可多选）</InputLabel>
                 <Select
                   multiple
-                  value={config.symbols}
-                  onChange={handleSymbolChange}
-                  input={<OutlinedInput label="交易对（可多选）" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600 }} />
-                      ))}
-                    </Box>
-                  )}
+                  value={newBacktest.symbols}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, symbols: e.target.value })}
+                  input={<OutlinedInput label="交易对" />}
+                  renderValue={(selected) => selected.join(', ')}
                   MenuProps={MenuProps}
                   sx={{ 
                     color: '#fff',
@@ -392,21 +544,19 @@ const BacktestInterface = () => {
                 >
                   {availableSymbols.map((symbol) => (
                     <MenuItem key={symbol} value={symbol}>
-                      <Checkbox checked={config.symbols.indexOf(symbol) > -1} sx={{ color: '#5eddac', '&.Mui-checked': { color: '#5eddac' } }} />
+                      <Checkbox checked={newBacktest.symbols.indexOf(symbol) > -1} sx={{ color: '#5eddac' }} />
                       <ListItemText primary={symbol} />
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
                 <InputLabel sx={{ color: '#aaa' }}>时间窗口</InputLabel>
                 <Select
-                  value={config.timeframe}
-                  label="时间窗口"
-                  onChange={(e) => handleConfigChange('timeframe', e.target.value)}
+                  value={newBacktest.timeframe}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, timeframe: e.target.value })}
                   sx={{ 
                     color: '#fff',
                     '& .MuiFilledInput-root': {
@@ -427,285 +577,48 @@ const BacktestInterface = () => {
                 </Select>
               </FormControl>
             </Grid>
-
-            {/* 回测参数 */}
-            <Grid item xs={12} md={4}>
-              <TextField
-                variant="filled"
-                fullWidth
-                sx={{ 
-                  background: '#181c1f',
-                  '& .MuiInputBase-root': { color: '#fff' },
-                  '& .MuiInputLabel-root': { color: '#aaa' },
-                  '& .MuiFilledInput-root': {
-                    background: '#23272a',
-                    '&:hover': { background: '#2a2f33' },
-                    '&.Mui-focused': { background: '#23272a' }
-                  },
-                  '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
-                  '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
-                  '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
-                }}
-                label="初始资金"
-                type="number"
-                value={config.initialCash}
-                onChange={(e) => handleConfigChange('initialCash', Number(e.target.value))}
-                InputProps={{ inputProps: { min: 1000, max: 10000000, step: 1000 } }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <TextField
-                variant="filled"
-                fullWidth
-                sx={{ 
-                  background: '#181c1f',
-                  '& .MuiInputBase-root': { color: '#fff' },
-                  '& .MuiInputLabel-root': { color: '#aaa' },
-                  '& .MuiFilledInput-root': {
-                    background: '#23272a',
-                    '&:hover': { background: '#2a2f33' },
-                    '&.Mui-focused': { background: '#23272a' }
-                  },
-                  '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
-                  '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
-                  '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
-                }}
-                label="风险百分比 (%)"
-                type="number"
-                value={config.riskPercent}
-                onChange={(e) => handleConfigChange('riskPercent', Number(e.target.value))}
-                InputProps={{ inputProps: { min: 0.1, max: 10, step: 0.1 } }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <TextField
-                variant="filled"
-                fullWidth
-                sx={{ 
-                  background: '#181c1f',
-                  '& .MuiInputBase-root': { color: '#fff' },
-                  '& .MuiInputLabel-root': { color: '#aaa' },
-                  '& .MuiFilledInput-root': {
-                    background: '#23272a',
-                    '&:hover': { background: '#2a2f33' },
-                    '&.Mui-focused': { background: '#23272a' }
-                  },
-                  '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
-                  '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
-                  '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
-                }}
-                label="手续费率"
-                type="number"
-                value={config.commission}
-                onChange={(e) => handleConfigChange('commission', Number(e.target.value))}
-                InputProps={{ inputProps: { min: 0, max: 0.01, step: 0.0001 } }}
-              />
-            </Grid>
-
-            {/* 操作按钮 */}
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={isRunning ? <CircularProgress size={20} /> : <PlayArrow />}
-                  onClick={runBacktest}
-                  disabled={!canRunBacktest()}
-                  sx={{ background: '#5eddac', color: '#f4f2f1', fontWeight: 600, '&:hover': { background: '#4fd39a' }, px: 4, py: 1.5 }}
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth variant="filled" sx={{ background: '#181c1f' }}>
+                <InputLabel sx={{ color: '#aaa' }}>回测时间段</InputLabel>
+                <Select
+                  value={newBacktest.backtestPeriod}
+                  onChange={(e) => setNewBacktest({ ...newBacktest, backtestPeriod: e.target.value })}
+                  sx={{ 
+                    color: '#fff',
+                    '& .MuiFilledInput-root': {
+                      background: '#23272a',
+                      '&:hover': { background: '#2a2f33' },
+                      '&.Mui-focused': { background: '#23272a' }
+                    },
+                    '& .MuiSelect-icon': { color: '#5eddac' },
+                    '& .MuiFilledInput-underline:before': { borderBottomColor: '#333' },
+                    '& .MuiFilledInput-underline:hover:before': { borderBottomColor: '#5eddac' },
+                    '& .MuiFilledInput-underline:after': { borderBottomColor: '#5eddac' }
+                  }}
+                  MenuProps={MenuProps}
                 >
-                  {isRunning ? '回测中...' : '开始回测'}
-                </Button>
-                
-                <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={<Refresh />}
-                  onClick={resetConfig}
-                  sx={{ borderColor: '#5eddac', color: '#5eddac', ml: 2, fontWeight: 600, '&:hover': { borderColor: '#4fd39a', color: '#4fd39a' }, px: 4, py: 1.5 }}
-                >
-                  重置配置
-                </Button>
-              </Box>
+                  <MenuItem value="1m">最近一月</MenuItem>
+                  <MenuItem value="3m">最近三月</MenuItem>
+                  <MenuItem value="1y">最近一年</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
-
-      {/* 结果展示 */}
-      {backtestResult && (
-        <Box id="backtest-results">
-          <Divider sx={{ my: 4, background: '#23272a' }} />
-          {/* 整体表现卡片 */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <TrendingUp sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#fff' }}>
-                        {formatPercent(backtestResult.summary.avg_return)}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#ccc' }}>平均收益率</Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SwapHoriz sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#fff' }}>
-                        {backtestResult.summary.total_trades_all}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#ccc' }}>总交易次数</Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <GpsFixed sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#fff' }}>
-                        {formatPercent(backtestResult.summary.avg_win_rate / 100)}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#ccc' }}>平均胜率</Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AccountBalance sx={{ fontSize: 32, mr: 1, color: '#5eddac' }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#fff' }}>
-                        {backtestResult.summary.total_symbols}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#ccc' }}>测试交易对</Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* 详细结果表格 */}
-          <Card sx={{ mb: 4, background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-            <CardHeader
-              avatar={<Assessment sx={{ color: '#5eddac' }} />}
-              title={<Typography variant="h5" sx={{ fontWeight: 600, color: '#fff' }}>详细回测结果</Typography>}
-              action={
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {backtestResult.summary.best_symbol && (
-                    <Chip label={`最佳: ${backtestResult.summary.best_symbol}`} color="success" size="small" sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600 }} />
-                  )}
-                  {backtestResult.summary.worst_symbol && (
-                    <Chip label={`最差: ${backtestResult.summary.worst_symbol}`} color="error" size="small" sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600 }} />
-                  )}
-                </Box>
-              }
-            />
-            <CardContent>
-              <TableContainer component={Paper} sx={{ background: '#181c1f', color: '#fff', borderRadius: 1, '& td, & th': { borderColor: '#23272a', color: '#fff' } }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: '#23272a' }}>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>交易对</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>收益率</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>年化收益率</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>夏普比率</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>最大回撤</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>交易次数</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>胜率</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>入场信号</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>信号执行率</TableCell>
-                      <TableCell sx={{ color: '#fff', fontWeight: 600 }}>测试天数</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {backtestResult.summary.individual_results.map((row) => (
-                      <TableRow key={row.symbol} hover>
-                        <TableCell>
-                          <Chip label={row.symbol} variant="outlined" size="small" sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600 }} />
-                        </TableCell>
-                        <TableCell>
-                          <Typography sx={{ fontWeight: 600, color: getReturnColor(row.total_return) }}>
-                            {formatPercent(row.total_return)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography sx={{ fontWeight: 600, color: getReturnColor(row.annual_return) }}>
-                            {formatPercent(row.annual_return)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{row.sharpe_ratio ? row.sharpe_ratio.toFixed(2) : 'N/A'}</TableCell>
-                        <TableCell>
-                          <Typography color="error" sx={{ fontWeight: 600 }}>
-                            {formatPercent(row.max_drawdown)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{row.total_trades}</TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{formatPercent(row.win_rate / 100)}</TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{row.total_entry_signals}</TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{formatPercent(row.signal_execution_rate / 100)}</TableCell>
-                        <TableCell sx={{ color: '#fff' }}>{row.duration_days}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-
-          {/* 配置信息 */}
-          <Card sx={{ background: '#23272a', color: '#fff', boxShadow: 'none' }}>
-            <CardHeader
-              avatar={<Info sx={{ color: '#5eddac' }} />}
-              title={<Typography variant="h5" sx={{ fontWeight: 600, color: '#fff' }}>回测配置信息</Typography>}
-            />
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>策略组合</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{backtestResult.report['配置信息']['策略组合']}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>时间框架</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{backtestResult.report['配置信息']['时间框架']}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>初始资金</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{backtestResult.report['配置信息']['初始资金']}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>风险百分比</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{backtestResult.report['配置信息']['风险百分比']}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>手续费</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{backtestResult.report['配置信息']['手续费']}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Typography variant="subtitle2" sx={{ color: '#ccc' }}>测试时间</Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>{formatDateTime(backtestResult.report['配置信息']['测试时间'])}</Typography>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Box>
-      )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)} sx={{ color: '#ccc' }}>
+            取消
+          </Button>
+          <Button 
+            onClick={handleCreateBacktest} 
+            variant="contained"
+            disabled={isRunning || !newBacktest.entryStrategy || !newBacktest.exitStrategy || newBacktest.symbols.length === 0}
+            sx={{ background: '#5eddac', color: '#181c1f', fontWeight: 600 }}
+          >
+            {isRunning ? <CircularProgress size={20} /> : '开始回测'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

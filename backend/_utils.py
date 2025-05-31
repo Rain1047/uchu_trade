@@ -162,7 +162,7 @@ class DatabaseUtils:
     @staticmethod
     def get_engine():
         project_root = DatabaseUtils.get_project_root()
-        db_absolute_path = project_root / 'backend' / 'data_center' / 'trade_db.db'
+        db_absolute_path = project_root / 'backend' / 'trade_db.db'
         return create_engine(f'sqlite:///{db_absolute_path}')
 
     @classmethod
@@ -171,7 +171,7 @@ class DatabaseUtils:
             # 获取项目根目录的绝对路径
             project_root = cls.get_project_root()
             # 构建数据库文件的绝对路径
-            db_absolute_path = project_root / 'backend' / 'data_center' / 'trade_db.db'
+            db_absolute_path = project_root / 'backend' / 'trade_db.db'
             logger = LogConfig.get_logger(__name__)
             logger.info(f"数据库路径: {db_absolute_path}")
             # 创建数据库连接引擎

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from backend.data_object_center.strategy_instance import StrategyInstance
@@ -22,6 +22,15 @@ class CreateInstanceRequest(BaseModel):
     entry_per_trans: Optional[float] = None
     loss_per_trans: Optional[float] = None
     commission: float = 0.001
+
+    @validator('entry_per_trans', 'loss_per_trans')
+    def validate_funds(cls, v, values):
+        if 'entry_per_trans' in values and 'loss_per_trans' in values:
+            if values['entry_per_trans'] is None and values['loss_per_trans'] is None:
+                raise ValueError('entry_per_trans和loss_per_trans至少需要设置一个')
+            if values['entry_per_trans'] is not None and values['loss_per_trans'] is not None:
+                raise ValueError('entry_per_trans和loss_per_trans不能同时设置')
+        return v
 
 class UpdateInstanceRequest(BaseModel):
     strategy_name: Optional[str] = None
@@ -67,6 +76,8 @@ def create_instance(request: CreateInstanceRequest):
         else:
             return {"success": False, "error": "创建策略实例失败"}
             
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
     except Exception as e:
         logger.error(f"创建策略实例失败: {str(e)}")
         return {"success": False, "error": str(e)}

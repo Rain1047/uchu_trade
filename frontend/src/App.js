@@ -19,6 +19,7 @@ import AgentUpload from "./pages/AgentUpload";
 import ChatAgent from "./pages/ChatAgent";
 import StrategyInstance from "./pages/StrategyInstance";
 import StrategyInstanceDetail from "./pages/StrategyInstanceDetail";
+import BacktestDetail from "./pages/BacktestDetail";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -57,15 +58,15 @@ function App() {
                     <Layout>
                         <React.Suspense fallback={<div style={{color:'#fff',textAlign:'center',marginTop:40}}>Loading...</div>}>
                             <Routes>
-                                <Route path="/" element={<AgentUpload />} />
+                                <Route path="/" element={<ChatAgent />} />
                                 <Route path="/trade/history" element={<TradeHistoryTable />} />
                                 <Route path="/strategy" element={<StrategyPage />} />
                                 <Route path="/balance" element={<BalanceList />} />
                                 <Route path="/backtest" element={<Backtest />} />
                                 <Route path="/enhanced-backtest" element={<BacktestInterface />} />
+                                <Route path="/enhanced-backtest/:id" element={<BacktestDetail />} />
                                 <Route path="/strategyfiles" element={<StrategyFilesPage />} />
                                 <Route path="/record" element={<TradeRecordTable />} />
-                                <Route path="/agent/upload" element={<AgentUpload />} />
                                 <Route path="/agent/chat" element={<ChatAgent/>} />
                                 <Route path="/strategy-instance" element={<StrategyInstance />} />
                                 <Route path="/strategy-instance/:id" element={<StrategyInstanceDetail />} />
