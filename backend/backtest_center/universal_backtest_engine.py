@@ -85,27 +85,58 @@ class UniversalBacktestEngine:
                 logger.warning(f"交易对 {symbol} 数据不足，跳过回测")
                 return None
             
-            # 2. 应用策略生成信号
-            df = self._apply_strategies(df, config)
+            # 2. 先补充缺失 SMA 以便策略使用
+            for ma in [10,20,50,100,200]:
+                col = f'sma{ma}'
+                if col not in df.columns:
+                    df[col] = df['close'].rolling(window=ma).mean()
+
+            # 应用策略生成信号
+            entry_strategy = registry.get_strategy(config.entry_strategy)
+            df = entry_strategy(df, None)
             
-            # 3. 运行回测
+            # 应用出场策略 - 传入None作为stIns参数，触发回测模式
+            exit_strategy = registry.get_strategy(config.exit_strategy)
+            df = exit_strategy(df, None)  # 传入None触发回测模式
+            
+            # 应用过滤策略（如果有）
+            if config.filter_strategy:
+                filter_strategy = registry.get_strategy(config.filter_strategy)
+                df = filter_strategy(df, None)  # 传入None作为stIns参数，触发回测模式
+                
+                # 过滤策略可能会修改入场信号
+                if 'filtered_entry_sig' in df.columns:
+                    df['entry_sig'] = df['filtered_entry_sig']
+            
+            # 确保必要的列存在
+            required_columns = ['entry_sig', 'entry_price', 'sell_sig', 'sell_price']
+            for col in required_columns:
+                if col not in df.columns:
+                    if 'entry' in col:
+                        df[col] = 0
+                    else:  # sell相关
+                        df[col] = df['close']  # 默认使用收盘价
+            
+            # —— 自动补充缺失指标列 ——
+            missing_indicators = [c for c in ['sma10','sma20','sma50','sma100','sma200'] if c not in df.columns]
+            for ind in missing_indicators:
+                period = int(ind.replace('sma',''))
+                df[ind] = df['close'].rolling(window=period).mean()
+            
+            # 3. 运行回测系统
             backtest_system = BacktestSystem(
                 initial_cash=config.initial_cash,
                 risk_percent=config.risk_percent,
                 commission=config.commission
             )
-            
-            # 创建临时策略实例对象（兼容现有系统）
+
             temp_st = self._create_temp_strategy_instance(config, symbol)
-            
             backtest_results = backtest_system.run(df, temp_st, plot=False)
-            
-            # 4. 转换为新的结果格式
-            result = self._convert_to_new_result_format(
+
+            # 4. 转换为新格式并返回
+            return self._convert_to_new_result_format(
                 backtest_results, config.generate_key(), symbol, df
             )
-            
-            return result
             
         except Exception as e:
             logger.error(f"回测 {symbol} 时发生错误: {str(e)}")
@@ -179,6 +210,22 @@ class UniversalBacktestEngine:
                     else:  # sell相关
                         df[col] = df['close']  # 默认使用收盘价
             
+            # —— 自动补充缺失指标列 ——
+            missing_indicators = [c for c in ['sma10','sma20','sma50','sma100','sma200'] if c not in df.columns]
+            if missing_indicators:
+                from backend.data_center.kline_data.enhanced_kline_manager import CommonIndicators, IndicatorRequest
+                indicator_map = {
+                    'sma10': CommonIndicators.sma(10),
+                    'sma20': CommonIndicators.sma(20),
+                    'sma50': CommonIndicators.sma(50),
+                    'sma100': CommonIndicators.sma(100),
+                    'sma200': CommonIndicators.sma(200),
+                }
+                for ind in missing_indicators:
+                    req = indicator_map.get(ind)
+                    if req:
+                        df[ind] = IndicatorCalculator.calculate_sma(df, period=int(ind.replace('sma','')))
+            
             return df
             
         except Exception as e:
@@ -195,6 +242,8 @@ class UniversalBacktestEngine:
                 self.entry_st_code = config.entry_strategy
                 self.exit_st_code = config.exit_strategy
                 self.filter_st_code = config.filter_strategy
+                # 用于记录回测结果时的展示名称
+                self.name = f"{config.entry_strategy}/{config.exit_strategy}" + (f"/{config.filter_strategy}" if config.filter_strategy else "")
         
         return TempStrategyInstance(config, symbol)
     

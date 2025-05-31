@@ -213,9 +213,15 @@ async def run_backtest_async(record_id: int, request: BacktestRequest):
 async def run_backtest(request: BacktestRequest, background_tasks: BackgroundTasks):
     """执行回测"""
     try:
+        # ---- 记录请求开始 ----
+        logger.info("===== ⏱️ 收到增强回测请求 =====")
+        logger.info(f"请求内容: {request.dict()}")
+
         # 验证策略是否存在
         available_strategies = registry.list_strategies()
         strategy_names = [s['name'] for s in available_strategies]
+        
+        logger.debug(f"可用策略: {strategy_names}")
         
         if request.entry_strategy not in strategy_names:
             raise HTTPException(status_code=400, detail=f'入场策略不存在: {request.entry_strategy}')
@@ -226,13 +232,19 @@ async def run_backtest(request: BacktestRequest, background_tasks: BackgroundTas
         if request.filter_strategy and request.filter_strategy not in strategy_names:
             raise HTTPException(status_code=400, detail=f'过滤策略不存在: {request.filter_strategy}')
         
+        logger.info("✅ 策略验证通过")
+        
         # 验证交易对
         kline_manager = EnhancedKlineManager()
         available_symbols = kline_manager.get_available_symbols()
         
+        logger.debug(f"可用交易对: {available_symbols}")
+        
         invalid_symbols = [s for s in request.symbols if s not in available_symbols]
         if invalid_symbols:
             raise HTTPException(status_code=400, detail=f'无效的交易对: {invalid_symbols}')
+        
+        logger.info("✅ 交易对验证通过")
         
         # 创建回测记录
         record_data = {
@@ -254,8 +266,11 @@ async def run_backtest(request: BacktestRequest, background_tasks: BackgroundTas
         if not record:
             raise HTTPException(status_code=500, detail='创建回测记录失败')
         
+        logger.info(f"📝 已创建回测记录 #{record.id}, 状态 running")
+        
         # 在后台异步执行回测
         background_tasks.add_task(run_backtest_async, record.id, request)
+        logger.info(f"🚀 已将回测任务 #{record.id} 加入后台队列")
         
         logger.info(f"开始执行回测 #{record.id}: {request.entry_strategy} + {request.exit_strategy}")
         
@@ -462,4 +477,35 @@ def run_backtest_core(**kwargs):
         return {
             'success': False,
             'error': str(e)
-        } 
+        }
+
+
+@router.delete("/api/enhanced-backtest/record/{record_id}")
+async def delete_backtest_record(record_id: int):
+    """删除回测记录"""
+    try:
+        # 检查记录是否存在
+        record = EnhancedBacktestRecord.get_by_id(record_id)
+        if not record:
+            raise HTTPException(status_code=404, detail='回测记录不存在')
+        
+        # 检查状态，运行中的不允许删除
+        if record.status in ['running', 'analyzing']:
+            raise HTTPException(status_code=400, detail='不能删除正在运行的回测')
+        
+        # 执行删除
+        success = EnhancedBacktestRecord.delete_by_id(record_id)
+        if success:
+            logger.info(f"成功删除回测记录 #{record_id}")
+            return {
+                'success': True,
+                'message': '回测记录已删除'
+            }
+        else:
+            raise HTTPException(status_code=500, detail='删除失败')
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"删除回测记录失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f'删除回测记录失败: {str(e)}') 

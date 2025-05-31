@@ -234,28 +234,28 @@ class StrategyForBacktest(bt.Strategy):
             # 验证输入价格
             if pd.isna(price) or price <= 0 or not math.isfinite(price):
                 if self.p.debug:
-                    self.log(f'价格无效: {price}, 返回仓位0')
+                    self.log(f'[Size] 价格无效: {price}, 返回0')
                 return 0
             
             # 获取投资组合价值
             portfolio_value = self.broker.getvalue()
             if pd.isna(portfolio_value) or portfolio_value <= 0 or not math.isfinite(portfolio_value):
                 if self.p.debug:
-                    self.log(f'投资组合价值无效: {portfolio_value}, 返回仓位0')
+                    self.log(f'[Size] 投资组合价值无效: {portfolio_value}, 返回0')
                 return 0
 
             # 计算目标交易价值
             trade_value = portfolio_value * (self.p.risk_percent / 100)
             if pd.isna(trade_value) or trade_value <= 0 or not math.isfinite(trade_value):
                 if self.p.debug:
-                    self.log(f'交易价值无效: {trade_value}, 返回仓位0')
+                    self.log(f'[Size] 交易价值无效: {trade_value}, 返回0')
                 return 0
 
             # 计算最大允许的总仓位价值
             max_position_value = portfolio_value * self.p.max_position_size
             if pd.isna(max_position_value) or max_position_value <= 0 or not math.isfinite(max_position_value):
                 if self.p.debug:
-                    self.log(f'最大仓位价值无效: {max_position_value}, 返回仓位0')
+                    self.log(f'[Size] 最大仓位价值无效: {max_position_value}, 返回0')
                 return 0
 
             # 计算现有仓位价值
@@ -276,14 +276,14 @@ class StrategyForBacktest(bt.Strategy):
             target_trade_value = min(trade_value, available_position_value)
             if pd.isna(target_trade_value) or target_trade_value <= 0 or not math.isfinite(target_trade_value):
                 if self.p.debug:
-                    self.log(f'目标交易价值无效: {target_trade_value}, 返回仓位0')
+                    self.log(f'[Size] 目标交易价值无效: {target_trade_value}, 返回0')
                 return 0
 
             # 检查最小交易单位
             min_trade_value = price * 0.001  # 最小交易单位
             if target_trade_value < min_trade_value:
                 if self.p.debug:
-                    self.log(f'仓位太小 - 目标交易价值: {target_trade_value:.2f}, '
+                    self.log(f'[Size] 仓位太小 - 目标交易价值: {target_trade_value:.2f}, '
                              f'最小要求: {min_trade_value:.2f}')
                 return 0
 
@@ -291,20 +291,20 @@ class StrategyForBacktest(bt.Strategy):
             size = target_trade_value / price
             if pd.isna(size) or size <= 0 or not math.isfinite(size):
                 if self.p.debug:
-                    self.log(f'计算的仓位大小无效: {size}, 返回仓位0')
+                    self.log(f'[Size] 计算的仓位大小无效: {size}, 返回0')
                 return 0
 
             # 限制最大仓位
             max_size = portfolio_value * 0.5 / price  # 最大使用50%资金
             if pd.isna(max_size) or not math.isfinite(max_size):
-                max_size = size  # 如果max_size无效，使用原size
+                max_size = size
             else:
                 size = min(size, max_size)
 
             # 最终验证
             if pd.isna(size) or size <= 0 or not math.isfinite(size):
                 if self.p.debug:
-                    self.log(f'最终仓位大小无效: {size}, 返回仓位0')
+                    self.log(f'[Size] 最终仓位大小无效: {size}, 返回0')
                 return 0
             
             # 限制极端值

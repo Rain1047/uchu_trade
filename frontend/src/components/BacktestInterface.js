@@ -39,7 +39,8 @@ import {
   TrendingUp,
   SwapHoriz,
   ShowChart,
-  Timer
+  Timer,
+  Delete
 } from '@mui/icons-material';
 import http from '../api/http';
 import { useNavigate } from 'react-router-dom';
@@ -184,6 +185,24 @@ const BacktestInterface = () => {
   // 查看详情
   const handleViewDetails = (recordId) => {
     navigate(`/enhanced-backtest/${recordId}`);
+  };
+
+  // 删除回测记录
+  const handleDeleteRecord = async (recordId) => {
+    if (!window.confirm('确定要删除这条回测记录吗？')) {
+      return;
+    }
+    
+    try {
+      const response = await http.delete(`/api/enhanced-backtest/record/${recordId}`);
+      if (response.data.success) {
+        loadBacktestRecords();
+      } else {
+        setError(response.data.error || '删除失败');
+      }
+    } catch (error) {
+      setError('删除回测记录失败');
+    }
   };
 
   // 获取状态颜色
@@ -352,25 +371,26 @@ const BacktestInterface = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '60px' }}>ID</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>策略组合</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '120px' }}>策略组合</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>交易对</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '80px' }}>频率</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '100px' }}>状态</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '120px' }}>回测时间段</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600, width: '180px' }}>获利/亏损/胜率</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 600 }}>盈利均值/亏损均值/盈亏比</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '80px' }}>操作</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 600, width: '100px' }}>操作</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                   <CircularProgress sx={{ color: '#5eddac' }} />
                 </TableCell>
               </TableRow>
             ) : backtestRecords.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ color: '#ccc', py: 4 }}>
+                <TableCell colSpan={9} align="center" sx={{ color: '#ccc', py: 4 }}>
                   暂无回测记录
                 </TableCell>
               </TableRow>
@@ -380,6 +400,9 @@ const BacktestInterface = () => {
                   <TableCell sx={{ color: '#fff' }}>{record.id}</TableCell>
                   <TableCell sx={{ color: '#fff', fontSize: '13px' }}>
                     {formatStrategyCombo(record)}
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff', fontSize: '13px' }}>
+                    {record.symbols ? record.symbols.join(', ') : ''}
                   </TableCell>
                   <TableCell sx={{ color: '#fff' }}>{record.timeframe}</TableCell>
                   <TableCell>
@@ -412,6 +435,14 @@ const BacktestInterface = () => {
                       sx={{ color: '#5eddac' }}
                     >
                       <Info />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDeleteRecord(record.id)} 
+                      sx={{ color: '#ff6b6b' }}
+                      disabled={record.status === 'running' || record.status === 'analyzing'}
+                    >
+                      <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>

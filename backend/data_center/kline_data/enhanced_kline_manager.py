@@ -245,6 +245,31 @@ class EnhancedKlineManager:
     
     def load_raw_data(self, symbol: str, timeframe: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[pd.DataFrame]:
         """加载原始K线数据"""
+        # —— 先尝试数据库 ——
+        try:
+            from backend.data_object_center.kline_record import KlineRecord, DatabaseUtils
+            session = DatabaseUtils.get_db_session()
+            query = session.query(KlineRecord).filter(
+                KlineRecord.symbol == symbol.upper(),
+                KlineRecord.timeframe == timeframe
+            )
+            if start_date:
+                query = query.filter(KlineRecord.datetime >= start_date)
+            if end_date:
+                query = query.filter(KlineRecord.datetime <= end_date)
+            records = query.order_by(KlineRecord.datetime).all()
+            if records:
+                df_db = pd.DataFrame([r.to_dict() for r in records])
+                df_db.set_index('datetime', inplace=True)
+                self.logger.info(f"Loaded {len(df_db)} records from DB for {symbol} {timeframe}")
+                # 如果数据足够，直接返回
+                if len(df_db) >= 100:
+                    return df_db.copy()
+            else:
+                df_db = None
+        except Exception as e:
+            self.logger.error(f"DB load error: {e}")
+        
         # 生成缓存键
         cache_key = f"{symbol}_{timeframe}_{start_date}_{end_date}"
         
@@ -255,8 +280,9 @@ class EnhancedKlineManager:
         
         # 获取文件路径
         filepath = self.get_data_file_path(symbol, timeframe)
-        if filepath is None:
-            return None
+        if filepath is None or not os.path.exists(filepath):
+            # 跳过 Binance 拉取，直接转 yfinance / OKX
+            pass
         
         try:
             # 读取数据
@@ -277,6 +303,41 @@ class EnhancedKlineManager:
                 df = df[df.index >= start_date]
             if end_date:
                 df = df[df.index <= end_date]
+            
+            # 如果过滤后数据不足，则尝试再次拉取缺失区间
+            if len(df) < 100:
+                # 直接使用 yfinance 备选
+                try:
+                    from backend.data_center.kline_data.yfinance_kline_fetcher import YFinanceKlineFetcher
+                    yfetch = YFinanceKlineFetcher(self.data_dir)
+                    yfetch.download_historical(symbol, timeframe, start_date, end_date)
+                    filepath = self.get_data_file_path(symbol, timeframe)
+                    if os.path.exists(filepath):
+                        df = pd.read_csv(filepath)
+                        df = self._standardize_columns(df)
+                        if 'datetime' in df.columns:
+                            df['datetime'] = pd.to_datetime(df['datetime'])
+                            df = df.set_index('datetime')
+                        df = df.sort_index()
+                except Exception as e2:
+                    self.logger.error(f"YF fetch failed: {e2}")
+            
+            # —— 最终尝试 OKX ——
+            if len(df) < 100:
+                try:
+                    from backend.data_center.kline_data.okx_kline_fetcher import OkxKlineFetcher
+                    okxf = OkxKlineFetcher(self.data_dir)
+                    okxf.download_historical(symbol, timeframe)
+                    filepath = self.get_data_file_path(symbol, timeframe)
+                    if os.path.exists(filepath):
+                        df = pd.read_csv(filepath)
+                        df = self._standardize_columns(df)
+                        if 'datetime' in df.columns:
+                            df['datetime'] = pd.to_datetime(df['datetime'])
+                            df = df.set_index('datetime')
+                        df = df.sort_index()
+                except Exception as e3:
+                    self.logger.error(f"OKX fetch failed: {e3}")
             
             # 确保数据按时间排序
             df = df.sort_index()
